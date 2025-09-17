@@ -1,0 +1,1929 @@
+{
+  "week 1": {
+    "Maths": {
+      "Grade 1": [
+        {
+          "question": "Choose the correct option",
+          "options": ["big", "small", "tiny"],
+          "correctOption": "big",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/maths/1.jpg",
+          "next": 1
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["big", "small", "tall"],
+          "correctOption": "small",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/maths/2.jpg",
+          "next": 2
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["big", "small", "thin"],
+          "correctOption": "big",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/maths/3.jpg",
+          "next": 3
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["big", "small", "large"],
+          "correctOption": "small",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/maths/4.jpg",
+          "next": 4
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["more", "less", "equal"],
+          "correctOption": "more",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/maths/5.jpg",
+          "next": 5
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["more", "less", "equal"],
+          "correctOption": "less",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/maths/6.jpg",
+          "next": 6
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["more", "less", "equal"],
+          "correctOption": "less",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/maths/7.jpg",
+          "next": 7
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["more", "less", "equal"],
+          "correctOption": "more",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/maths/8.jpg",
+          "next": 8
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["A", "B", "Both are the same"],
+          "correctOption": "B",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/maths/9.jpg",
+          "next": 9
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["A", "B", "Both are the same"],
+          "correctOption": "A",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/maths/10.jpg",
+          "next": 10
+        },
+        {
+          "question": "",
+          "options": [],
+          "correctOption": "",
+          "url": "",
+          "next": -1
+        }
+      ],
+      "Grade 2": [
+        {
+          "question": "Choose the correct option",
+          "options": ["dog", "cat", "cow"],
+          "correctOption": "cat",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/maths/1.jpg",
+          "next": 1
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["5", "7", "8"],
+          "correctOption": "7",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/maths/2.jpg",
+          "next": 2
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["16", "18", "13"],
+          "correctOption": "16",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/maths/3.jpg",
+          "next": 3
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["A", "B", "C"],
+          "correctOption": "C",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/maths/4.jpg",
+          "next": 4
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["7", "8", "9"],
+          "correctOption": "8",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/maths/5.jpg",
+          "next": 5
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["A", "B", "Both are equal"],
+          "correctOption": "A",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/maths/6.jpg",
+          "next": 6
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["15", "17", "20"],
+          "correctOption": "17",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/maths/7.jpg",
+          "next": 7
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["A", "B", "Both are equal"],
+          "correctOption": "A",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/maths/8.jpg",
+          "next": 8
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["9", "12", "5"],
+          "correctOption": "5",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/maths/9.jpg",
+          "next": 9
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["16", "17", "19"],
+          "correctOption": "19",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/maths/10.jpg",
+          "next": 10
+        },
+        {
+          "question": "",
+          "options": [],
+          "correctOption": "",
+          "url": "",
+          "next": -1
+        }
+      ],
+      "Grade 3": [
+        {
+          "question": "Choose the correct option",
+          "options": ["68", "17", "79"],
+          "correctOption": "79",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/maths/1.jpg",
+          "next": 1
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["more than", "less than", "equal to"],
+          "correctOption": "more than",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/maths/2.jpg",
+          "next": 2
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["6", "7", "8"],
+          "correctOption": "6",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/maths/3.jpg",
+          "next": 3
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["vertical", "horizontal", "curved"],
+          "correctOption": "horizontal",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/maths/4.jpg",
+          "next": 4
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["55", "42", "58"],
+          "correctOption": "58",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/maths/5.jpg",
+          "next": 5
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["18", "8", "80"],
+          "correctOption": "8",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/maths/6.jpg",
+          "next": 6
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["16", "17", "18"],
+          "correctOption": "16",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/maths/7.jpg",
+          "next": 7
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["45", "95", "59"],
+          "correctOption": "59",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/maths/8.jpg",
+          "next": 8
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["heavier", "lighter", "thinner"],
+          "correctOption": "heavier",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/maths/9.jpg",
+          "next": 9
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["A", "B", "C"],
+          "correctOption": "C",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/maths/10.jpg",
+          "next": 10
+        },
+        {
+          "question": "",
+          "options": [],
+          "correctOption": "",
+          "url": "",
+          "next": -1
+        }
+      ]
+    },
+    "English": {
+      "Grade 1": [
+        {
+          "question": "Choose the correct option",
+          "options": ["Green", "Blue", "Red"],
+          "correctOption": "Green",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/english/1.jpg",
+          "next": 1
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["eyes", "ears", "nose"],
+          "correctOption": "ears",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/english/2.jpg",
+          "next": 2
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["leg", "hand", "ear"],
+          "correctOption": "hand",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/english/3.jpg",
+          "next": 3
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["One", "Two", "Four"],
+          "correctOption": "Two",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/english/4.jpg",
+          "next": 4
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["a", "b", "c"],
+          "correctOption": "b",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/english/5.jpg",
+          "next": 5
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["drinking", "standing", "washing"],
+          "correctOption": "washing",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/english/6.jpg",
+          "next": 6
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["axe", "bag", "cup"],
+          "correctOption": "axe",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/english/7.jpg",
+          "next": 7
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["blue", "green", "red"],
+          "correctOption": "red",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/english/8.jpg",
+          "next": 8
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["dog", "fan", "pin"],
+          "correctOption": "dog",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/english/9.jpg",
+          "next": 9
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["tin", "cup", "girl"],
+          "correctOption": "girl",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/english/10.jpg",
+          "next": 10
+        },
+        {
+          "question": "",
+          "options": [],
+          "correctOption": "",
+          "url": "",
+          "next": -1
+        }
+      ],
+      "Grade 2": [
+        {
+          "question": "Choose the correct option",
+          "options": ["Seven", "Eight", "Nine"],
+          "correctOption": "Eight",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/english/1.jpg",
+          "next": 1
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["Drink", "Eat", "Study"],
+          "correctOption": "Eat",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/english/2.jpg",
+          "next": 2
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["morning", "night", "afternoon"],
+          "correctOption": "night",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/english/3.jpg",
+          "next": 3
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["hands", "head", "legs"],
+          "correctOption": "legs",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/english/4.jpg",
+          "next": 4
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["u", "i", "o"],
+          "correctOption": "u",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/english/5.jpg",
+          "next": 5
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["for", "on", "to"],
+          "correctOption": "on",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/english/6.jpg",
+          "next": 6
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["p", "n", "q"],
+          "correctOption": "p",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/english/7.jpg",
+          "next": 7
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["m", "t", "p"],
+          "correctOption": "t",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/english/8.jpg",
+          "next": 8
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["lion", "apple", "elephant"],
+          "correctOption": "elephant",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/english/9.jpg",
+          "next": 9
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["t", "l", "k"],
+          "correctOption": "k",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/english/10.jpg",
+          "next": 10
+        },
+        {
+          "question": "",
+          "options": [],
+          "correctOption": "",
+          "url": "",
+          "next": -1
+        }
+      ],
+      "Grade 3": [
+        {
+          "question": "Choose the correct option",
+          "options": ["warm", "cold", "hat"],
+          "correctOption": "cold",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/english/1.jpg",
+          "next": 1
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["scy", "ski", "sky"],
+          "correctOption": "sky",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/english/2.jpg",
+          "next": 2
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["Duck", "Parrot", "Crow"],
+          "correctOption": "Parrot",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/english/3.jpg",
+          "next": 3
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["Leg", "Hand", "Head"],
+          "correctOption": "Leg",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/english/4.jpg",
+          "next": 4
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["Jump", "Run", "Climb"],
+          "correctOption": "Climb",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/english/5.jpg",
+          "next": 5
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["milk", "potato", "sugar"],
+          "correctOption": "milk",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/english/6.jpg",
+          "next": 6
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["bus", "train", "plane"],
+          "correctOption": "plane",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/english/7.jpg",
+          "next": 7
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["Leaf", "Play", "Print"],
+          "correctOption": "Play",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/english/8.jpg",
+          "next": 8
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["A", "An", "In"],
+          "correctOption": "A",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/english/9.jpg",
+          "next": 9
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["Cup", "Rain", "Hope"],
+          "correctOption": "Hope",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/english/10.jpg",
+          "next": 10
+        },
+        {
+          "question": "",
+          "options": [],
+          "correctOption": "",
+          "url": "",
+          "next": -1
+        }
+      ]
+    }
+  },
+  "week 2": {
+    "Maths": {
+      "Grade 1": [
+        {
+          "question": "Choose the correct option",
+          "options": ["on", "of", "under"],
+          "correctOption": "on",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/maths2/1.jpg",
+          "next": 1
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["for", "on", "under"],
+          "correctOption": "under",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/maths2/2.jpg",
+          "next": 2
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["outside", "up", "inside"],
+          "correctOption": "inside",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/maths2/3.jpg",
+          "next": 3
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["on", "outside", "in"],
+          "correctOption": "outside",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/maths2/4.jpg",
+          "next": 4
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["top", "outside", "in"],
+          "correctOption": "top",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/maths2/5.jpg",
+          "next": 5
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["in", "bottom", "up"],
+          "correctOption": "bottom",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/maths2/6.jpg",
+          "next": 6
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["in", "above", "bottom"],
+          "correctOption": "above",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/maths2/7.jpg",
+          "next": 7
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["in", "inside", "below"],
+          "correctOption": "below",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/maths2/8.jpg",
+          "next": 8
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["in", "below", "outside"],
+          "correctOption": "below",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/maths2/9.jpg",
+          "next": 9
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["above", "in", "inside"],
+          "correctOption": "above",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/maths2/10.jpg",
+          "next": 10
+        },
+        {
+          "question": "",
+          "options": [],
+          "correctOption": "",
+          "url": "",
+          "next": -1
+        }
+      ],
+      "Grade 2": [
+        {
+          "question": "Choose the correct option",
+          "options": ["3", "5", "0"],
+          "correctOption": "0",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/maths2/1.jpg",
+          "next": 1
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["A", "B", "C"],
+          "correctOption": "A",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/maths2/2.jpg",
+          "next": 2
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["Thirty", "Eighteen", "Twenty"],
+          "correctOption": "Twenty",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/maths2/3.jpg",
+          "next": 3
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["4", "1", "3"],
+          "correctOption": "4",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/maths2/4.jpg",
+          "next": 4
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["A", "B", "C"],
+          "correctOption": "B",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/maths2/5.jpg",
+          "next": 5
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["Summer", "Winter", "Monsoon"],
+          "correctOption": "Summer",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/maths2/6.jpg",
+          "next": 6
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["Seventy", "Sixty Five", "Seventy Five"],
+          "correctOption": "Seventy Five",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/maths2/7.jpg",
+          "next": 7
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["evening", "night", "morning"],
+          "correctOption": "morning",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/maths2/8.jpg",
+          "next": 8
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["Dawa", "Karma", "Palmo"],
+          "correctOption": "Karma",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/maths2/9.jpg",
+          "next": 9
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["Dawa", "Karma", "Palmo"],
+          "correctOption": "Palmo",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/maths2/10.jpg",
+          "next": 10
+        },
+        {
+          "question": "",
+          "options": [],
+          "correctOption": "",
+          "url": "",
+          "next": -1
+        }
+      ],
+      "Grade 3": [
+        {
+          "question": "Choose the correct option",
+          "options": ["8", "6", "7"],
+          "correctOption": "7",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/maths2/1.jpg",
+          "next": 1
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["50", "55", "60"],
+          "correctOption": "50",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/maths2/2.jpg",
+          "next": 2
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["15", "10", "12"],
+          "correctOption": "12",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/maths2/3.jpg",
+          "next": 3
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["sevens", "eights", "nines"],
+          "correctOption": "eights",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/maths2/4.jpg",
+          "next": 4
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["35", "30", "40"],
+          "correctOption": "35",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/maths2/5.jpg",
+          "next": 5
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["62", "49", "50"],
+          "correctOption": "49",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/maths2/6.jpg",
+          "next": 6
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["7", "11", "8"],
+          "correctOption": "8",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/maths2/7.jpg",
+          "next": 7
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["Summer", "Winter", "Monsoon"],
+          "correctOption": "Monsoon",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/maths2/8.jpg",
+          "next": 8
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["67", "70", "82"],
+          "correctOption": "67",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/maths2/9.jpg",
+          "next": 9
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["46", "34", "27"],
+          "correctOption": "34",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/maths2/10.jpg",
+          "next": 10
+        },
+        {
+          "question": "",
+          "options": [],
+          "correctOption": "",
+          "url": "",
+          "next": -1
+        }
+      ]
+    },
+    "English": {
+      "Grade 1": [
+        {
+          "question": "Choose the correct option",
+          "options": ["A", "B", "C"],
+          "correctOption": "A",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/english2/1.jpg",
+          "next": 1
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["Four", "Five", "Six"],
+          "correctOption": "Four",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/english2/2.jpg",
+          "next": 2
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["Seven", "Eight", "Nine"],
+          "correctOption": "Seven",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/english2/3.jpg",
+          "next": 3
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["bat", "mat", "fat"],
+          "correctOption": "mat",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/english2/4.jpg",
+          "next": 4
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["white", "black", "blue"],
+          "correctOption": "white",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/english2/5.jpg",
+          "next": 5
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["hot", "cold", "warm"],
+          "correctOption": "cold",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/english2/6.jpg",
+          "next": 6
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["hot", "cold", "cool"],
+          "correctOption": "hot",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/english2/7.jpg",
+          "next": 7
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["window", "gate", "wall"],
+          "correctOption": "gate",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/english2/8.jpg",
+          "next": 8
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["door", "wall", "window"],
+          "correctOption": "door",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/english2/9.jpg",
+          "next": 9
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["hands", "legs", "ears"],
+          "correctOption": "legs",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/english2/10.jpg",
+          "next": 10
+        },
+        {
+          "question": "",
+          "options": [],
+          "correctOption": "",
+          "url": "",
+          "next": -1
+        }
+      ],
+      "Grade 2": [
+        {
+          "question": "Choose the correct option",
+          "options": ["cat", "rat", "lion"],
+          "correctOption": "cat",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/english2/1.jpg",
+          "next": 1
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["s", "r", "h"],
+          "correctOption": "h",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/english2/2.jpg",
+          "next": 2
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["She", "They", "He"],
+          "correctOption": "He",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/english2/3.jpg",
+          "next": 3
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["Ball", "Car", "Bat"],
+          "correctOption": "Car",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/english2/4.jpg",
+          "next": 4
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["Jump", "Walk", "Stand"],
+          "correctOption": "Jump",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/english2/5.jpg",
+          "next": 5
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["mother", "father", "aunt"],
+          "correctOption": "father",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/english2/6.jpg",
+          "next": 6
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["Throw", "Close", "Dance"],
+          "correctOption": "Throw",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/english2/7.jpg",
+          "next": 7
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["Cup", "Tap", "Mug"],
+          "correctOption": "Tap",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/english2/8.jpg",
+          "next": 8
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["Tomato", "Lemon", "Potato"],
+          "correctOption": "Tomato",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/english2/9.jpg",
+          "next": 9
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["Her", "He", "Their"],
+          "correctOption": "Her",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/english2/10.jpg",
+          "next": 10
+        },
+        {
+          "question": "",
+          "options": [],
+          "correctOption": "",
+          "url": "",
+          "next": -1
+        }
+      ],
+      "Grade 3": [
+        {
+          "question": "Choose the correct option",
+          "options": ["A", "An", "To"],
+          "correctOption": "An",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/english2/1.jpg",
+          "next": 1
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["standing", "sitting", "jumping"],
+          "correctOption": "sitting",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/english2/2.jpg",
+          "next": 2
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["are", "it", "is"],
+          "correctOption": "is",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/english2/3.jpg",
+          "next": 3
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["Chalk", "Match", "Clip"],
+          "correctOption": "Chalk",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/english2/4.jpg",
+          "next": 4
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["beskat", "bucket", "basket"],
+          "correctOption": "basket",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/english2/5.jpg",
+          "next": 5
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["tall", "small", "thin"],
+          "correctOption": "small",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/english2/6.jpg",
+          "next": 6
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["Sun", "Stars", "Moon"],
+          "correctOption": "Sun",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/english2/7.jpg",
+          "next": 7
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["Plane", "Train", "Ship"],
+          "correctOption": "Ship",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/english2/8.jpg",
+          "next": 8
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["bed", "dustbin", "room"],
+          "correctOption": "dustbin",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/english2/9.jpg",
+          "next": 9
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["trots", "runs", "crawls"],
+          "correctOption": "crawls",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/english2/10.jpg",
+          "next": 10
+        },
+        {
+          "question": "",
+          "options": [],
+          "correctOption": "",
+          "url": "",
+          "next": -1
+        }
+      ]
+    }
+  },
+  "week 3": {
+    "Maths": {
+      "Grade 1": [
+        {
+          "question": "Choose the correct option",
+          "options": ["2", "4", "5"],
+          "correctOption": "4",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/maths3/1.jpg",
+          "next": 1
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["2", "3", "4"],
+          "correctOption": "2",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/maths3/2.jpg",
+          "next": 2
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["3", "4", "5"],
+          "correctOption": "4",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/maths3/3.jpg",
+          "next": 3
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["1", "2", "3"],
+          "correctOption": "1",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/maths3/4.jpg",
+          "next": 4
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["circle", "square", "cone"],
+          "correctOption": "circle",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/maths3/5.jpg",
+          "next": 5
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["cone", "circle", "square"],
+          "correctOption": "circle",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/maths3/6.jpg",
+          "next": 6
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["A", "B", "C"],
+          "correctOption": "C",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/maths3/7.jpg",
+          "next": 7
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["A", "B", "C"],
+          "correctOption": "C",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/maths3/8.jpg",
+          "next": 8
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["8", "6", "5"],
+          "correctOption": "5",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/maths3/9.jpg",
+          "next": 9
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["7", "10", "6"],
+          "correctOption": "10",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/maths3/10.jpg",
+          "next": 10
+        },
+        {
+          "question": "",
+          "options": [],
+          "correctOption": "",
+          "url": "",
+          "next": -1
+        }
+      ],
+      "Grade 2": [
+        {
+          "question": "Choose the correct option",
+          "options": ["12", "13", "14"],
+          "correctOption": "12",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/maths3/1.jpg",
+          "next": 1
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["after", "before", "under"],
+          "correctOption": "before",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/maths3/2.jpg",
+          "next": 2
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["A", "B", "C"],
+          "correctOption": "B",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/maths3/3.jpg",
+          "next": 3
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["Zero", "One", "Ten"],
+          "correctOption": "Zero",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/maths3/4.jpg",
+          "next": 4
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["9", "10", "12"],
+          "correctOption": "9",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/maths3/5.jpg",
+          "next": 5
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["6", "5", "4"],
+          "correctOption": "4",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/maths3/6.jpg",
+          "next": 6
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["shop", "school", "hospital"],
+          "correctOption": "shop",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/maths3/7.jpg",
+          "next": 7
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["shop", "school", "hospital"],
+          "correctOption": "hospital",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/maths3/8.jpg",
+          "next": 8
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["A", "B", "Both"],
+          "correctOption": "B",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/maths3/9.jpg",
+          "next": 9
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["Watermelon", "Almond", "Apricot"],
+          "correctOption": "Watermelon",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/maths3/10.jpg",
+          "next": 10
+        },
+        {
+          "question": "",
+          "options": [],
+          "correctOption": "",
+          "url": "",
+          "next": -1
+        }
+      ],
+      "Grade 3": [
+        {
+          "question": "Choose the correct option",
+          "options": ["42", "48", "36"],
+          "correctOption": "42",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/maths3/1.jpg",
+          "next": 1
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["82", "71", "95"],
+          "correctOption": "95",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/maths3/2.jpg",
+          "next": 2
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["22", "25", "20"],
+          "correctOption": "22",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/maths3/3.jpg",
+          "next": 3
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["5", "6", "3"],
+          "correctOption": "5",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/maths3/4.jpg",
+          "next": 4
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["A", "B", "C"],
+          "correctOption": "B",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/maths3/5.jpg",
+          "next": 5
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["90", "74", "84"],
+          "correctOption": "84",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/maths3/6.jpg",
+          "next": 6
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["DEF", "ABC", "EFG"],
+          "correctOption": "DEF",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/maths3/7.jpg",
+          "next": 7
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["A", "B", "C"],
+          "correctOption": "C",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/maths3/8.jpg",
+          "next": 8
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["32", "27", "44"],
+          "correctOption": "27",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/maths3/9.jpg",
+          "next": 9
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["19", "29", "39"],
+          "correctOption": "29",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/maths3/10.jpg",
+          "next": 10
+        },
+        {
+          "question": "",
+          "options": [],
+          "correctOption": "",
+          "url": "",
+          "next": -1
+        }
+      ]
+    },
+    "English": {
+      "Grade 1": [
+        {
+          "question": "Choose the correct option",
+          "options": ["A", "B", "C"],
+          "correctOption": "A",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/english3/1.jpg",
+          "next": 1
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["One", "Five", "Six"],
+          "correctOption": "One",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/english3/2.jpg",
+          "next": 2
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["Four", "Three", "Nine"],
+          "correctOption": "Three",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/english3/3.jpg",
+          "next": 3
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["tall", "wall", "fall"],
+          "correctOption": "wall",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/english3/4.jpg",
+          "next": 4
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["white", "black", "blue"],
+          "correctOption": "blue",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/english3/5.jpg",
+          "next": 5
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["far", "near", "on"],
+          "correctOption": "near",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/english3/6.jpg",
+          "next": 6
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["near", "by", "far"],
+          "correctOption": "far",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/english3/7.jpg",
+          "next": 7
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["rainy", "sunny", "cold"],
+          "correctOption": "sunny",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/english3/8.jpg",
+          "next": 8
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["cloudy", "warm", "sunny"],
+          "correctOption": "cloudy",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/english3/9.jpg",
+          "next": 9
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["hair", "teeth", "hands"],
+          "correctOption": "teeth",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/english3/10.jpg",
+          "next": 10
+        },
+        {
+          "question": "",
+          "options": [],
+          "correctOption": "",
+          "url": "",
+          "next": -1
+        }
+      ],
+      "Grade 2": [
+        {
+          "question": "Choose the correct option",
+          "options": ["flower", "fruit", "vegetable"],
+          "correctOption": "fruit",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/english3/1.jpg",
+          "next": 1
+        },
+        {
+          "question": "Choose the correct option",
+          "options": [ "This is my lunch.",
+            "I did not bring my lunch.",
+            "This is my glass of milk."],
+          "correctOption": "This is my lunch.",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/english3/2.jpg",
+          "next": 2
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["Four", "Five", "Six"],
+          "correctOption": "Six",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/english3/3.jpg",
+          "next": 3
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["Ball", "Jam", "Nail"],
+          "correctOption": "Jam",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/english3/4.jpg",
+          "next": 4
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["e", "a", "i"],
+          "correctOption": "e",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/english3/5.jpg",
+          "next": 5
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["Red", "Yellow", "Pink"],
+          "correctOption": "Yellow",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/english3/6.jpg",
+          "next": 6
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["class", "market", "family"],
+          "correctOption": "family",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/english3/7.jpg",
+          "next": 7
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["hat", "zip", "lip"],
+          "correctOption": "zip",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/english3/8.jpg",
+          "next": 8
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["evening", "morning", "night"],
+          "correctOption": "evening",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/english3/9.jpg",
+          "next": 9
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["sleeping", "reading", "playing"],
+          "correctOption": "playing",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/english3/10.jpg",
+          "next": 10
+        },
+        {
+          "question": "",
+          "options": [],
+          "correctOption": "",
+          "url": "",
+          "next": -1
+        }
+      ],
+      "Grade 3": [
+        {
+          "question": "Choose the correct option",
+          "options": ["Peacock", "Fish", "Giraffe"],
+          "correctOption": "Fish",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/english3/1.jpg",
+          "next": 1
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["a", "r", "u"],
+          "correctOption": "u",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/english3/2.jpg",
+          "next": 2
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["A", "An", "In"],
+          "correctOption": "An",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/english3/3.jpg",
+          "next": 3
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["Sky", "Land", "Ocean"],
+          "correctOption": "Ocean",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/english3/4.jpg",
+          "next": 4
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["One", "Two", "Three"],
+          "correctOption": "Two",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/english3/5.jpg",
+          "next": 5
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["A boy is painting.",
+            "Two boys are dancing. ",
+            "Two boys are painting."],
+          "correctOption": "Two boys are painting.",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/english3/6.jpg",
+          "next": 6
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["Ch", "Sh", "Sl"],
+          "correctOption": "Sh",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/english3/7.jpg",
+          "next": 7
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["flower", "fruit", "vegetable"],
+          "correctOption": "flower",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/english3/8.jpg",
+          "next": 8
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["lo", "ck", "sk"],
+          "correctOption": "ck",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/english3/9.jpg",
+          "next": 9
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["Small", "Tiny", "Big"],
+          "correctOption": "Big",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/english3/10.jpg",
+          "next": 10
+        },
+        
+        {
+          "question": "",
+          "options": [],
+          "correctOption": "",
+          "url": "",
+          "next": -1
+        }
+      ]
+    }
+  },
+  "week 4": {
+    "Maths": {
+      "Grade 1": [
+        {
+          "question": "Choose the correct option",
+          "options": ["2", "4", "5"],
+          "correctOption": "2",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/maths4/1.jpg",
+          "next": 1
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["2", "4", "5"],
+          "correctOption": "4",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/maths4/2.jpg",
+          "next": 2
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["1", "2", "3"],
+          "correctOption": "1",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/maths4/3.jpg",
+          "next": 3
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["3", "4", "2"],
+          "correctOption": "2",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/maths4/4.jpg",
+          "next": 4
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["2", "3", "4"],
+          "correctOption": "2",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/maths4/5.jpg",
+          "next": 5
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["4", "6", "7"],
+          "correctOption": "6",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/maths4/6.jpg",
+          "next": 6
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["4", "6", "8"],
+          "correctOption": "8",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/maths4/7.jpg",
+          "next": 7
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["2", "3", "8"],
+          "correctOption": "8",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/maths4/8.jpg",
+          "next": 8
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["8", "9", "10"],
+          "correctOption": "9",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/maths4/9.jpg",
+          "next": 9
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["4", "5", "6"],
+          "correctOption": "4",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/maths4/10.jpg",
+          "next": 10
+        },
+        {
+          "question": "",
+          "options": [],
+          "correctOption": "",
+          "url": "",
+          "next": -1
+        }
+      ],
+      "Grade 2": [
+        {
+          "question": "Choose the correct option",
+          "options": ["5", "9", "7"],
+          "correctOption": "9",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/maths4/1.jpg",
+          "next": 1
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["8", "9", "10"],
+          "correctOption": "8",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/maths4/2.jpg",
+          "next": 2
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["sliding", "rolling", "standing"],
+          "correctOption": "sliding",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/maths4/3.jpg",
+          "next": 3
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["fifteen", "sixteen", "seventeen"],
+          "correctOption": "seventeen",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/maths4/4.jpg",
+          "next": 4
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["5", "7", "8"],
+          "correctOption": "7",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/maths4/5.jpg",
+          "next": 5
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["green", "orange", "white"],
+          "correctOption": "orange",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/maths4/6.jpg",
+          "next": 6
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["10", "16", "13"],
+          "correctOption": "13",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/maths4/7.jpg",
+          "next": 7
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["6", "7", "8"],
+          "correctOption": "8",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/maths4/8.jpg",
+          "next": 8
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["8", "10", "6"],
+          "correctOption": "8",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/maths4/9.jpg",
+          "next": 9
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["2", "5", "10"],
+          "correctOption": "5",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/maths4/10.jpg",
+          "next": 10
+        },
+        {
+          "question": "",
+          "options": [],
+          "correctOption": "",
+          "url": "",
+          "next": -1
+        }
+      ],
+      "Grade 3": [
+        {
+          "question": "Choose the correct option",
+          "options": ["29", "30", "31"],
+          "correctOption": "30",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/maths4/1.jpg",
+          "next": 1
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["Spring", "Autumn", "Monsoon"],
+          "correctOption": "Spring",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/maths4/2.jpg",
+          "next": 2
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["3", "9", "6"],
+          "correctOption": "9",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/maths4/3.jpg",
+          "next": 3
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["East", "North", "West"],
+          "correctOption": "East",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/maths4/4.jpg",
+          "next": 4
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["3", "5", "2"],
+          "correctOption": "2",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/maths4/5.jpg",
+          "next": 5
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["December", "April", "February"],
+          "correctOption": "February",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/maths4/6.jpg",
+          "next": 6
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["A", "B", "C"],
+          "correctOption": "A",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/maths4/7.jpg",
+          "next": 7
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["18", "19", "20"],
+          "correctOption": "20",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/maths4/8.jpg",
+          "next": 8
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["A", "B", "C"],
+          "correctOption": "B",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/maths4/9.jpg",
+          "next": 9
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["Circle", "Triangle", "Square"],
+          "correctOption": "Triangle",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/maths4/10.jpg",
+          "next": 10
+        },
+        {
+          "question": "",
+          "options": [],
+          "correctOption": "",
+          "url": "",
+          "next": -1
+        }
+      ]
+    },
+    "English": {
+      "Grade 1": [
+        {
+          "question": "Choose the correct option",
+          "options": ["A", "B", "C"],
+          "correctOption": "B",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/english4/1.jpg",
+          "next": 1
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["Three", "Four", "Five"],
+          "correctOption": "Four",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/english4/2.jpg",
+          "next": 2
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["Three", "Four", "Five"],
+          "correctOption": "Five",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/english4/3.jpg",
+          "next": 3
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["pan", "pot", "glass"],
+          "correctOption": "pan",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/english4/4.jpg",
+          "next": 4
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["bull", "ox", "horse"],
+          "correctOption": "horse",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/english4/5.jpg",
+          "next": 5
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["bear", "cat", "elephant"],
+          "correctOption": "elephant",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/english4/6.jpg",
+          "next": 6
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["ice-cream", "butter", "cheese"],
+          "correctOption": "ice-cream",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/english4/7.jpg",
+          "next": 7
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["six", "seven", "eight"],
+          "correctOption": "eight",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/english4/8.jpg",
+          "next": 8
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["raining", "hot", "sunny"],
+          "correctOption": "raining",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/english4/9.jpg",
+          "next": 9
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["ear", "head", "hair"],
+          "correctOption": "hair",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade1/english4/10.jpg",
+          "next": 10
+        },
+        {
+          "question": "",
+          "options": [],
+          "correctOption": "",
+          "url": "",
+          "next": -1
+        }
+      ],
+      "Grade 2": [
+        {
+          "question": "Choose the correct option",
+          "options": ["Shirt", "Cap", "Pants"],
+          "correctOption": "Shirt",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/english4/1.jpg",
+          "next": 1
+        },
+        {
+          "question": "Choose the correct option",
+          "options": [ "hot", "warm","cold"
+         ],
+          "correctOption": "cold",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/english4/2.jpg",
+          "next": 2
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["class", "age", "name"],
+          "correctOption": "name",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/english4/3.jpg",
+          "next": 3
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["Box", "Fun", "Pan"],
+          "correctOption": "Box",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/english4/4.jpg",
+          "next": 4
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["U", "O", "A"],
+          "correctOption": "U",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/english4/5.jpg",
+          "next": 5
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["dancing", "sleeping", "running"],
+          "correctOption": "sleeping",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/english4/6.jpg",
+          "next": 6
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["soap", "shoe", "star"],
+          "correctOption": "soap",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/english4/7.jpg",
+          "next": 7
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["dog", "goat", "sheep"],
+          "correctOption": "goat",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/english4/8.jpg",
+          "next": 8
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["p", "q", "d"],
+          "correctOption": "q",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/english4/9.jpg",
+          "next": 9
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["truck", "hen", "free"],
+          "correctOption": "free",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade2/english4/10.jpg",
+          "next": 10
+        },
+        {
+          "question": "",
+          "options": [],
+          "correctOption": "",
+          "url": "",
+          "next": -1
+        }
+      ],
+      "Grade 3": [
+        {
+          "question": "Choose the correct option",
+          "options": ["Please", "Good bye", "Welcome"],
+          "correctOption": "Please",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/english4/1.jpg",
+          "next": 1
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["football ground", "forest", "paddy field"],
+          "correctOption": "paddy field",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/english4/2.jpg",
+          "next": 2
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["corrat", "carrot", "crrato"],
+          "correctOption": "carrot",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/english4/3.jpg",
+          "next": 3
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["Grandmother", "Brother", "Uncle"],
+          "correctOption": "Uncle",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/english4/4.jpg",
+          "next": 4
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["and", "in", "on"],
+          "correctOption": "and",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/english4/5.jpg",
+          "next": 5
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["of", "in", "on"],
+          "correctOption": "on",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/english4/6.jpg",
+          "next": 6
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["elephant", "tiget", "horse"],
+          "correctOption": "elephant",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/english4/7.jpg",
+          "next": 7
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["walking", "running", "standing"],
+          "correctOption": "running",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/english4/8.jpg",
+          "next": 8
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["Pl", "Cl", "Fl"],
+          "correctOption": "Fl",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/english4/9.jpg",
+          "next": 9
+        },
+        {
+          "question": "Choose the correct option",
+          "options": ["Bed", "Bucket", "Cupboard"],
+          "correctOption": "Bucket",
+          "url": "https://mis.17000ft.org/apis/fast_apis/chatbot_ques/Grade3/english4/10.jpg",
+          "next": 10
+        },
+        
+        {
+          "question": "",
+          "options": [],
+          "correctOption": "",
+          "url": "",
+          "next": -1
+        }
+      ]
+    }
+  }
+}

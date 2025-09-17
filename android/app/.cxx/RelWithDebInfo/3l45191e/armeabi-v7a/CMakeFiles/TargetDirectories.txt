@@ -1,0 +1,2 @@
+/Users/vedvika/Desktop/office_project/17ootft/lib17000ft/android/app/.cxx/RelWithDebInfo/3l45191e/armeabi-v7a/CMakeFiles/edit_cache.dir
+/Users/vedvika/Desktop/office_project/17ootft/lib17000ft/android/app/.cxx/RelWithDebInfo/3l45191e/armeabi-v7a/CMakeFiles/rebuild_cache.dir

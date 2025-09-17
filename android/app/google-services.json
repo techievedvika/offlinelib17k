@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "217392323092",
+    "project_id": "library17000ft",
+    "storage_bucket": "library17000ft.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:217392323092:android:b295e548f2b7658bd3a501",
+        "android_client_info": {
+          "package_name": "org.ft17000.lib17000ft"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBcf7d4fTn5YZGcEFKzbpv9tIDVoWImdIo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

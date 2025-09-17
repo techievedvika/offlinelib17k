@@ -1,0 +1,19 @@
+class AppUrls {
+  static String baseUrl = "https://library.17000ft.org/apis/";
+  static String loginapi = '${AppUrls.baseUrl}library_login.php';
+  static String dashapi = '${AppUrls.baseUrl}getDashboardData.php';
+  static String registerapi = '${AppUrls.baseUrl}registerStudent.php';
+  static String allStudentapi = '${AppUrls.baseUrl}allStudents.php';
+  static String bookIssueapi = '${AppUrls.baseUrl}bookIssueToStudent.php';
+  static String getReturnedBookapi = '${AppUrls.baseUrl}getReturnedBook.php';
+  static String getIssuedBookapi = '${AppUrls.baseUrl}getIssuedBook.php';
+  static String getBlockapi = '${AppUrls.baseUrl}filters.php?getBlock';
+  static String getStateapi = '${AppUrls.baseUrl}filters.php?getState';
+  static String getDistrictapi = '${AppUrls.baseUrl}filters.php?getDistrict';
+  static String getSchoolapi = '${AppUrls.baseUrl}filters.php?getSchool';
+  static String getLevelApi = '${AppUrls.baseUrl}/getLevels.php?request=level';
+  static String getLanguageApi = '${AppUrls.baseUrl}/getLevels.php?request=language';
+  static String promoteStudent = '${AppUrls.baseUrl}/promoteStudent.php';
+  static String getStudentId= '${AppUrls.baseUrl}/getUniqueId.php?getUniqueId';
+  static String fcmTokenApi = '${AppUrls.baseUrl}/setFCMToken.php';
+}
