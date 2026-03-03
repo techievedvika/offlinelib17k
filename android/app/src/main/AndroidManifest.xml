@@ -5,12 +5,15 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <!-- Camera for barcode scanning -->
-    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-feature android:name="android.hardware.camera" android:required="true"/>
+
 
     <!-- File access for Android 10 and below -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-        android:maxSdkVersion="28" />
+        android:maxSdkVersion="28"
+        />
 
     <!-- Network state check (optional but common) -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -21,7 +24,10 @@
         android:requestLegacyExternalStorage="true"
         android:name="${applicationName}"
         android:enableOnBackInvokedCallback="true"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:usesCleartextTraffic="true">
+
+
 
         <!-- Firebase Push Notifications -->
         <meta-data

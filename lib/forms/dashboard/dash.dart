@@ -41,6 +41,8 @@ class _DashBoardState extends State<DashBoard>
   String? block;
   String? school;
   String? rights;
+  bool? isSuperAdmin;
+  String? libSchool;
 
   //= {
 
@@ -57,7 +59,7 @@ class _DashBoardState extends State<DashBoard>
       curve: Curves.easeInOutBack,
     );
     _animationController.forward();
-    _requestNotificationPermission();
+    //_requestNotificationPermission();
   }
 
   @override
@@ -66,39 +68,45 @@ class _DashBoardState extends State<DashBoard>
     super.dispose();
   }
 
-  Future<bool> _requestNotificationPermission() async {
-    var status = await Permission.notification.status;
-
-    if (status.isPermanentlyDenied) {
-      print(
-          "Notification permission permanently denied. Opening app settings...");
-      await openAppSettings(); // Guide user to manually enable
-      return false;
-    }
-
-    if (!status.isGranted) {
-      status = await Permission.notification.request();
-    }
-
-    if (status.isGranted) {
-      print("Notification permission granted");
-      return true;
-    } else {
-      print("Notification permission denied");
-      return false;
-    }
-  }
+  // Future<bool> _requestNotificationPermission() async {
+  //   var status = await Permission.notification.status;
+  //
+  //   if (status.isPermanentlyDenied) {
+  //     print(
+  //         "Notification permission permanently denied. Opening app settings...");
+  //     await openAppSettings(); // Guide user to manually enable
+  //     return false;
+  //   }
+  //
+  //   if (!status.isGranted) {
+  //     status = await Permission.notification.request();
+  //   }
+  //
+  //   if (status.isGranted) {
+  //     print("Notification permission granted");
+  //     return true;
+  //   } else {
+  //     print("Notification permission denied");
+  //     return false;
+  //   }
+  // }
 
   Future<void> _loadUserId() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     userId = prefs.getString('userId');
-    role = prefs.getString('role');
+    role = prefs.getString('role')?.toLowerCase().toString();
     rights = prefs.getString('rights');
     role ??= 'Guest';
+    libSchool = prefs.getString('school');
 
     if (userId != null && mounted) {
       print('fetchdashdata is called');
       context.read<DashCubit>().dashData(adminId: userId!);
+    }
+    if(role =='Admin'.toLowerCase().trim() || role =='Librarian'.toLowerCase().trim()){
+      isSuperAdmin = false;
+    } else {
+      isSuperAdmin = true;
     }
   }
 
@@ -324,7 +332,7 @@ class _DashBoardState extends State<DashBoard>
               child: Text(
                 role?.isNotEmpty == true ? role! : '',
                 style: TextStyle(
-                  fontSize: isMobile ? 16 : 20,
+                  fontSize: isMobile ? 16 : 24,
                   fontWeight: FontWeight.bold,
                   color: AppColors.primary,
                 ),
@@ -340,6 +348,7 @@ class _DashBoardState extends State<DashBoard>
                   IconButton(
                     onPressed: () {
                       showFilterBottomSheet(
+                        title: 'Filter Dashboard',
                         context: context,
                         buildFilterContent: _buildFilterContent,
                         onApply: () {
@@ -537,7 +546,7 @@ class _DashBoardState extends State<DashBoard>
               }
             },
             child: Card(
-              elevation: 0,
+              elevation: 3,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
@@ -572,7 +581,7 @@ class _DashBoardState extends State<DashBoard>
                             color: color,
                             size: Responsive(context).screenWidth() < 600
                                 ? 16
-                                : 28,
+                                : 26,
                           ),
                         ),
                       ],
@@ -586,7 +595,7 @@ class _DashBoardState extends State<DashBoard>
                             color: Colors.grey[600],
                             fontSize: Responsive(context).screenWidth() < 600
                                 ? 12
-                                : 22,
+                                : 20,
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -610,115 +619,9 @@ class _DashBoardState extends State<DashBoard>
     );
   }
 
-  void _showFilterBottomSheet() {
-    final isMobile = MediaQuery.of(context).size.width < 600;
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) {
-        return StatefulBuilder(builder: (context, setModalState) {
-          return Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(20)),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
-                  blurRadius: 20,
-                  spreadRadius: 2,
-                ),
-              ],
-            ),
-            padding: EdgeInsets.only(
-              bottom: MediaQuery.of(context).viewInsets.bottom,
-            ),
-            child: DraggableScrollableSheet(
-              expand: false,
-              initialChildSize: 0.5, // Starts at 50% of screen height
-              maxChildSize: 0.9, // Can expand to 90%
-              minChildSize: 0.3, // Can collapse to 30%
-              builder: (_, controller) {
-                return SingleChildScrollView(
-                  controller: controller,
-                  child: Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Drag handle
-                        Center(
-                          child: Container(
-                            width: 40,
-                            height: 4,
-                            margin: const EdgeInsets.only(bottom: 16),
-                            decoration: BoxDecoration(
-                              color: Colors.grey.shade300,
-                              borderRadius: BorderRadius.circular(2),
-                            ),
-                          ),
-                        ),
-
-                        // Header
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Filter Dashboard',
-                              style: TextStyle(
-                                fontSize: isMobile ? 18 : 20,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.close),
-                              onPressed: () => Navigator.pop(context),
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 16),
-
-                        // Filter content (reusing our existing filter widgets)
-                        _buildFilterContent(isMobile, setModalState),
-
-                        const SizedBox(height: 24),
-
-                        // Apply button
-                        SizedBox(
-                          width: double.infinity,
-                          child: FilledButton(
-                            onPressed: () {
-                              _applyFilters();
-                              Navigator.pop(context);
-                            },
-                            style: FilledButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            child: const Text('Apply Filters'),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
-          );
-        });
-      },
-    );
-  }
-
   Widget _buildBookActivityChart(bool isMobile) {
     return Card(
-      elevation: 0,
+      elevation: 3,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
@@ -811,6 +714,7 @@ class _DashBoardState extends State<DashBoard>
     );
   }
 
+  ///Filter update
   Widget _buildFilterContent(
       bool isMobile, void Function(VoidCallback fn) setModalState) {
     return BlocBuilder<FilterCubit, FilterState>(
@@ -821,10 +725,26 @@ class _DashBoardState extends State<DashBoard>
           mainAxisSize: MainAxisSize.min,
           children: [
             // State Dropdown
+            if(isSuperAdmin == false)
+            FilterDropdown(
+                value: filterState.selectedSchool,
+                hint: 'Select School',
+                items: (libSchool!= null ? [libSchool!] : []),
+                onChanged: (value) {
+                  context.read<FilterCubit>().updateSelectedSchool(value!);
+                  context.read<FilterCubit>().selectSchool(value);
+                  setState(() {
+                    libSchool = value;
+                  });
+                  setModalState(() {});
+                },
+                isMobile: isMobile
+            ),
+            if(isSuperAdmin == true)
             FilterDropdown(
                 value: filterState.selectedState,
                 hint: 'Select State',
-                items: ['All', ...filterState.states],
+                items:['All', ...filterState.states],
                 onChanged: (value) {
                   context.read<FilterCubit>().updateSelectedState(value!);
 
@@ -835,9 +755,10 @@ class _DashBoardState extends State<DashBoard>
 
                   setModalState(() {});
                 },
-                isMobile: isMobile),
+                isMobile: isMobile
+            ),
             const SizedBox(height: 12),
-            if (filterState.districts.isNotEmpty)
+            if (filterState.districts.isNotEmpty && isSuperAdmin == true)
               FilterDropdown(
                   value: filterState.selectedDistrict,
                   hint: 'Select District',
@@ -857,7 +778,7 @@ class _DashBoardState extends State<DashBoard>
             // Block Dropdown
             const SizedBox(height: 12),
             if (filterState.blocks.isNotEmpty &&
-                filterState.districts.isNotEmpty)
+                filterState.districts.isNotEmpty && isSuperAdmin == true)
               FilterDropdown(
                   value: filterState.selectedBlock,
                   hint: 'Select Block',
@@ -871,10 +792,10 @@ class _DashBoardState extends State<DashBoard>
                     setModalState(() {});
                   },
                   isMobile: isMobile),
-            if (filterState.blocks.isNotEmpty) const SizedBox(height: 12),
+            //if (filterState.blocks.isNotEmpty) const SizedBox(height: 12),
             const SizedBox(height: 12),
             // School Dropdown
-            if (filterState.schools.isNotEmpty)
+            if (filterState.schools.isNotEmpty && isSuperAdmin == true)
               FilterDropdown(
                   value: filterState.selectedSchool,
                   hint: 'Select School',
@@ -888,7 +809,7 @@ class _DashBoardState extends State<DashBoard>
                     setModalState(() {});
                   },
                   isMobile: isMobile),
-            if (filterState.schools.isNotEmpty) const SizedBox(height: 12),
+            if (filterState.schools.isNotEmpty)
             const SizedBox(height: 12),
 
             // Date Range
@@ -918,14 +839,14 @@ class _DashBoardState extends State<DashBoard>
       child: Row(
         children: [
           Container(
-            width: Responsive(context).screenWidth() < 600 ? 9 : 16,
-            height: Responsive(context).screenWidth() < 600 ? 9 : 16,
+            width: Responsive(context).screenWidth() < 600 ? 9 : 22,
+            height: Responsive(context).screenWidth() < 600 ? 9 : 22,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: color,
             ),
           ),
-          const SizedBox(width: 4),
+          SizedBox(width: Responsive(context).screenWidth() < 600 ? 4 : 6),
           Text(
             text,
             style: TextStyle(

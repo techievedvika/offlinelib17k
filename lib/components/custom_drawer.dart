@@ -41,88 +41,100 @@ class _CustomDrawerState extends State<CustomDrawer> {
     final theme = Theme.of(context);
     final isSmallScreen = MediaQuery.of(context).size.width < 600;
 
-    return Drawer(
-      backgroundColor: theme.scaffoldBackgroundColor,
-      width: isSmallScreen ? null : 300, // Responsive width
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header Section
-          _buildHeader(theme),
-          
-          // Menu Items
-          Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  _buildDrawerSection('Navigation', [
-                    
-                    _buildDrawerItem(
-                      icon: FontAwesomeIcons.home,
-                      title: 'Home',
-                      route: RoutesName.homeScreen,
-                    ),
-                    
-                rights!.contains("1") ?  _buildDrawerItem(
-                      icon: FontAwesomeIcons.chartLine,
-                      title: 'Dashboard',
-                      route: RoutesName.dashboard,
-                    ) : const SizedBox(),
-                    
-                  ]),
-                  
-                  _buildDrawerSection('Book Management', [
-               rights!.contains("5") ?       _buildDrawerItem(
-                      icon: FontAwesomeIcons.book,
-                      title: 'Issue Book',
-                      route: RoutesName.bookIssue,
-                    ) : const SizedBox(),
-               rights!.contains("5") ?       _buildDrawerItem(
-                      icon: FontAwesomeIcons.bookBookmark,
-                      title: 'Return Book',
-                      route: RoutesName.bookReturn,
-                    ) : const SizedBox(),
-                rights!.contains("4") ?     _buildDrawerItem(
-                      icon: FontAwesomeIcons.bookOpen,
-                      title: 'All Issued Books',
-                      route: RoutesName.allbookIssue,
-                    ) : const SizedBox(),
-                 rights!.contains("4") ?    _buildDrawerItem(
-                      icon: Icons.pending,
-                      title: 'Pending Returns',
-                      route: RoutesName.allbookReturn,
-                    ) : const SizedBox(),
-                  ]),
-                  
-                  _buildDrawerSection('Student Management', [
-                  rights!.contains("6") ?   _buildDrawerItem(
-                      icon: FontAwesomeIcons.userPlus,
-                      title: 'Add Students',
-                      route: RoutesName.studentRegistration,
-                    ) : const SizedBox(),
-                rights!.contains("3") ?     _buildDrawerItem(
-                      icon: FontAwesomeIcons.userPlus,
-                      title: 'All Students',
-                      route: RoutesName.allStudent,
-                    ) : const SizedBox(),
-                rights!.contains("3") ?   _buildDrawerItem(
-                      icon: FontAwesomeIcons.userPlus,
-                      title: 'Promote Students',
-                      route: RoutesName.promoteStudent,
-                    ) : const SizedBox(),
-                    
-                  ]),
-                ],
+    return SafeArea(
+      child: Drawer(
+        backgroundColor: theme.scaffoldBackgroundColor,
+        width: isSmallScreen ? null : 300, // Responsive width
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header Section
+            _buildHeader(theme),
+
+            // Menu Items
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    _buildDrawerSection('Navigation', [
+
+                      _buildDrawerItem(
+                        icon: FontAwesomeIcons.home,
+                        title: 'Home',
+                        route: RoutesName.homeScreen,
+                      ),
+
+                      rights!.contains("1") ?  _buildDrawerItem(
+                        icon: FontAwesomeIcons.chartLine,
+                        title: 'Dashboard',
+                        route: RoutesName.dashboard,
+                      ) : const SizedBox(),
+
+                    ]),
+
+                    _buildDrawerSection('Book Management', [
+                      rights!.contains("5") ?       _buildDrawerItem(
+                        icon: FontAwesomeIcons.book,
+                        title: 'Issue Book',
+                        route: RoutesName.bookIssue,
+                      ) : const SizedBox(),
+                      rights!.contains("5") ?       _buildDrawerItem(
+                        icon: FontAwesomeIcons.bookBookmark,
+                        title: 'Return Book',
+                        route: RoutesName.bookReturn,
+                      ) : const SizedBox(),
+                      rights!.contains("4") ?     _buildDrawerItem(
+                        icon: FontAwesomeIcons.bookOpen,
+                        title: 'All Issued Books',
+                        route: RoutesName.allbookIssue,
+                      ) : const SizedBox(),
+                      rights!.contains("4") ?    _buildDrawerItem(
+                        icon: Icons.pending,
+                        title: 'Pending Returns',
+                        route: RoutesName.allbookReturn,
+                      ) : const SizedBox(),
+                    ]),
+
+                    _buildDrawerSection('Student Management', [
+                      rights!.contains("6") ?   _buildDrawerItem(
+                        icon: FontAwesomeIcons.userPlus,
+                        title: 'Add Students',
+                        route: RoutesName.studentRegistration,
+                      ) : const SizedBox(),
+                      rights!.contains("3") ?     _buildDrawerItem(
+                        icon: FontAwesomeIcons.userPlus,
+                        title: 'All Students',
+                        route: RoutesName.allStudent,
+                      ) : const SizedBox(),
+                      rights!.contains("3") ?   _buildDrawerItem(
+                        icon: FontAwesomeIcons.userPlus,
+                        title: 'Promote Students',
+                        route: RoutesName.promoteStudent,
+                      ) : const SizedBox(),
+
+                    ]),
+
+                    ///This is for the form section
+                    _buildDrawerSection('Forms', [
+                      rights!.contains("6") ?   _buildDrawerItem(
+                        icon: FontAwesomeIcons.file,
+                        title: 'Activity Log Form',
+                        route: RoutesName.libActivityLog,
+                      ) : const SizedBox(),
+
+                    ]),
+                  ],
+                ),
               ),
             ),
-          ),
-          
-          // Logout Button
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: _buildLogoutButton(theme),
-          ),
-        ],
+
+            // Logout Button
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: _buildLogoutButton(theme),
+            ),
+          ],
+        ),
       ),
     );
   }

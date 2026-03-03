@@ -1,3 +1,4 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lib17000ft/configs/color/color.dart';
@@ -20,6 +21,8 @@ class _SplashScreenState extends State<SplashScreen>
   late final Animation<double> _textSpacingAnimation;
   late final Animation<Color?> _colorAnimation;
   bool _disposed = false;
+
+ // FirebaseMessaging messaging = FirebaseMessaging.instance;
 
   @override
   void initState() {
@@ -54,6 +57,13 @@ class _SplashScreenState extends State<SplashScreen>
         _splashServices.isLogin(context);
       }
     });
+
+    ///For Notification permission
+    // await messaging.requestPermission(
+    //   alert: true,
+    //   badge: true,
+    //   sound: true,
+    // );
   }
 
   @override

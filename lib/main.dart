@@ -26,7 +26,8 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler); // <-- Add this
-  PushNotificationService.initialize(); // 👈 Setup notification handler
+  await PushNotificationService.initialize(); // 👈 Setup notification handler
+  //await PushNotificationService.initializeService();
   // await _initNotifications();
   runApp(const MyApp());
 }

@@ -35,7 +35,8 @@ mixin _$BookReturnModel {
   @JsonKey(name: 'apaarId')
   String get apparId => throw _privateConstructorUsedError;
   @JsonKey(name: 'created_at')
-  String get returnedDate => throw _privateConstructorUsedError;
+  String get returnedDate =>
+      throw _privateConstructorUsedError; //@JsonKey(name: 'issued_date') required String returnedDate,
   @JsonKey(name: 'created_by')
   String get createdBy => throw _privateConstructorUsedError;
   @JsonKey(name: 'isbn')
@@ -363,6 +364,7 @@ class _$BookReturnModelImpl implements _BookReturnModel {
   @override
   @JsonKey(name: 'created_at')
   final String returnedDate;
+//@JsonKey(name: 'issued_date') required String returnedDate,
   @override
   @JsonKey(name: 'created_by')
   final String createdBy;
@@ -505,7 +507,8 @@ abstract class _BookReturnModel implements BookReturnModel {
   String get apparId;
   @override
   @JsonKey(name: 'created_at')
-  String get returnedDate;
+  String
+      get returnedDate; //@JsonKey(name: 'issued_date') required String returnedDate,
   @override
   @JsonKey(name: 'created_by')
   String get createdBy;

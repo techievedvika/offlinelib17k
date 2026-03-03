@@ -1,8 +1,12 @@
+import 'dart:convert';
+
 import 'package:bloc/bloc.dart';
+import 'package:http/http.dart' as http;
 import 'package:lib17000ft/forms/book_issue/book_issue_state.dart';
 import 'package:lib17000ft/models/book_issue/book_issue_model.dart';
 import 'package:lib17000ft/models/book_return_model.dart/book_return_model.dart';
 
+import '../../configs/app_urls.dart';
 import 'book_issue_repository.dart';
 
 
@@ -13,26 +17,32 @@ class BookIssueCubit extends Cubit<BookIssueState> {
   bool _isLoading = false;  // Flag to prevent multiple simultaneous requests
   int _page = 1; // For pagination, assuming 1 as the starting page
   bool _hasMoreData = true; // Flag to check if there's more data
-  
 
-  void bookIssue(dynamic bookIssue) async {
+
+  // MODIFICATION 1: Update the method signature to accept 'status'
+  void bookIssue(dynamic bookIssue, String status) async {
     emit(BookIssueLoading());
-    await Future.delayed(const Duration(seconds: 1)); // Simulating API call
-     try {
+    // The Future.delayed is for simulation and can be removed if not needed.
+    await Future.delayed(const Duration(seconds: 1));
+    try {
       final value = await _bookIssueRepository.bookIssue(bookIssue);
-      
+
       if (value!['error'] == true || value['error'] == 1) {
         print('this is value message ${value['message']}');
-       
-       emit(BookIssueFailure(message: value['message'].toString()));
+
+        emit(BookIssueFailure(message: value['message'].toString()));
       } else if(value['error'] == false || value['error'] == 0  ) {
         print('sucess for ${value!['error']}' );
-       emit(BookIssueSuccess(message: value['message'].toString()));
+        // MODIFICATION 2: Pass the 'status' to the success state
+        emit(BookIssueSuccess(message: value['message'].toString(), status: status));
       }
     } catch (error) {
-     emit(BookIssueFailure(message: error.toString()));
+      emit(BookIssueFailure(message: error.toString()));
+      print(error);
     }
-    emit(BookIssueRegistered());
+    // This emit seems redundant and might cause issues in the UI.
+    // Consider removing it if it's not handled specifically in your BlocConsumer.
+    // emit(BookIssueRegistered());
   }
 
   Future<void> fetchBookReturned({
@@ -64,11 +74,9 @@ class BookIssueCubit extends Cubit<BookIssueState> {
           List<BookReturnModel> bookReturn = (value['data'] as List)
               .map((student) => BookReturnModel.fromJson(student))
               .toList();
-          
-          // Check if there are more students to load
-          _hasMoreData = value['data'].length > 0;  // Assume if data length is 0, there's no more data
 
-          // If more data exists, increase the page number for the next request
+          _hasMoreData = value['data'].length > 0;
+
           if (_hasMoreData) {
             _page++;
           }
@@ -85,7 +93,7 @@ class BookIssueCubit extends Cubit<BookIssueState> {
     }
   }
 
- Future<void> fetchBookIssued({
+  Future<void> fetchBookIssued({
     required dynamic adminId,
     String? stateName,
     String? district,
@@ -112,11 +120,9 @@ class BookIssueCubit extends Cubit<BookIssueState> {
           List<BookIssueModel> bookReturn = (value['data'] as List)
               .map((student) => BookIssueModel.fromJson(student))
               .toList();
-          
-          // Check if there are more students to load
-          _hasMoreData = value['data'].length > 0;  // Assume if data length is 0, there's no more data
 
-          // If more data exists, increase the page number for the next request
+          _hasMoreData = value['data'].length > 0;
+
           if (_hasMoreData) {
             _page++;
           }
@@ -134,4 +140,3 @@ class BookIssueCubit extends Cubit<BookIssueState> {
   }
 
 }
-

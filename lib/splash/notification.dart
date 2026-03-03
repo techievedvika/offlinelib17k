@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:lib17000ft/services/push_notification_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:lib17000ft/components/custom_appbar.dart';
 
@@ -85,26 +86,6 @@ class _NotificationScreenState extends State<NotificationScreen> {
       ),
       body: Column(
         children: [
-          // Padding(
-          //   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-          //   child: DropdownButtonFormField<String>(
-          //     value: filterType,
-          //     items: const [
-          //       DropdownMenuItem(value: "All", child: Text("All")),
-          //       DropdownMenuItem(value: "Reminder", child: Text("Reminders")),
-          //       DropdownMenuItem(value: "Alert", child: Text("Alerts")),
-          //       DropdownMenuItem(value: "Info", child: Text("Info")),
-          //     ],
-          //     onChanged: (value) {
-          //       filterType = value!;
-          //       _loadNotifications();
-          //     },
-          //     decoration: const InputDecoration(
-          //       labelText: "Filter",
-          //       border: OutlineInputBorder(),
-          //     ),
-          //   ),
-          // ),
           Expanded(
             child: notifications.isEmpty
                 ? const Center(child: Text(" No notifications", style: TextStyle(fontSize: 18),
@@ -188,6 +169,14 @@ class _NotificationScreenState extends State<NotificationScreen> {
                     },
                   ),
           ),
+
+          ///For Testing purpose only
+          // ElevatedButton(
+          //   onPressed: (){
+          //     PushNotificationService.showNotification("Working...");
+          //   },
+          //   child: Text("Test"),
+          // ),
         ],
       ),
     );

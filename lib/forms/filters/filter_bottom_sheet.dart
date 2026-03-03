@@ -6,6 +6,7 @@ typedef FilterContentBuilder = Widget Function(
 );
 
 void showFilterBottomSheet({
+  required String? title,
   required BuildContext context,
   required FilterContentBuilder buildFilterContent,
   required VoidCallback onApply,
@@ -62,7 +63,7 @@ void showFilterBottomSheet({
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'Filter Dashboard',
+                            '$title',
                             style: TextStyle(
                               fontSize: isMobile ? 18 : 20,
                               fontWeight: FontWeight.w600,

@@ -201,5 +201,6 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _saveLoginState() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('isLoggedIn', true);
+
   }
 }

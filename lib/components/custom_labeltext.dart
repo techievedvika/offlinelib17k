@@ -16,6 +16,7 @@ class LabelText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.sizeOf(context);
     return Align(
       alignment: Alignment.topLeft,
       child: RichText(
@@ -26,7 +27,7 @@ class LabelText extends StatelessWidget {
               children: [
                 TextSpan(
                     text: label,
-                    style: AppStyles.inputLabel(context, textColor == null ? AppColors.onBackground : textColor!,14),),
+                    style: AppStyles.inputLabel(context, textColor == null ? AppColors.onBackground : textColor!,13),),
                 if (astrick == true)
                    TextSpan(
                       text: ' *',

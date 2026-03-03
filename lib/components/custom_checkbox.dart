@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../configs/color/color.dart';
+
 class CustomCheckbox extends FormField<List<String>> {
   final List<String> options;
   // final FocusNode focusNode;
@@ -45,6 +47,8 @@ class CustomCheckbox extends FormField<List<String>> {
                   child: Column(
                     children: options.map((option) {
                       return CheckboxListTile(
+                        checkColor: AppColors.onPrimary,
+                        activeColor: AppColors.primary,
                         title: Text(option),
                         value: field.value?.contains(option) ?? false,
                         onChanged: (bool? value) {

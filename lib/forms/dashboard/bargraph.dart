@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 
+import '../../configs/color/color.dart';
+
 class BookStatsChart extends StatefulWidget {
   final List<dynamic> barGraphData;
 
@@ -49,7 +51,7 @@ class _BookStatsChartState extends State<BookStatsChart> {
     
 
     return Card(
-      margin: const EdgeInsets.all(16),
+      //margin: const EdgeInsets.all(16),
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
@@ -62,7 +64,9 @@ class _BookStatsChartState extends State<BookStatsChart> {
               style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Colors.deepPurple),
+                  //color: Colors.deepPurple
+                color: AppColors.primary,
+              ),
             ),
             const SizedBox(height: 20),
 
@@ -73,13 +77,20 @@ class _BookStatsChartState extends State<BookStatsChart> {
         child: SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: SizedBox(
-            width: widget.barGraphData.length * 60,
+            //width: MediaQuery.sizeOf(context).width,
+            width: widget.barGraphData.length * 90,
             child: BarChart(
               BarChartData(
                 maxY: maxY,
                 barGroups: _buildChartData(),
                 borderData: FlBorderData(show: false),
-                gridData: const FlGridData(show: true),
+                gridData: const FlGridData(
+                    show: true,
+                    verticalInterval: 10,
+                    horizontalInterval: 10,
+                  drawHorizontalLine: true,
+                  drawVerticalLine: true,
+                ),
                 barTouchData: BarTouchData(
                   enabled: true,
                   touchTooltipData: BarTouchTooltipData(

@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:http/http.dart' as http;
 import 'package:lib17000ft/configs/app_urls.dart';
 
 import '../../data/network/network_api_services.dart';
@@ -10,7 +11,10 @@ class BookIssueRepository {
   //login method
   Future<dynamic> bookIssue(dynamic data) async {
     final response = await _api.postApi(AppUrls.bookIssueapi, data);
-    
+
+    //Testing purpose only
+    //final response = await _api.postApi(AppUrls.testBookIssueapi, data);
+
 
     try {
       if (!response['error']) {
@@ -23,6 +27,7 @@ class BookIssueRepository {
         return {
           "error": 1,
           "message": response['message'],
+
         };
       }
     } catch (e) {
@@ -30,8 +35,20 @@ class BookIssueRepository {
       rethrow; // rethrow the error after logging it
     }
   }
+
 //Get book Return Report 
-  Future<dynamic> getBookReturn(dynamic id, String? stateName, String? district,String? block, String? school, String? from, String? to,String? level, String? language, {required int page}) async {
+  Future<dynamic> getBookReturn(
+      dynamic id,
+      String? stateName,
+      String? district,
+      String? block,
+      String? school,
+      String? from,
+      String? to,
+      String? level,
+      String? language,
+      {required int page}
+      ) async {
    String url = "${AppUrls.getReturnedBookapi}?id=$id&state=$stateName&district=$district&block=$block&school=$school&from=$from&to=$to&level=$level&language=$language";
 
     final response = await _api.getApi(url);
@@ -58,7 +75,17 @@ class BookIssueRepository {
 
   //Get Issue Book Report
  
-  Future<dynamic> getIssuedBook(dynamic id,String? stateName, String? district,String? block, String? school, String? from, String? to, String? level, String? language,{required int page}) async {
+  Future<dynamic> getIssuedBook(
+      dynamic id,
+      String? stateName,
+      String? district,
+      String? block,
+      String? school,
+      String? from,
+      String? to,
+      String? level,
+      String? language
+      ,{required int page}) async {
    String url = "${AppUrls.getIssuedBookapi}?id=$id&state=$stateName&district=$district&block=$block&school=$school&from=$from&to=$to&level=$level&language=$language";
 
     final response = await _api.getApi(url);

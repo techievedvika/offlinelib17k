@@ -13,5 +13,6 @@ class RoutesName {
   static const String exportStudent = '/export_student';
   static const String exportIssuedBook = '/export_issuedBook';
   static const String exportPendingBook = '/export_pendingBook';
+  static const String libActivityLog = '/lib_activity_log'; //This is for Library Activity Log Form
   
 }

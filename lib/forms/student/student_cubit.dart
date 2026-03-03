@@ -125,7 +125,22 @@ class StudentCubit extends Cubit<StudentState> {
     }
     // emit(StudentRegistered());
   }
+
+  // Add this method inside your StudentCubit class
+
+  Future<void> fetchGrades() async {
+    emit(GradesLoading());
+    try {
+      final grades = await _studentRepository.getGrades();
+      emit(GradesSuccess(grades));
+    } catch (e) {
+      emit(GradesFailure('Failed to fetch grades: ${e.toString()}'));
+    }
+  }
+
 }
+
+
 
 class RadioCubit extends Cubit<String?> {
   RadioCubit() : super(null);

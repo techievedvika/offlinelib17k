@@ -18,6 +18,8 @@ class CustomTextFormField extends StatelessWidget {
   final void Function()? onEditingComplete; // Updated to void return type
   final FocusNode? focusNode;
   final Function()? onTap;
+  //final KeyboardInsertedContent? keyboardType;
+
 
   const CustomTextFormField({
     super.key,
@@ -36,6 +38,7 @@ class CustomTextFormField extends StatelessWidget {
     this.onChanged, // Updated type
     this.focusNode,
     this.onEditingComplete, // Updated type
+    //this.keyboardType,
   });
 
   @override

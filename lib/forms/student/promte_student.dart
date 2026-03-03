@@ -4,6 +4,7 @@ import 'package:csv/csv.dart';
 import 'package:file_saver/file_saver.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_file_dialog/flutter_file_dialog.dart';
 import 'package:intl/intl.dart';
 import 'package:lib17000ft/components/circular_indicator.dart';
 import 'package:lib17000ft/components/custom_appbar.dart';
@@ -13,11 +14,14 @@ import 'package:lib17000ft/forms/filters/filter_bottom_sheet.dart';
 import 'package:lib17000ft/forms/filters/filter_cubit.dart';
 import 'package:lib17000ft/forms/filters/filter_dropdown.dart';
 import 'package:lib17000ft/forms/student/student_cubit.dart';
-import 'package:lib17000ft/forms/student/student_idcard.dart';
+import 'package:lib17000ft/services/csv_exporter.dart';
 import 'package:lib17000ft/models/student_registration/student_model.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:lib17000ft/forms/filters/filter_content_widget.dart';
+import '../../components/student_details_bottom_sheet.dart';
+import '../../services/permission_storage.dart';
 
 class PromoteStudentList extends StatefulWidget {
   const PromoteStudentList({super.key});
@@ -33,36 +37,26 @@ class _PromoteStudentListState extends State<PromoteStudentList> {
   String? userId;
   DateTimeRange? _selectedDateRange;
   String? rights;
+  String? userRole;
+  bool? isSuperAdmin;
+  String? libSchool;
 
   String? stateName;
+  String? districtName;
   String? block;
   String? school;
   String? location;
+
+  String? _tempSelectedState;
+  String? _tempSelectedDistrict;
+  String? _tempSelectedBlock;
+  String? _tempSelectedSchool;
+  DateTimeRange? _tempSelectedDateRange;
 
   @override
   void initState() {
     super.initState();
     _loadUserId();
-    _requestStoragePermission();
-
-    //_sc
-    //rollController.addListener(_scrollListener);
-  }
-
-  Future<bool> _requestStoragePermission() async {
-    var status = await Permission.manageExternalStorage.status;
-
-    if (!status.isGranted) {
-      status = await Permission.manageExternalStorage.request();
-    }
-    if (status.isGranted) {
-      print("Permission granted");
-      return true;
-    } else {
-      print("Permission denied or permanently denied");
-      openAppSettings(); // Optional: Guide user to settings
-      return false;
-    }
   }
 
   @override
@@ -76,9 +70,16 @@ class _PromoteStudentListState extends State<PromoteStudentList> {
     setState(() {
       userId = prefs.getString('userId');
       rights = prefs.getString('rights');
+      libSchool = prefs.getString('school')?.toLowerCase().trim();
+      userRole = prefs.getString('role')?.toLowerCase().trim();
 
       if (userId != null) {
         context.read<StudentCubit>().fetchStudents(adminId: userId);
+      }
+      if(userRole =='Admin'.toLowerCase().trim() || userRole =='Librarian'.toLowerCase().trim()){
+        isSuperAdmin = false;
+      } else {
+        isSuperAdmin = true;
       }
     });
     print("this is the user id $userId");
@@ -109,7 +110,7 @@ class _PromoteStudentListState extends State<PromoteStudentList> {
       child: Scaffold(
         appBar: const CustomAppbar(
           title: 'Promote Students',
-          studentAdd: true,
+          studentAdd: false,
           // download: true,
           backbutton: true,
         ),
@@ -184,6 +185,9 @@ class _PromoteStudentListState extends State<PromoteStudentList> {
                         Expanded(
                           child: SearchBar(
                             hintText: 'Search students by name or ID',
+                            hintStyle: WidgetStateProperty.all(
+                              const TextStyle(color: Colors.grey)
+                            ),
                             leading: const Icon(Icons.search),
                             elevation: MaterialStateProperty.all(1.0),
                             shape: MaterialStateProperty.all(
@@ -202,31 +206,90 @@ class _PromoteStudentListState extends State<PromoteStudentList> {
                         const SizedBox(width: 8),
 
                         // Filter Button stays fixed
-                        rights!.contains("7")
-                            ? SizedBox(
-                                height: 48,
-                                width: 48,
-                                child: IconButton(
-                                  onPressed: () {
-                                    showFilterBottomSheet(
-                                      context: context,
-                                      buildFilterContent: _buildFilterContent,
-                                      onApply: () {
-                                        _applyFilters();
-                                      },
+                        // rights!.contains("7")
+                        //     ? SizedBox(
+                        //         height: 48,
+                        //         width: 48,
+                        //         child: IconButton(
+                        //           onPressed: () {
+                        //             showFilterBottomSheet(
+                        //               title: 'Filter Promote Students',
+                        //               context: context,
+                        //               buildFilterContent: _buildFilterContent,
+                        //               onApply: () {
+                        //                 _applyFilters();
+                        //               },
+                        //             );
+                        //           },
+                        //           icon: const Icon(Icons.filter_alt, size: 20),
+                        //           style: IconButton.styleFrom(
+                        //             backgroundColor:
+                        //                 AppColors.primary.withOpacity(0.1),
+                        //             shape: RoundedRectangleBorder(
+                        //               borderRadius: BorderRadius.circular(12),
+                        //             ),
+                        //           ),
+                        //         ),
+                        //       )
+                        //     : const SizedBox(),
+                        if (rights!.contains("7") && isSuperAdmin == true)
+                          SizedBox(
+                            height: 48,
+                            width: 48,
+                            child: IconButton(
+                              onPressed: () {
+                                //This ensures that every time filter filter button pressed the values are reset
+                                _tempSelectedState = null;
+                                // _tempSelectedDistrict = null;
+                                // _tempSelectedBlock = null;
+                                // _tempSelectedSchool = null;
+                                // _tempSelectedDateRange = null;
+
+                                showFilterBottomSheet(
+                                  title: 'Filter Promote Students',
+                                  context: context,
+                                  buildFilterContent: (isMobile, setModalState) {
+                                    return FilterContentWidget(
+                                      isSuperAdmin: isSuperAdmin ?? true,
+                                      libSchool: libSchool,
+                                      onStateChanged: (value) => _tempSelectedState = value,
+                                      showDateFilter:false,
+                                      // onDistrictChanged: (value) => _tempSelectedDistrict = value,
+                                      // onBlockChanged: (value) => _tempSelectedBlock = value,
+                                      // onSchoolChanged: (value) => _tempSelectedSchool = value,
+                                      // onDateRangeChanged: (value) => _tempSelectedDateRange = value,
+                                        onClear: (){
+                                          setModalState(() {});
+                                        }
                                     );
                                   },
-                                  icon: const Icon(Icons.filter_alt, size: 20),
-                                  style: IconButton.styleFrom(
-                                    backgroundColor:
-                                        AppColors.primary.withOpacity(0.1),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                  ),
+                                  onApply: () {
+                                    // Use the temporary values when the button is pressed
+                                    context.read<StudentCubit>().fetchStudents(
+                                      adminId: userId,
+                                      stateName: _tempSelectedState,
+                                      // district: _tempSelectedDistrict,
+                                      // block: _tempSelectedBlock,
+                                      // school: _tempSelectedSchool,
+                                      // from: _tempSelectedDateRange?.start != null
+                                      //     ? DateFormat('yyyy-MM-dd').format(_tempSelectedDateRange!.start)
+                                      //     : null,
+                                      // to: _tempSelectedDateRange?.end != null
+                                      //     ? DateFormat('yyyy-MM-dd').format(_tempSelectedDateRange!.end)
+                                      //     : null,
+                                    );
+                                  },
+                                );
+                              },
+                              icon: const Icon(Icons.filter_alt, size: 20),
+                              style: IconButton.styleFrom(
+                                backgroundColor: AppColors.primary.withOpacity(0.1),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
-                              )
-                            : const SizedBox(),
+                              ),
+                            ),
+                          ),
                       ],
                     ),
                   ),
@@ -322,30 +385,168 @@ class _PromoteStudentListState extends State<PromoteStudentList> {
         floatingActionButton: BlocBuilder<StudentCubit, StudentState>(
           builder: (context, state) {
             if (state is StudentListSuccess && state.studentList.isNotEmpty) {
+              final filteredStudents = _filterStudents(state.studentList, _searchQuery);
               return FloatingActionButton.small(
+                // onPressed: () async {
+                //   //final granted = await _requestStoragePermission();
+                //   final granted = await PermissionService.requestStoragePermission();
+                //   if (granted) {
+                //     // You'll need to implement or call your _exportToCSV method here
+                //     await _exportToCSV(state.studentList);
+                //     // ScaffoldMessenger.of(context).showSnackBar(
+                //     //   const SnackBar(content: Text('Exporting CSV...')),
+                //     // );
+                //   } else {
+                //     // The bottom sheet will be shown automatically if needed.
+                //     // This SnackBar is a fallback for other denial cases.
+                //     if (mounted) {
+                //       ScaffoldMessenger.of(context).showSnackBar(
+                //         const SnackBar(
+                //             content: Text('Storage permission is required to export data.')),
+                //       );
+                //     }
+                //   }
+                // },
                 onPressed: () async {
-                  final granted = await _requestStoragePermission();
-                  if (granted) {
+                  try {
                     await _exportToCSV(state.studentList);
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text('Storage permission is required')),
-                    );
+                  } catch (e) {
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Export failed: $e',style: const TextStyle(color: AppColors.onError),),
+                          backgroundColor: AppColors.error,
+                        ),
+                      );
+                    }
                   }
                 },
                 tooltip: 'Export CSV',
-                child: const Icon(Icons.download,
-                    size: 20), // optional but good for accessibility
+                child: const Icon(Icons.download, size: 20),
               );
             }
-            return const SizedBox.shrink();
+            return const SizedBox.shrink(); // Hide button if there's no data
           },
         ),
+
       ),
     );
   }
 
+  // Future<void> _exportToCSV(List<StudentModel> students) async {
+  //   final List<List<String>> rows = [
+  //     [
+  //       'Name',
+  //       'Gender',
+  //       'Student ID',
+  //       'Class',
+  //       'APAAR ID',
+  //       'School'
+  //     ], // CSV headers
+  //     ...students.map((student) => [
+  //       student.name,
+  //       student.gender,
+  //       student.rollNo,
+  //       student.classs,
+  //       student.apaarId ?? 'N/A',
+  //       student.school!,
+  //     ])
+  //   ];
+  //
+  //   final csvData = const ListToCsvConverter().convert(rows);
+  //   final directory = await getExternalStorageDirectory();
+  //   final path = '${directory!.path}/students_list.csv';
+  //
+  //   final file = File(path);
+  //   await file.writeAsString(csvData);
+  //   if (await Permission.manageExternalStorage.request().isGranted ||
+  //       await Permission.storage.request().isGranted) {
+  //     Directory? downloadsDir;
+  //
+  //     if (Platform.isAndroid) {
+  //       downloadsDir =
+  //           Directory('/storage/emulated/0/Download'); // public Downloads
+  //     } else {
+  //       downloadsDir = await getApplicationDocumentsDirectory(); // iOS fallback
+  //     }
+  //     final now = DateTime.now();
+  //     final formattedDate =
+  //         "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}_${now.hour.toString().padLeft(2, '0')}-${now.minute.toString().padLeft(2, '0')}";
+  //     final file = File("${downloadsDir.path}/Student_List_$formattedDate.csv");
+  //
+  //     //final file = File("${downloadsDir.path}/students.csv");
+  //     await file.writeAsString(csvData);
+  //     print("File saved to: ${file.path}");
+  //   } else {
+  //     print("Storage permission not granted");
+  //   }
+  //
+  //   // Save using FileSaver for Android/iOS support
+  //   await FileSaver.instance.saveFile(
+  //     name: 'students_list',
+  //     bytes: file.readAsBytesSync(),
+  //     ext: 'csv',
+  //     mimeType: MimeType.csv,
+  //   );
+  //
+  //   ScaffoldMessenger.of(context).showSnackBar(
+  //     const SnackBar(content: Text('Student list exported successfully!'),backgroundColor: AppColors.primary,),
+  //   );
+  // }
+  Future<void> _exportToCSV(List<StudentModel> students) async {
+    try {
+      /// 1. Prepare CSV Data
+      final List<List<String>> rows = [
+        ['Name', 'Gender', 'Student ID', 'Class', 'APAAR ID', 'School'],
+        ...students.map((student) => [
+          student.name ?? '',
+          student.gender ?? '',
+          student.rollNo ?? '',
+          student.classs ?? '',
+          student.apaarId ?? 'N/A',
+          student.school ?? '',
+        ])
+      ];
+
+      final csvData = const ListToCsvConverter().convert(rows);
+
+      /// 2. Generate timestamp filename
+      final now = DateTime.now();
+      final formattedDate =
+          "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}_${now.hour.toString().padLeft(2, '0')}-${now.minute.toString().padLeft(2, '0')}";
+
+      /// 3. Save in temporary directory (Scoped Storage safe)
+      final tempDir = await getTemporaryDirectory();
+      final tempFile =
+      File('${tempDir.path}/Student_List_$formattedDate.csv');
+
+      await tempFile.writeAsString(csvData);
+
+      /// 4. Let user choose save location (system file picker)
+      await FlutterFileDialog.saveFile(
+        params: SaveFileDialogParams(
+          sourceFilePath: tempFile.path,
+        ),
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Student list exported successfully!'),
+            backgroundColor: AppColors.primary,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Export failed: $e',style: const TextStyle(color: AppColors.onError),),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
+  }
   void _applyFilters() {
     context.read<StudentCubit>().fetchStudents(
           adminId: userId!,
@@ -361,70 +562,206 @@ class _PromoteStudentListState extends State<PromoteStudentList> {
         );
   }
 
+  // Widget _buildFilterContent(
+  //     bool isMobile, void Function(VoidCallback fn) setModalState) {
+  //   return BlocBuilder<FilterCubit, FilterState>(
+  //     builder: (context, filterState) {
+  //       context.read<FilterCubit>().fetchStates();
+  //
+  //       return Column(
+  //         mainAxisSize: MainAxisSize.min,
+  //         children: [
+  //           // State Dropdown
+  //           FilterDropdown(
+  //             value: filterState.selectedState,
+  //             hint: 'Select State',
+  //             items: ['All', ...filterState.states],
+  //             onChanged: (value) {
+  //               context.read<FilterCubit>().updateSelectedState(value!);
+  //
+  //               setState(() {
+  //                 stateName = value;
+  //               });
+  //
+  //               //  context.read<FilterCubit>().fetchBlocks(value);
+  //
+  //               setModalState(() {});
+  //             },
+  //             isMobile: isMobile,
+  //           ),
+  //
+  //           if (filterState.districts.isNotEmpty && isSuperAdmin == true)
+  //             FilterDropdown(
+  //                 value: filterState.selectedDistrict,
+  //                 hint: 'Select District',
+  //                 items: ['All', ...filterState.districts],
+  //                 onChanged: (value) {
+  //                   context.read<FilterCubit>().updateSelectedDistrict(value!);
+  //
+  //                   setState(() {
+  //                     districtName = value;
+  //                   });
+  //                   //  context.read<FilterCubit>().fetchBlocks(value);
+  //
+  //                   setModalState(() {});
+  //                 },
+  //                 isMobile: isMobile),
+  //
+  //           const SizedBox(height: 12),
+  //
+  //           // Block Dropdown
+  //           if (filterState.blocks.isNotEmpty)
+  //             FilterDropdown(
+  //               value: filterState.selectedBlock,
+  //               hint: 'Select Block',
+  //               items: ['All', ...filterState.blocks],
+  //               onChanged: (value) {
+  //                 context.read<FilterCubit>().updateSelectedBlock(value!);
+  //                 setState(() {
+  //                   block = value;
+  //                 });
+  //
+  //                 setModalState(() {});
+  //               },
+  //               isMobile: isMobile,
+  //             ),
+  //           if (filterState.blocks.isNotEmpty) const SizedBox(height: 12),
+  //
+  //           // School Dropdown
+  //           if (filterState.schools.isNotEmpty)
+  //             FilterDropdown(
+  //               value: filterState.selectedSchool,
+  //               hint: 'Select School',
+  //               items: ['All', ...filterState.schools],
+  //               onChanged: (value) {
+  //                 context.read<FilterCubit>().updateSelectedSchool(value!);
+  //                 context.read<FilterCubit>().selectSchool(value);
+  //                 setState(() {
+  //                   school = value;
+  //                 });
+  //
+  //                 setModalState(() {});
+  //               },
+  //               isMobile: isMobile,
+  //             ),
+  //           if (filterState.schools.isNotEmpty) const SizedBox(height: 12),
+  //
+  //           // Date Range
+  //           _buildDateFilterButton(isMobile, setModalState),
+  //
+  //           // Clear Filters
+  //           if (filterState.selectedState != null || _selectedDateRange != null)
+  //             TextButton(
+  //               onPressed: () {
+  //                 context.read<FilterCubit>().clearFilters();
+  //                 setState(() {
+  //                   _selectedDateRange = null;
+  //                 });
+  //                 setModalState(() {});
+  //               },
+  //               child: const Text("Clear All Filters"),
+  //             )
+  //         ],
+  //       );
+  //     },
+  //   );
   Widget _buildFilterContent(
       bool isMobile, void Function(VoidCallback fn) setModalState) {
     return BlocBuilder<FilterCubit, FilterState>(
       builder: (context, filterState) {
         context.read<FilterCubit>().fetchStates();
-
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // State Dropdown
-            FilterDropdown(
-              value: filterState.selectedState,
-              hint: 'Select State',
-              items: ['All', ...filterState.states],
-              onChanged: (value) {
-                context.read<FilterCubit>().updateSelectedState(value!);
-
-                setState(() {
-                  stateName = value;
-                });
-
-                //  context.read<FilterCubit>().fetchBlocks(value);
-
-                setModalState(() {});
-              },
-              isMobile: isMobile,
-            ),
-            const SizedBox(height: 12),
-
-            // Block Dropdown
-            if (filterState.blocks.isNotEmpty)
+            //Only School dropDown for Librarian
+            if(isSuperAdmin == false)
               FilterDropdown(
-                value: filterState.selectedBlock,
-                hint: 'Select Block',
-                items: ['All', ...filterState.blocks],
-                onChanged: (value) {
-                  context.read<FilterCubit>().updateSelectedBlock(value!);
-                  setState(() {
-                    block = value;
-                  });
+                  value: filterState.selectedSchool,
+                  hint: 'Select School',
+                  items: (libSchool!= null ? [libSchool!] : []),
+                  onChanged: (value) {
+                    context.read<FilterCubit>().updateSelectedSchool(value!);
+                    context.read<FilterCubit>().selectSchool(value);
+                    setState(() {
+                      school = value;
+                    });
+                    setModalState(() {});
+                  },
+                  isMobile: isMobile),
 
-                  setModalState(() {});
-                },
-                isMobile: isMobile,
-              ),
+            //Filter for super admin
+
+            // State Dropdown
+            const SizedBox(height: 12),
+            if(isSuperAdmin == true)
+              FilterDropdown(
+                  value: filterState.selectedState,
+                  hint: 'Select State',
+                  items:['All', ... filterState.states],
+                  onChanged: (value) {
+                    context.read<FilterCubit>().updateSelectedState(value!);
+
+                    setState(() {
+                      stateName = value;
+                    });
+                    //  context.read<FilterCubit>().fetchBlocks(value);
+
+                    setModalState(() {});
+                  },
+                  isMobile: isMobile),
+            const SizedBox(height: 12),
+            if (filterState.districts.isNotEmpty && isSuperAdmin == true)
+              FilterDropdown(
+                  value: filterState.selectedDistrict,
+                  hint: 'Select District',
+                  items: ['All', ...filterState.districts],
+                  onChanged: (value) {
+                    context.read<FilterCubit>().updateSelectedDistrict(value!);
+
+                    setState(() {
+                      districtName = value;
+                    });
+                    //  context.read<FilterCubit>().fetchBlocks(value);
+
+                    setModalState(() {});
+                  },
+                  isMobile: isMobile),
+
+            const SizedBox(height: 12),
+            // Block Dropdown
+            if (filterState.blocks.isNotEmpty && isSuperAdmin == true)
+              FilterDropdown(
+                  value: filterState.selectedBlock,
+                  hint: 'Select Block',
+                  items: ['All', ...filterState.blocks],
+                  onChanged: (value) {
+                    context.read<FilterCubit>().updateSelectedBlock(value!);
+                    setState(() {
+                      block = value;
+
+                    });
+
+                    setModalState(() {});
+                  },
+                  isMobile: isMobile),
             if (filterState.blocks.isNotEmpty) const SizedBox(height: 12),
 
             // School Dropdown
-            if (filterState.schools.isNotEmpty)
+            if (filterState.schools.isNotEmpty && isSuperAdmin == true)
               FilterDropdown(
-                value: filterState.selectedSchool,
-                hint: 'Select School',
-                items: ['All', ...filterState.schools],
-                onChanged: (value) {
-                  context.read<FilterCubit>().updateSelectedSchool(value!);
-                  context.read<FilterCubit>().selectSchool(value);
-                  setState(() {
-                    school = value;
-                  });
+                  value: filterState.selectedSchool,
+                  hint: 'Select School',
+                  items: ['All', ...filterState.schools],
+                  onChanged: (value) {
+                    context.read<FilterCubit>().updateSelectedSchool(value!);
+                    context.read<FilterCubit>().selectSchool(value);
+                    setState(() {
+                      school = value;
+                    });
+                    setModalState(() {});
+                  },
+                  isMobile: isMobile),
 
-                  setModalState(() {});
-                },
-                isMobile: isMobile,
-              ),
             if (filterState.schools.isNotEmpty) const SizedBox(height: 12),
 
             // Date Range
@@ -534,13 +871,15 @@ class _PromoteStudentListState extends State<PromoteStudentList> {
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
-        onTap: () => Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => StudentIdCard(studentData: studentData),
-          ),
-        ),
-        child: Padding(
+        // onTap: () => Navigator.push(
+        //   context,
+        //   MaterialPageRoute(
+        //     builder: (context) => StudentIdCard(studentData: studentData),
+        //   ),
+        // ),
+        //onTap: () =>  _showStudentDetailsBottomSheet(context,student),
+        //onTap: () => showStudentDetailsBottomSheet(context, student),
+      child: Padding(
           padding: EdgeInsets.all(isPortrait ? 12 : 16),
           child: Row(
             children: [
@@ -557,13 +896,18 @@ class _PromoteStudentListState extends State<PromoteStudentList> {
                   ),
                 ),
                 child: Center(
-                  child: Text(
-                    _getInitials(student.name),
-                    style: TextStyle(
-                      fontSize: isPortrait ? 18 : 20,
-                      fontWeight: FontWeight.bold,
-                      color: colorScheme.primary,
+                  child: TextButton(
+                    child: Text(
+                      _getInitials(student.name),
+                      style: TextStyle(
+                        fontSize: isPortrait ? 18 : 20,
+                        fontWeight: FontWeight.bold,
+                        color: colorScheme.primary,
+                      ),
                     ),
+                    onPressed: () {
+                      showStudentDetailsBottomSheet(context, student);
+                    },
                   ),
                 ),
               ),
@@ -602,21 +946,56 @@ class _PromoteStudentListState extends State<PromoteStudentList> {
               // View button
               OutlinedButton(
                 onPressed: () async {
-                  bool shouldExit = await showConfirmationDialog(
-                    context: context,
-                    title: 'Exit?',
-                    content: 'Do you want to promote this student?',
-                    cancelText: 'No',
-                    confirmText: 'Yes',
-                    onCancel: () => Navigator.of(context).pop(false),
-                    onConfirm: () {
-                      dynamic data = {
-                        "id": student.id,
-                        "class": student.classs,
-                      };
-                      context.read<StudentCubit>().promoteStudent(data);
-                    },
-                  );
+                  final prefs = await SharedPreferences.getInstance();
+                  // Unique key for each student to store promotion time
+                  final storageKey = 'promoted_${student.id}';
+                  final lastPromoted = prefs.getString(storageKey);
+
+                  if (lastPromoted != null) {
+                    // If student was promoted before, show the info dialog
+                    if (context.mounted) {
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('Already Promoted'),
+                          content: Text('This student was previously promoted on:\n$lastPromoted'),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text('OK'),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+                    return; // Stop here
+                  }
+
+                  // If not promoted yet, show confirmation dialog
+                  if (context.mounted) {
+                    bool shouldPromote = await showConfirmationDialog(
+                      context: context,
+                      title: 'Confirm',
+                      content: 'Do you want to promote this student?',
+                      cancelText: 'No',
+                      confirmText: 'Yes',
+                      onCancel: () => Navigator.of(context).pop(false),
+                      onConfirm: () async {
+                        dynamic data = {
+                          "id": student.id,
+                          "class": student.classs,
+                        };
+
+                        // Store the current date and time
+                        final now = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
+                        await prefs.setString(storageKey, now);
+
+                        if (context.mounted) {
+                          context.read<StudentCubit>().promoteStudent(data);
+                        }
+                      },
+                    );
+                  }
                 },
                 style: OutlinedButton.styleFrom(
                   foregroundColor: colorScheme.primary,
@@ -705,100 +1084,5 @@ class _PromoteStudentListState extends State<PromoteStudentList> {
     );
 
     return result ?? false;
-  }
-
-  Future<void> _exportToCSV(List<StudentModel> students) async {
-    final List<List<String>> rows = [
-      [
-        'Name',
-        'Gender',
-        'Student ID',
-        'Class',
-        'APAAR ID',
-        'School'
-      ], // CSV headers
-      ...students.map((student) => [
-            student.name,
-            student.gender,
-            student.rollNo,
-            student.classs,
-            student.apaarId ?? 'N/A',
-            student.school!,
-          ])
-    ];
-
-    final csvData = const ListToCsvConverter().convert(rows);
-    final directory = await getExternalStorageDirectory();
-    final path = '${directory!.path}/students_list.csv';
-
-    final file = File(path);
-    await file.writeAsString(csvData);
-    if (await Permission.manageExternalStorage.request().isGranted ||
-        await Permission.storage.request().isGranted) {
-      Directory? downloadsDir;
-
-      if (Platform.isAndroid) {
-        downloadsDir =
-            Directory('/storage/emulated/0/Download'); // public Downloads
-      } else {
-        downloadsDir = await getApplicationDocumentsDirectory(); // iOS fallback
-      }
-      final now = DateTime.now();
-      final formattedDate =
-          "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}_${now.hour.toString().padLeft(2, '0')}-${now.minute.toString().padLeft(2, '0')}";
-      final file = File("${downloadsDir.path}/Student_List_$formattedDate.csv");
-
-      //final file = File("${downloadsDir.path}/students.csv");
-      await file.writeAsString(csvData);
-      print("File saved to: ${file.path}");
-    } else {
-      print("Storage permission not granted");
-    }
-
-    // Save using FileSaver for Android/iOS support
-    await FileSaver.instance.saveFile(
-      name: 'students_list',
-      bytes: file.readAsBytesSync(),
-      ext: 'csv',
-      mimeType: MimeType.csv,
-    );
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Student list exported successfully!')),
-    );
-  }
-
-  Widget _buildFilterChip({
-    required String label,
-    required List<String> options,
-    required Function(String) onSelected,
-  }) {
-    return ActionChip(
-      label: Text(label),
-      onPressed: () {
-        showModalBottomSheet(
-          context: context,
-          backgroundColor: Colors.white,
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-          ),
-          builder: (context) {
-            return ListView(
-              children: options
-                  .map((option) => ListTile(
-                        title: Text(option),
-                        onTap: () {
-                          Navigator.pop(context);
-                          onSelected(option);
-                        },
-                      ))
-                  .toList(),
-            );
-          },
-        );
-      },
-      backgroundColor: Colors.grey[200],
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-    );
   }
 }

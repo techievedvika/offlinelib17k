@@ -10,10 +10,11 @@ class CustomButton extends StatefulWidget {
   double? width;
   void Function()? onPressedButton;
   String? title;
-  Icon? icon;
+  IconData? icon;
+  Padding? padding;
 
   CustomButton(
-      {super.key, this.height, this.width, this.title, this.onPressedButton,this.icon});
+      {super.key, this.height, this.width, this.title, this.onPressedButton,this.icon,this.padding});
 
   @override
   State<CustomButton> createState() => _CustomButtonState();
@@ -25,15 +26,16 @@ class _CustomButtonState extends State<CustomButton> {
     final responsive = Responsive(context);
     return SizedBox(
         height:
-            responsive.responsiveValue(small: 60.0, medium: 60.0, large: 70.0),
+            responsive.responsiveValue(small: 60.0, medium: 60.0, large: 65.0),
         width: responsive.responsiveValue(
-            small: 190.0, medium: 280.0, large: 330.0),
+            small: 190.0, medium: 260.0, large: 280.0),
         child: Center(
           child: ElevatedButton(
   style: AppStyles.primaryButtonStyle(context, AppColors.primary),
   onPressed: widget.onPressedButton,
   child: Row(
     mainAxisSize: MainAxisSize.min, // Ensures the button doesn't take unnecessary space
+    mainAxisAlignment: MainAxisAlignment.center,
     children: [
       Text(
         widget.title!,
@@ -41,7 +43,7 @@ class _CustomButtonState extends State<CustomButton> {
       ),
       const SizedBox(width: 8), // Adds some spacing between text and icon
       widget.icon !=  null ?
-      const Icon(Icons.arrow_forward, color: AppColors.onPrimary) : const SizedBox(),
+      Icon(widget.icon,color: AppColors.onPrimary) : const SizedBox(),
     ],
   ),
 )

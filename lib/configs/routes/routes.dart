@@ -9,6 +9,7 @@ import 'package:lib17000ft/splash/splash.dart';
 
 import '../../forms/book_issue/book_issue.dart';
 import '../../forms/book_return/book_return.dart';
+import '../../forms/lib_activity_log/screen/lib_activity_form_screen.dart';
 import '../../forms/student/student_registration.dart';
 import '../../login/login.dart';
 
@@ -40,6 +41,8 @@ class Routes {
         return MaterialPageRoute(builder: (context) => const PromoteStudentList());
       case '/testhome':
         return MaterialPageRoute(builder: (context) => const SplashScreen());
+      case '/lib_activity_log':
+        return MaterialPageRoute(builder: (context) => const LibActivityFormScreen());
       default:
         return MaterialPageRoute(
           builder: (context) => const Scaffold(

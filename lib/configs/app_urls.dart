@@ -5,6 +5,7 @@ class AppUrls {
   static String registerapi = '${AppUrls.baseUrl}registerStudent.php';
   static String allStudentapi = '${AppUrls.baseUrl}allStudents.php';
   static String bookIssueapi = '${AppUrls.baseUrl}bookIssueToStudent.php';
+  static String testBookIssueapi = '${AppUrls.baseUrl}test_bookIssuedToStudent.php';
   static String getReturnedBookapi = '${AppUrls.baseUrl}getReturnedBook.php';
   static String getIssuedBookapi = '${AppUrls.baseUrl}getIssuedBook.php';
   static String getBlockapi = '${AppUrls.baseUrl}filters.php?getBlock';
@@ -16,4 +17,8 @@ class AppUrls {
   static String promoteStudent = '${AppUrls.baseUrl}/promoteStudent.php';
   static String getStudentId= '${AppUrls.baseUrl}/getUniqueId.php?getUniqueId';
   static String fcmTokenApi = '${AppUrls.baseUrl}/setFCMToken.php';
+  static String getGradeApi = '${AppUrls.baseUrl}/getGrade.php';
+  static String getBooksApi = '${AppUrls.baseUrl}/getBook.php';
+  static String testGetBooksApi = '${AppUrls.baseUrl}/test_getBook.php';
+  static String insertFormApi = 'https://library.17000ft.org/library_activity_log/insert.php';
 }

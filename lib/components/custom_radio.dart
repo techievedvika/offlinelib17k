@@ -58,29 +58,91 @@ class DynamicRadio extends FormField<String> {
         );
 }
 
+// class ResettableRadio extends StatefulWidget {
+//   final List<String> options;
+//   final ValueChanged<String?> onChanged;
+//   final String? selectedOption;
+//
+//   const ResettableRadio({
+//     super.key,
+//     required this.options,
+//     required this.onChanged,
+//     this.selectedOption,
+//   });
+//
+//   @override
+//   ResettableRadioState createState() => ResettableRadioState();
+// }
+//
+// class ResettableRadioState extends State<ResettableRadio> {
+//   String? selectedOption;
+//
+//   @override
+//   void initState() {
+//     super.initState();
+//     selectedOption = widget.selectedOption; // Initialize selection
+//   }
+//
+//   void _onOptionSelected(String option) {
+//     setState(() {
+//       selectedOption = option;
+//       widget.onChanged(selectedOption);
+//     });
+//   }
+//
+//   void resetSelection() {
+//     setState(() {
+//       selectedOption = null;
+//       widget.onChanged(null);
+//     });
+//   }
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return Column(
+//       children: widget.options.map((option) {
+//         return InkWell(
+//           onTap: () => _onOptionSelected(option),
+//           child: Row(
+//             children: [
+//               Radio<String>(
+//                 value: option,
+//                 groupValue: selectedOption,
+//                 onChanged: (value) => _onOptionSelected(option),
+//               ),
+//               Text(option),
+//             ],
+//           ),
+//         );
+//       }).toList(),
+//     );
+//   }
+// }
 class ResettableRadio extends StatefulWidget {
   final List<String> options;
   final ValueChanged<String?> onChanged;
   final String? selectedOption;
+  final String? Function(String?)? validator;
 
   const ResettableRadio({
     super.key,
     required this.options,
     required this.onChanged,
     this.selectedOption,
+    this.validator,
   });
 
   @override
-  _ResettableRadioState createState() => _ResettableRadioState();
+  ResettableRadioState createState() => ResettableRadioState();
 }
 
-class _ResettableRadioState extends State<ResettableRadio> {
+class ResettableRadioState extends State<ResettableRadio> {
   String? selectedOption;
 
   @override
   void initState() {
     super.initState();
-    selectedOption = widget.selectedOption; // Initialize selection
+    selectedOption = widget.selectedOption;
   }
 
   void _onOptionSelected(String option) {
@@ -99,22 +161,40 @@ class _ResettableRadioState extends State<ResettableRadio> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: widget.options.map((option) {
-        return InkWell(
-          onTap: () => _onOptionSelected(option),
-          child: Row(
-            children: [
-              Radio<String>(
-                value: option,
-                groupValue: selectedOption,
-                onChanged: (value) => _onOptionSelected(option),
+    return FormField<String>(
+      validator: widget.validator,
+      builder: (FormFieldState<String> state) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Column(
+              children: widget.options.map((option) {
+                return InkWell(
+                  onTap: () => _onOptionSelected(option),
+                  child: Row(
+                    children: [
+                      Radio<String>(
+                        value: option,
+                        groupValue: selectedOption,
+                        onChanged: (value) => _onOptionSelected(option),
+                      ),
+                      Text(option),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ),
+            if (state.hasError)
+              Padding(
+                padding: const EdgeInsets.only(top: 5),
+                child: Text(
+                  state.errorText ?? '',
+                  style: const TextStyle(color: Colors.red, fontSize: 12),
+                ),
               ),
-              Text(option),
-            ],
-          ),
+          ],
         );
-      }).toList(),
+      },
     );
   }
 }

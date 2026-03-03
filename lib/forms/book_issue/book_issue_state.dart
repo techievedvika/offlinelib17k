@@ -19,7 +19,8 @@ class BookIssueFailure extends BookIssueState {
 }
 class BookIssueSuccess extends BookIssueState {
   final String message;
-  BookIssueSuccess({required this.message});
+  final String status;
+  BookIssueSuccess({required this.message, required this.status});
 }
 
 class BookReturnListSuccess extends BookIssueState {

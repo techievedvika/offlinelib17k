@@ -9,6 +9,7 @@ class CustomDropdownFormField extends StatefulWidget {
   final FocusNode? focusNode;
   final GlobalKey? widgetKey;
   final String? Function(String?)? validator;
+  final double? height;
 
   const CustomDropdownFormField({
     super.key,
@@ -19,6 +20,7 @@ class CustomDropdownFormField extends StatefulWidget {
     this.focusNode,
     this.validator,
     this.widgetKey,
+    this.height,
   });
 
   @override
@@ -34,6 +36,7 @@ class _CustomDropdownFormFieldState extends State<CustomDropdownFormField> {
     return LayoutBuilder(
       builder: (context, constraints) {
         return DropdownButtonFormField<String>(
+          menuMaxHeight: widget.height,
           key: widget.widgetKey,
           focusNode: widget.focusNode,
           value: widget.options.contains(widget.selectedOption)

@@ -39,3 +39,24 @@ class StudentIdSuccess extends StudentState {
 class StudentRegistered extends StudentState {
   StudentRegistered();
 }
+
+// Add these to your student_state.dart file
+
+class GradesLoading extends StudentState {}
+
+class GradesSuccess extends StudentState {
+  final List<String> grades;
+  GradesSuccess(this.grades);
+
+  @override
+  List<Object> get props => [grades];
+}
+
+class GradesFailure extends StudentState {
+  final String message;
+  GradesFailure(this.message);
+
+  @override
+  List<Object> get props => [message];
+}
+

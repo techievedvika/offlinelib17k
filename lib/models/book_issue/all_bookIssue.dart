@@ -4,6 +4,7 @@ import 'package:csv/csv.dart';
 import 'package:file_saver/file_saver.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_file_dialog/flutter_file_dialog.dart';
 import 'package:intl/intl.dart';
 import 'package:lib17000ft/components/circular_indicator.dart';
 import 'package:lib17000ft/components/custom_appbar.dart';
@@ -19,6 +20,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../services/permission_storage.dart';
+
 class AllBookIssueList extends StatefulWidget {
    String? state;
     String? district;
@@ -26,6 +29,7 @@ class AllBookIssueList extends StatefulWidget {
     String? school;
     String? from;
     String? to;
+    //String? role;
    AllBookIssueList({super.key,this.state,this.district,this.block,this.school,this.from,this.to});
 
   @override
@@ -39,7 +43,10 @@ class _AllBookIssueListState extends State<AllBookIssueList> {
   String? userId;
   DateTimeRange? _selectedDateRange;
   String? rights;
+  String? userRole;
+  bool? isSuperAdmin;
   String? stateName;
+  String? userSchool;
   String? block;
   String? levels;
   String? language;
@@ -50,7 +57,6 @@ class _AllBookIssueListState extends State<AllBookIssueList> {
   void initState() {
     super.initState();
     _loadUserId();
-
     //_scrollController.addListener(_scrollListener);
   }
 
@@ -60,45 +66,43 @@ class _AllBookIssueListState extends State<AllBookIssueList> {
     super.dispose();
   }
 
- Future<bool> _requestStoragePermission() async {
-  var status = await Permission.storage.status;
-
-  if (!status.isGranted) {
-    status = await Permission.storage.request();
-  }
-
-  if (status.isGranted) {
-    return true;
-  } else if (status.isPermanentlyDenied) {
-    openAppSettings();
-    return false;
-  }
-  return false;
-}
-
-
   Future<void> _loadUserId() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       userId = prefs.getString('userId');
       rights = prefs.getString('rights');
+      userRole = prefs.getString('role')?.toLowerCase().trim();
+      userSchool = prefs.getString('school')?.toLowerCase().trim();
+
+      // Log all stored SharedPreferences data for debugging
+      print("---- SharedPreferences Data ----");
+      prefs.getKeys().forEach((key) {
+        print("$key: ${prefs.get(key)}");
+      });
+      print("-----------------------------");
+
+
       if (userId != null) {
         context.read<BookIssueCubit>().fetchBookIssued(
               adminId: userId,
-              stateName:widget.state,district:widget.district,block:  widget.block,school: widget.school,from: widget.from,to:widget.to
+              stateName:widget.state,
+            district:widget.district,
+            block:  widget.block,
+            //role: widget.role,
+            school: widget.school,
+            from: widget.from,
+            to:widget.to
             );
+      }
+
+      if(userRole =='Admin'.toLowerCase().trim() || userRole =='Librarian'.toLowerCase().trim()){
+        isSuperAdmin = false;
+      } else {
+        isSuperAdmin = true;
       }
     });
     print("this is the user id $userId");
   }
-// void _scrollListener() {
-//   if (_scrollController.position.atEdge) {
-//     if (_scrollController.position.pixels == _scrollController.position.maxScrollExtent) {
-//       // Trigger load more students when reaching the end
-//       context.read<StudentCubit>().fetchStudents(1);
-//     }
-//   }
-// }
 
   List<BookIssueModel> _filterBookIssued(
       List<BookIssueModel> books, String query) {
@@ -181,6 +185,9 @@ class _AllBookIssueListState extends State<AllBookIssueList> {
                       Expanded(
                         child: SearchBar(
                           hintText: 'Search book by student ID or book ID',
+                          hintStyle: WidgetStateProperty.all(
+                              const TextStyle(color: Colors.grey)
+                          ),
                           leading: const Icon(Icons.search),
                           elevation: MaterialStateProperty.all(1.0),
                           shape: MaterialStateProperty.all(
@@ -208,6 +215,7 @@ class _AllBookIssueListState extends State<AllBookIssueList> {
                               child: IconButton(
                                 onPressed: () {
                                   showFilterBottomSheet(
+                                    title: 'Filter All Issued Books',
                                     context: context,
                                     buildFilterContent: _buildFilterContent,
                                     onApply: () {
@@ -279,33 +287,35 @@ class _AllBookIssueListState extends State<AllBookIssueList> {
                                   .read<BookIssueCubit>()
                                   .fetchBookIssued(adminId: userId);
                             },
-                            child: ListView.builder(
-                              controller: _scrollController,
-                              padding: EdgeInsets.symmetric(
-                                horizontal: isPortrait
-                                    ? screenWidth * 0.03
-                                    : screenWidth * 0.1,
-                                vertical: 8,
+                            child: SafeArea(
+                              child: ListView.builder(
+                                controller: _scrollController,
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: isPortrait
+                                      ? screenWidth * 0.03
+                                      : screenWidth * 0.1,
+                                  vertical: 8,
+                                ),
+                                itemCount: filteredIssuedBooks.length +
+                                    (_isLoadingMore ? 1 : 0),
+                                itemBuilder: (context, index) {
+                                  if (index >= filteredIssuedBooks.length) {
+                                    return const Padding(
+                                      padding: EdgeInsets.all(16.0),
+                                      child: Center(
+                                        child: CircularProgressIndicator(),
+                                      ),
+                                    );
+                                  }
+
+                                  final student = filteredIssuedBooks[index];
+                                  final studentJsonData =
+                                  jsonEncode(student.toJson());
+
+                                  return _buildStudentCard(
+                                      student, context, studentJsonData);
+                                },
                               ),
-                              itemCount: filteredIssuedBooks.length +
-                                  (_isLoadingMore ? 1 : 0),
-                              itemBuilder: (context, index) {
-                                if (index >= filteredIssuedBooks.length) {
-                                  return const Padding(
-                                    padding: EdgeInsets.all(16.0),
-                                    child: Center(
-                                      child: CircularProgressIndicator(),
-                                    ),
-                                  );
-                                }
-
-                                final student = filteredIssuedBooks[index];
-                                final studentJsonData =
-                                    jsonEncode(student.toJson());
-
-                                return _buildStudentCard(
-                                    student, context, studentJsonData);
-                              },
                             ),
                           ),
                   ),
@@ -321,15 +331,52 @@ class _AllBookIssueListState extends State<AllBookIssueList> {
             if (state is BookIssuedListSuccess &&
                 state.bookIssuedList.isNotEmpty) {
               return FloatingActionButton.small(
+                // onPressed: () async {
+                //   final granted = await _requestStoragePermission();
+                //   if (granted) {
+                //     await _exportToCSV(state.bookIssuedList);
+                //   } else {
+                //     ScaffoldMessenger.of(context).showSnackBar(
+                //       const SnackBar(
+                //           content: Text('Storage permission is required')),
+                //     );
+                //   }
+                // },
+                // onPressed: () async {
+                //   //final granted = await _requestStoragePermission();
+                //   final granted = await PermissionService.requestStoragePermission();
+                //   if (granted) {
+                //     // You'll need to implement or call your _exportToCSV method here
+                //     await _exportToCSV(state.bookIssuedList);
+                //     // ScaffoldMessenger.of(context).showSnackBar(
+                //     //   const SnackBar(content: Text('Exporting CSV...')),
+                //     // );
+                //   } else {
+                //     // The bottom sheet will be shown automatically if needed.
+                //     // This SnackBar is a fallback for other denial cases.
+                //     if (mounted) {
+                //       ScaffoldMessenger.of(context).showSnackBar(
+                //         const SnackBar(
+                //             content: Text('Storage permission is required to export data.')),
+                //       );
+                //     }
+                //   }
+                // },
                 onPressed: () async {
-                  final granted = await _requestStoragePermission();
-                  if (granted) {
+                  try {
                     await _exportToCSV(state.bookIssuedList);
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text('Storage permission is required')),
-                    );
+
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('CSV exported successfully')),
+                      );
+                    }
+                  } catch (e) {
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Failed to export CSV')),
+                      );
+                    }
                   }
                 },
                 tooltip: 'Export CSV',
@@ -346,6 +393,7 @@ class _AllBookIssueListState extends State<AllBookIssueList> {
   void _applyFilters() {
     context.read<BookIssueCubit>().fetchBookIssued(
           adminId: userId!,
+          //stateName: isSuperAdmin == true ? stateName : userState,
           stateName: stateName,
           block: block,
           school: school,
@@ -357,7 +405,7 @@ class _AllBookIssueListState extends State<AllBookIssueList> {
               : null,
               level: levels,
               language: language,
-        );
+    );
   }
 
   Widget _buildFilterContent(
@@ -371,6 +419,40 @@ class _AllBookIssueListState extends State<AllBookIssueList> {
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+
+            if (filterState.states.isNotEmpty)
+              if(isSuperAdmin == false)
+                FilterDropdown(
+                    value: filterState.selectedSchool,
+                    hint: 'Select School',
+                    items: (userSchool!= null ? [userSchool!] : []),
+                    onChanged: (value) {
+                      context.read<FilterCubit>().updateSelectedSchool(value!);
+                      context.read<FilterCubit>().selectSchool(value);
+                      setState(() {
+                        school = value;
+                      });
+                      setModalState(() {});
+                    },
+                    isMobile: isMobile),
+            if(isSuperAdmin == true)
+            FilterDropdown(
+                value: filterState.selectedState,
+                hint: 'Select State',
+                items: ['All', ...filterState.states],  //This is to get either user is Super admin or not
+                onChanged: (value) {
+                  context.read<FilterCubit>().updateSelectedState(value!);
+
+                  setState(() {
+                    stateName = value;
+                  });
+                    //context.read<FilterCubit>().fetchBlocks(value);
+
+                  setModalState(() {});
+                },
+                isMobile: isMobile,
+            ),
+            const SizedBox(height: 12),
             FilterDropdown(
               value: filterState.selectedLevel,
               hint: 'Select Level',
@@ -408,23 +490,8 @@ class _AllBookIssueListState extends State<AllBookIssueList> {
               isMobile: isMobile,
             ),
             const SizedBox(height: 12),
-            FilterDropdown(
-                value: filterState.selectedState,
-                hint: 'Select State',
-                items: ['All', ...filterState.states],
-                onChanged: (value) {
-                  context.read<FilterCubit>().updateSelectedState(value!);
-
-                  setState(() {
-                    stateName = value;
-                  });
-                  //  context.read<FilterCubit>().fetchBlocks(value);
-
-                  setModalState(() {});
-                },
-                isMobile: isMobile),
-            const SizedBox(height: 12),
-            if (filterState.districts.isNotEmpty)
+            //if (filterState.districts.isNotEmpty && isSuperAdmin == true)
+            if(filterState.districts.isNotEmpty && isSuperAdmin == true)
               FilterDropdown(
                   value: filterState.selectedDistrict,
                   hint: 'Select District',
@@ -435,14 +502,16 @@ class _AllBookIssueListState extends State<AllBookIssueList> {
                     setState(() {
                       districtName = value;
                     });
-                    //  context.read<FilterCubit>().fetchBlocks(value);
-
+                      //context.read<FilterCubit>().fetchBlocks(value);
                     setModalState(() {});
+                    // print('---\n$districtName\n---');
                   },
                   isMobile: isMobile),
 
             // Block Dropdown
-            if (filterState.blocks.isNotEmpty) const SizedBox(height: 12),
+            const SizedBox(height: 12),
+            // if (filterState.blocks.isNotEmpty && isSuperAdmin == true)
+            if (filterState.blocks.isNotEmpty && filterState.districts.isNotEmpty && isSuperAdmin == true)
             FilterDropdown(
                 value: filterState.selectedBlock,
                 hint: 'Select Block',
@@ -453,14 +522,18 @@ class _AllBookIssueListState extends State<AllBookIssueList> {
                     block = value;
                   });
 
+                  //context.read<FilterCubit>().fetchBlocks(value);
                   setModalState(() {});
+                  // print('---\n$block\n---');
                 },
                 isMobile: isMobile),
-            if (filterState.blocks.isNotEmpty) const SizedBox(height: 12),
+            //if (filterState.blocks.isNotEmpty)
 
             // School Dropdown
-            if (filterState.schools.isNotEmpty)
-              FilterDropdown(
+            const SizedBox(height: 12),
+            // if (filterState.schools.isNotEmpty && isSuperAdmin == true)
+            if (filterState.schools.isNotEmpty && filterState.blocks.isNotEmpty && isSuperAdmin == true)
+            FilterDropdown(
                   value: filterState.selectedSchool,
                   hint: 'Select School',
                   items: ['All', ...filterState.schools],
@@ -471,10 +544,13 @@ class _AllBookIssueListState extends State<AllBookIssueList> {
                       school = value;
                     });
                     setModalState(() {});
+                    // print('---\n$school\n---');
                   },
-                  isMobile: isMobile),
+                  isMobile: isMobile,
+              ),
 
-            if (filterState.schools.isNotEmpty) const SizedBox(height: 12),
+            const SizedBox(height: 12),
+            if (filterState.schools.isNotEmpty || filterState.states.isNotEmpty)
 
             // Date Range
             _buildDateFilterButton(isMobile, setModalState),
@@ -1002,85 +1078,157 @@ class _AllBookIssueListState extends State<AllBookIssueList> {
         false;
   }
 
+  // Future<void> _exportToCSV(List<BookIssueModel> bookIssueList) async {
+  //   final List<List<String>> rows = [
+  //     [
+  //       'Name',
+  //       'Title',
+  //       'School Name',
+  //       'Class',
+  //       'Gender',
+  //       'Student Id',
+  //       'APAAR ID',
+  //       'Issued Date',
+  //       'Issued By',
+  //       'ISBN',
+  //       'Publisher',
+  //       'Author',
+  //       'Language',
+  //       'Gener',
+  //       'Level',
+  //       'Code'
+  //     ], // CSV headers
+  //     ...bookIssueList.map((book) => [
+  //           book.name ?? '',
+  //           book.title ?? '',
+  //           book.school ?? '',
+  //           book.studentnclass ?? '',
+  //           book.gender ?? '',
+  //           book.uniqid ?? '',
+  //           book.apparId ?? '',
+  //           book.issuedDate ?? '',
+  //           book.createdBy ?? '',
+  //           book.isbn ?? '',
+  //           book.publisher ?? '',
+  //           book.author ?? '',
+  //           book.language ?? '',
+  //           book.gener ?? '',
+  //           book.level ?? '',
+  //           book.code ?? '',
+  //         ])
+  //   ];
+  //
+  //   final csvData = const ListToCsvConverter().convert(rows);
+  //   final directory = await getExternalStorageDirectory();
+  //   final path = '${directory!.path}/bookIssued_List.csv';
+  //
+  //   final file = File(path);
+  //   await file.writeAsString(csvData);
+  //   if (await Permission.manageExternalStorage.request().isGranted ||
+  //       await Permission.storage.request().isGranted) {
+  //     Directory? downloadsDir;
+  //
+  //     if (Platform.isAndroid) {
+  //       downloadsDir =
+  //           Directory('/storage/emulated/0/Download'); // public Downloads
+  //     } else {
+  //       downloadsDir = await getApplicationDocumentsDirectory(); // iOS fallback
+  //     }
+  //     final now = DateTime.now();
+  //     final formattedDate =
+  //         "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}_${now.hour.toString().padLeft(2, '0')}-${now.minute.toString().padLeft(2, '0')}";
+  //     final file =
+  //         File("${downloadsDir.path}/bookIssued_List$formattedDate.csv");
+  //
+  //     //final file = File("${downloadsDir.path}/students.csv");
+  //     await file.writeAsString(csvData);
+  //     print("File saved to: ${file.path}");
+  //   } else {
+  //     print("Storage permission not granted");
+  //   }
+  //
+  //   // Save using FileSaver for Android/iOS support
+  //   await FileSaver.instance.saveFile(
+  //     name: 'bookIssued_List',
+  //     bytes: file.readAsBytesSync(),
+  //     ext: 'csv',
+  //     mimeType: MimeType.csv,
+  //   );
+  //
+  //   ScaffoldMessenger.of(context).showSnackBar(
+  //     const SnackBar(content: Text('Book Issued list exported successfully!')),
+  //   );
+  // }
   Future<void> _exportToCSV(List<BookIssueModel> bookIssueList) async {
-    final List<List<String>> rows = [
-      [
-        'Name',
-        'Title',
-        'School Name',
-        'Class',
-        'Gender',
-        'Student Id',
-        'APAAR ID',
-        'Issued Date',
-        'Issued By',
-        'ISBN',
-        'Publisher',
-        'Author',
-        'Language',
-        'Gener',
-        'Level',
-        'Code'
-      ], // CSV headers
-      ...bookIssueList.map((book) => [
-            book.name ?? '',
-            book.title ?? '', 
-            book.school ?? '', 
-            book.studentnclass ?? '', 
-            book.gender ?? '', 
-            book.uniqid ?? '', 
-            book.apparId ?? '', 
-            book.issuedDate ?? '', 
-            book.createdBy ?? '', 
-            book.isbn ?? '', 
-            book.publisher ?? '', 
-            book.author ?? '', 
-            book.language ?? '', 
-            book.gener ?? '', 
-            book.level ?? '', 
-            book.code ?? '', 
-          ])
-    ];
+    try {
+      final List<List<String>> rows = [
+        [
+          'Name',
+          'Title',
+          'School Name',
+          'Class',
+          'Gender',
+          'Student Id',
+          'APAAR ID',
+          'Issued Date',
+          'Issued By',
+          'ISBN',
+          'Publisher',
+          'Author',
+          'Language',
+          'Gener',
+          'Level',
+          'Code'
+        ],
+        ...bookIssueList.map((book) => [
+          book.name ?? '',
+          book.title ?? '',
+          book.school ?? '',
+          book.studentnclass ?? '',
+          book.gender ?? '',
+          book.uniqid ?? '',
+          book.apparId ?? '',
+          book.issuedDate ?? '',
+          book.createdBy ?? '',
+          book.isbn ?? '',
+          book.publisher ?? '',
+          book.author ?? '',
+          book.language ?? '',
+          book.gener ?? '',
+          book.level ?? '',
+          book.code ?? '',
+        ])
+      ];
 
-    final csvData = const ListToCsvConverter().convert(rows);
-    final directory = await getExternalStorageDirectory();
-    final path = '${directory!.path}/bookIssued_List.csv';
+      final csvData = const ListToCsvConverter().convert(rows);
 
-    final file = File(path);
-    await file.writeAsString(csvData);
-    if (await Permission.manageExternalStorage.request().isGranted ||
-        await Permission.storage.request().isGranted) {
-      Directory? downloadsDir;
+      /// ✅ Step 1: Save in temporary directory (Scoped Storage safe)
+      final tempDir = await getTemporaryDirectory();
+      final tempFile = File('${tempDir.path}/bookIssued_List.csv');
 
-      if (Platform.isAndroid) {
-        downloadsDir =
-            Directory('/storage/emulated/0/Download'); // public Downloads
-      } else {
-        downloadsDir = await getApplicationDocumentsDirectory(); // iOS fallback
+      await tempFile.writeAsString(csvData);
+
+      /// ✅ Step 2: Let user choose save location
+      await FlutterFileDialog.saveFile(
+        params: SaveFileDialogParams(
+          sourceFilePath: tempFile.path,
+        ),
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('Book Issued list exported successfully!'),backgroundColor: AppColors.primary),
+        );
       }
-      final now = DateTime.now();
-      final formattedDate =
-          "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}_${now.hour.toString().padLeft(2, '0')}-${now.minute.toString().padLeft(2, '0')}";
-      final file =
-          File("${downloadsDir.path}/bookIssued_List$formattedDate.csv");
-
-      //final file = File("${downloadsDir.path}/students.csv");
-      await file.writeAsString(csvData);
-      print("File saved to: ${file.path}");
-    } else {
-      print("Storage permission not granted");
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Export failed: $e',style: const TextStyle(color: AppColors.onError),),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
     }
-
-    // Save using FileSaver for Android/iOS support
-    await FileSaver.instance.saveFile(
-      name: 'bookIssued_List',
-      bytes: file.readAsBytesSync(),
-      ext: 'csv',
-      mimeType: MimeType.csv,
-    );
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Book Issued list exported successfully!')),
-    );
   }
 }
