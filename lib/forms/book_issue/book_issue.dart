@@ -12,7 +12,9 @@ import 'package:lib17000ft/forms/book_issue/book_issue_state.dart';
 import 'package:lib17000ft/forms/dashboard/dash_cubit.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../components/school_tag.dart';
 import '../../configs/app_urls.dart';
+import '../../models/student_registration/student_model.dart';
 
 class BookIssue extends StatefulWidget {
   const BookIssue({super.key});
@@ -24,6 +26,7 @@ class BookIssue extends StatefulWidget {
 class _BookIssueState extends State<BookIssue> {
   // Controllers for Student Info
   final TextEditingController studentIdController = TextEditingController();
+  final TextEditingController idController = TextEditingController();
   final TextEditingController studentNameController = TextEditingController();
   final TextEditingController studentClassController = TextEditingController();
 
@@ -37,6 +40,7 @@ class _BookIssueState extends State<BookIssue> {
 
   bool isScanning = false;  
   String? userId;
+  String? libSchool;
   String? idValue; // Stores the value of the 'For Reading only?' radio button
   String? isbnValue;
   String? userIdValue;
@@ -52,6 +56,7 @@ class _BookIssueState extends State<BookIssue> {
     if (mounted) {
       setState(() {
         userId = prefs.getString('userId');
+        libSchool = prefs.getString('school');
       });
     }
   }
@@ -66,25 +71,141 @@ class _BookIssueState extends State<BookIssue> {
 
       try {
         Map<String, dynamic> studentDetails = jsonDecode(scannedData);
-        if (!studentDetails.containsKey('rollno') || !studentDetails.containsKey('name')) {
-          throw const FormatException("Invalid student QR code");
+
+        if (studentDetails['id'] == null) {
+          throw const FormatException("Invalid QR: Missing Roll No");
         }
+
         setState(() {
-          studentIdController.text = studentDetails['rollno'] ?? 'ID Not Found';
-          studentNameController.text = studentDetails['name'] ?? 'No Name';
-          studentClassController.text = studentDetails['class'] ?? 'Unknown';
+          idController.text = studentDetails['id']?.toString() ?? '';
+          studentNameController.text = studentDetails['name']?.toString() ?? '';
+          studentClassController.text = studentDetails['class']?.toString() ?? '';
         });
-      } catch (e) {
+
+
+        final List<StudentModel> students = await context
+            .read<BookIssueCubit>()
+            .fetchStudentByRollno(studentIdController.text);
+
+        if (students.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Student not found in database. Please check Roll No."),
+              backgroundColor: AppColors.error,
+            ),
+          );
+          return;
+        }
+
+        print('Student School: ${students.first.school}');
+
+        if(students.first.school != libSchool){
+          await showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (context) => Dialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(24, 28, 24, 20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: const BoxDecoration(
+                            color: AppColors.primary,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.warning_amber_rounded,
+                            color: AppColors.onPrimary,
+                            size: 22,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        const Expanded(
+                          child: Text(
+                            'Different school detected',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      'This student belongs to',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    SchoolTag(
+                      name: students.first.school,
+                      accentColor: AppColors.onPrimary,
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Please scan a student from',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    SchoolTag(
+                      name: libSchool,
+                      accentColor: AppColors.onPrimary,
+                    ),
+                    const SizedBox(height: 24),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: FilledButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          resetForm();
+                        },
+                        style: FilledButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 28,
+                            vertical: 12,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        child: const Text('Got it',style: TextStyle(color: AppColors.onPrimary,fontWeight: FontWeight.bold)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+          return;
+        }
+
+      } on FormatException {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-              content: Text("Invalid QR Code. Please scan a valid student QR."),
+              content: Text("Invalid QR Code format."),
               backgroundColor: AppColors.error),
         );
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error: ${e.toString()}"), backgroundColor: AppColors.error),
+        );
       }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error during scan: $e")),
-      );
     } finally {
       if (mounted) setState(() => isScanning = false);
     }
@@ -130,8 +251,8 @@ class _BookIssueState extends State<BookIssue> {
 
   Future<Map<String, String>> fetchBookDetails(String isbn) async {
     //final url = Uri.parse('https://mis.17000ft.org/Library/apis/getBook.php');
-    //final url = Uri.parse(AppUrls.getBooksApi);
-    final url = Uri.parse(AppUrls.testGetBooksApi);
+    final url = Uri.parse(AppUrls.getBooksApi);
+    //final url = Uri.parse(AppUrls.testGetBooksApi);
     try {
       final response = await http.post(url, body: {"isbn": isbn});
       if (response.statusCode == 200) {
@@ -218,12 +339,6 @@ class _BookIssueState extends State<BookIssue> {
 
 
                     LabelText(label: 'Scan Book Barcode'),
-                    // ElevatedButton.icon(
-                    //   onPressed: isScanning ? null : scanISBN,
-                    //   icon: const Icon(Icons.qr_code_scanner),
-                    //   label: const Text('Scan Book ISBN'),
-                    // ),
-                    ///This is to match UI design
                     CustomButton(
                       onPressedButton: isScanning ? null : scanISBN,
                       icon: Icons.barcode_reader,
@@ -250,7 +365,7 @@ class _BookIssueState extends State<BookIssue> {
                     const SizedBox(height: 10),
                     CustomTextFormField(
                       textController: authorController,
-                      readOnly: authorController.text == 'NA' ? false : true,
+                      readOnly: authorController.text != 'NA' ? false : true,
                     ),
 
 
@@ -377,4 +492,6 @@ class _BookIssueState extends State<BookIssue> {
     );
     return result ?? false;
   }
+
+
 }

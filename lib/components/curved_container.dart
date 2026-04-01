@@ -2,7 +2,8 @@ import 'package:flutter/widgets.dart';
 import 'package:lib17000ft/configs/color/color.dart';
 
 class CurvedContainer extends StatelessWidget {
-  const CurvedContainer({super.key});
+  final child;
+  const CurvedContainer({super.key, this.child});
 
   @override
   Widget build(BuildContext context) {
@@ -25,8 +26,7 @@ class CurvedContainer extends StatelessWidget {
                  AppColors.yellow,
               ]),
         ),
-
-        //color: const Color.fromARGB(255, 7, 54, 79),
+        child: child,//color: const Color.fromARGB(255, 7, 54, 79),
       ),
     );
   }

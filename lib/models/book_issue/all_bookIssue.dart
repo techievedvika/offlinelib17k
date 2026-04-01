@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:csv/csv.dart';
-import 'package:file_saver/file_saver.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_file_dialog/flutter_file_dialog.dart';
@@ -17,7 +16,6 @@ import 'package:lib17000ft/forms/filters/filter_cubit.dart';
 import 'package:lib17000ft/forms/filters/filter_dropdown.dart';
 import 'package:lib17000ft/models/book_issue/book_issue_model.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../services/permission_storage.dart';
@@ -331,37 +329,6 @@ class _AllBookIssueListState extends State<AllBookIssueList> {
             if (state is BookIssuedListSuccess &&
                 state.bookIssuedList.isNotEmpty) {
               return FloatingActionButton.small(
-                // onPressed: () async {
-                //   final granted = await _requestStoragePermission();
-                //   if (granted) {
-                //     await _exportToCSV(state.bookIssuedList);
-                //   } else {
-                //     ScaffoldMessenger.of(context).showSnackBar(
-                //       const SnackBar(
-                //           content: Text('Storage permission is required')),
-                //     );
-                //   }
-                // },
-                // onPressed: () async {
-                //   //final granted = await _requestStoragePermission();
-                //   final granted = await PermissionService.requestStoragePermission();
-                //   if (granted) {
-                //     // You'll need to implement or call your _exportToCSV method here
-                //     await _exportToCSV(state.bookIssuedList);
-                //     // ScaffoldMessenger.of(context).showSnackBar(
-                //     //   const SnackBar(content: Text('Exporting CSV...')),
-                //     // );
-                //   } else {
-                //     // The bottom sheet will be shown automatically if needed.
-                //     // This SnackBar is a fallback for other denial cases.
-                //     if (mounted) {
-                //       ScaffoldMessenger.of(context).showSnackBar(
-                //         const SnackBar(
-                //             content: Text('Storage permission is required to export data.')),
-                //       );
-                //     }
-                //   }
-                // },
                 onPressed: () async {
                   try {
                     await _exportToCSV(state.bookIssuedList);
@@ -1077,88 +1044,6 @@ class _AllBookIssueListState extends State<AllBookIssueList> {
         ) ??
         false;
   }
-
-  // Future<void> _exportToCSV(List<BookIssueModel> bookIssueList) async {
-  //   final List<List<String>> rows = [
-  //     [
-  //       'Name',
-  //       'Title',
-  //       'School Name',
-  //       'Class',
-  //       'Gender',
-  //       'Student Id',
-  //       'APAAR ID',
-  //       'Issued Date',
-  //       'Issued By',
-  //       'ISBN',
-  //       'Publisher',
-  //       'Author',
-  //       'Language',
-  //       'Gener',
-  //       'Level',
-  //       'Code'
-  //     ], // CSV headers
-  //     ...bookIssueList.map((book) => [
-  //           book.name ?? '',
-  //           book.title ?? '',
-  //           book.school ?? '',
-  //           book.studentnclass ?? '',
-  //           book.gender ?? '',
-  //           book.uniqid ?? '',
-  //           book.apparId ?? '',
-  //           book.issuedDate ?? '',
-  //           book.createdBy ?? '',
-  //           book.isbn ?? '',
-  //           book.publisher ?? '',
-  //           book.author ?? '',
-  //           book.language ?? '',
-  //           book.gener ?? '',
-  //           book.level ?? '',
-  //           book.code ?? '',
-  //         ])
-  //   ];
-  //
-  //   final csvData = const ListToCsvConverter().convert(rows);
-  //   final directory = await getExternalStorageDirectory();
-  //   final path = '${directory!.path}/bookIssued_List.csv';
-  //
-  //   final file = File(path);
-  //   await file.writeAsString(csvData);
-  //   if (await Permission.manageExternalStorage.request().isGranted ||
-  //       await Permission.storage.request().isGranted) {
-  //     Directory? downloadsDir;
-  //
-  //     if (Platform.isAndroid) {
-  //       downloadsDir =
-  //           Directory('/storage/emulated/0/Download'); // public Downloads
-  //     } else {
-  //       downloadsDir = await getApplicationDocumentsDirectory(); // iOS fallback
-  //     }
-  //     final now = DateTime.now();
-  //     final formattedDate =
-  //         "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}_${now.hour.toString().padLeft(2, '0')}-${now.minute.toString().padLeft(2, '0')}";
-  //     final file =
-  //         File("${downloadsDir.path}/bookIssued_List$formattedDate.csv");
-  //
-  //     //final file = File("${downloadsDir.path}/students.csv");
-  //     await file.writeAsString(csvData);
-  //     print("File saved to: ${file.path}");
-  //   } else {
-  //     print("Storage permission not granted");
-  //   }
-  //
-  //   // Save using FileSaver for Android/iOS support
-  //   await FileSaver.instance.saveFile(
-  //     name: 'bookIssued_List',
-  //     bytes: file.readAsBytesSync(),
-  //     ext: 'csv',
-  //     mimeType: MimeType.csv,
-  //   );
-  //
-  //   ScaffoldMessenger.of(context).showSnackBar(
-  //     const SnackBar(content: Text('Book Issued list exported successfully!')),
-  //   );
-  // }
   Future<void> _exportToCSV(List<BookIssueModel> bookIssueList) async {
     try {
       final List<List<String>> rows = [

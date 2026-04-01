@@ -32,6 +32,36 @@ class StudentCubit extends Cubit<StudentState> {
     // emit(StudentRegistered());
   }
 
+  void updateStudent(StudentModel? student) async {
+    emit(StudentLoading());
+
+    // Prepare the data map for the API
+    final data = {
+      "action": "update",
+      "id": student?.id,
+      "rollno": student?.rollNo,
+      "name": student?.name,
+      "gender": student?.gender,
+      "class": student?.classs,
+      "apaarId": student?.apaarId,
+      "school": student?.school,
+      "created_by" : student?.createdBy,
+    };
+
+    try {
+      final value = await _studentRepository.updateStudent(data);
+
+      if (value['error'] == false) {
+        emit(StudentSuccess(message: value['message'].toString()));
+      } else {
+        emit(StudentFailure(message: value['message'].toString()));
+      }
+    } catch (error) {
+      print('Update error: $error');
+      emit(StudentFailure(message: error.toString()));
+    }
+  }
+
   Future<void> getStudentId(String state) async {
   print('this is student id for state $state');
   emit(StudentLoading());

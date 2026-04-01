@@ -77,6 +77,7 @@ class CustomTextFormField extends StatelessWidget {
               )
             : null,
         hintText: hintText ?? '',
+        hintStyle: AppStyles.captionText(context, AppColors.outline, 11),
         floatingLabelStyle: const TextStyle(color: AppColors.primary),
         enabledBorder: const OutlineInputBorder(
           borderRadius: BorderRadius.all(Radius.circular(10)),

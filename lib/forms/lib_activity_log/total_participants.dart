@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 
+import '../../components/custom_labeltext.dart';
 import '../../components/custom_textField.dart';
 
 class TotalParticipantsInput extends StatelessWidget {
@@ -8,11 +9,17 @@ class TotalParticipantsInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomTextFormField(
-      labelText: 'Total No. of Participants',
-      onChanged: onChanged,
-      textInputType: TextInputType.number,
-      validator: (v) => v!.isEmpty ? 'Please enter the number of participants' : null,
+    return Column(
+      children: [
+        LabelText(label: "Activity No. of Participants"),
+        const SizedBox(height: 10),
+        CustomTextFormField(
+          hintText: 'Total Participants',
+          onChanged: onChanged,
+          textInputType: TextInputType.number,
+          validator: (v) => v!.isEmpty ? 'Please enter the number of participants' : null,
+        ),
+      ],
     );
   }
 }

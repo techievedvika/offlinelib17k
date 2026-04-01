@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 
+import '../../components/custom_labeltext.dart';
 import '../../components/custom_textField.dart';
 
 class ActivityNameInput extends StatelessWidget {
@@ -8,10 +9,17 @@ class ActivityNameInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomTextFormField(
-      labelText: 'Activity Name',
-      onChanged: onChanged,
-      validator: (v) => v!.isEmpty ? 'Please enter an activity name' : null,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        LabelText(label: "Activity Name"),
+        const SizedBox(height: 10),
+        CustomTextFormField(
+          hintText: 'Activity Name',
+          onChanged: onChanged,
+          validator: (v) => v!.isEmpty ? 'Please enter an activity name' : null,
+        ),
+      ],
     );
   }
 }

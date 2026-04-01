@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../configs/app_urls.dart';
 import '../../data/network/network_api_services.dart';
@@ -28,9 +29,16 @@ class LoginRepository {
         UserModel userModel = UserModel.fromJson(response);
 
         // Store the user ID in SharedPreferences
-       
+
+        PackageInfo packageInfo = await PackageInfo.fromPlatform();
+        String version = packageInfo.version; // e.g. 1.0.0
+        String buildNumber = packageInfo.buildNumber; // e.g. 1
+
+        final currentVersion = "$version+$buildNumber";
 
         SharedPreferences prefs = await SharedPreferences.getInstance();
+
+        await prefs.setString('currentVersion', currentVersion);
         await prefs.setString('userId', userModel.user!.id.toString());
         await prefs.setString('location', userModel.user!.location.toString());
         await prefs.setString('school', userModel.user!.school.toString());

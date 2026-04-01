@@ -14,9 +14,13 @@ import 'package:lib17000ft/forms/filters/filter_dropdown.dart';
 import 'package:lib17000ft/forms/student/all_student.dart';
 import 'package:lib17000ft/models/book_issue/all_bookIssue.dart';
 import 'package:lib17000ft/models/dash/dash_model.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:lib17000ft/components/component.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+import '../../components/animated_pie_chart.dart';
 
 class DashBoard extends StatefulWidget {
   const DashBoard({super.key});
@@ -44,12 +48,11 @@ class _DashBoardState extends State<DashBoard>
   bool? isSuperAdmin;
   String? libSchool;
 
-  //= {
-
   @override
   void initState() {
     super.initState();
     _loadUserId();
+    getAppVersion();
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1200),
@@ -68,28 +71,106 @@ class _DashBoardState extends State<DashBoard>
     super.dispose();
   }
 
-  // Future<bool> _requestNotificationPermission() async {
-  //   var status = await Permission.notification.status;
-  //
-  //   if (status.isPermanentlyDenied) {
-  //     print(
-  //         "Notification permission permanently denied. Opening app settings...");
-  //     await openAppSettings(); // Guide user to manually enable
-  //     return false;
-  //   }
-  //
-  //   if (!status.isGranted) {
-  //     status = await Permission.notification.request();
-  //   }
-  //
-  //   if (status.isGranted) {
-  //     print("Notification permission granted");
-  //     return true;
-  //   } else {
-  //     print("Notification permission denied");
-  //     return false;
-  //   }
-  // }
+  Future<void> getAppVersion() async {
+    //PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+
+    //current = prefs.getString('userId');
+
+    // String version = packageInfo.version; // e.g. 1.0.0
+    // String buildNumber = packageInfo.buildNumber; // e.g. 1
+
+    // final currentVersion = "$version+$buildNumber";
+    final currentVersion = prefs.getString('currentVersion');
+
+    final libVersion = await context.read<DashCubit>().fetchLibVersion();
+
+    if(libVersion != currentVersion){
+      await showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 28, 24, 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: const BoxDecoration(
+                        color: AppColors.primary,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.warning_amber_rounded,
+                        color: AppColors.onPrimary,
+                        size: 22,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    const Expanded(
+                      child: Text(
+                        'New Version Available',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                TextButton(
+                  child: const Text('Go to Play store'),
+                  onPressed: () async {
+                    final Uri url = Uri.parse("https://play.google.com/store/apps/details?id=org.ft17000.lib17000ft");
+
+                    if (await canLaunchUrl(url)) {
+                      await launchUrl(url, mode: LaunchMode.externalApplication);
+                    } else {
+                      throw 'Could not launch $url';
+                    }
+                  },
+                ),
+
+                const SizedBox(height: 24),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: FilledButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    style: FilledButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 28,
+                        vertical: 12,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    child: const Text('Got it',style: TextStyle(color: AppColors.onPrimary,fontWeight: FontWeight.bold)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+      return;
+    }
+    print("Library Version: $libVersion");
+    print("Version: $currentVersion");
+  }
 
   Future<void> _loadUserId() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -857,117 +938,6 @@ class _DashBoardState extends State<DashBoard>
         ],
       ),
     );
-  }
-}
-
-class AnimatedPieChart extends StatelessWidget {
-  final int touchedIndex;
-  final Animation<double> animation;
-  final int green;
-  final int red;
-  final int orange;
-  final int white;
-  final int na;
-
-  const AnimatedPieChart({
-    super.key,
-    required this.touchedIndex,
-    required this.animation,
-    this.green = 0,
-    this.red = 0,
-    this.orange = 0,
-    this.white = 0,
-    this.na = 0,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: animation,
-      builder: (context, child) {
-        return SizedBox(
-          height: Responsive(context).screenWidth() < 600 ? 220 : 300,
-          width: Responsive(context).screenWidth() < 600 ? 220 : 300,
-          child: PieChart(
-            PieChartData(
-              pieTouchData: PieTouchData(
-                touchCallback: (FlTouchEvent event, pieTouchResponse) {},
-              ),
-              borderData: FlBorderData(show: false),
-              sectionsSpace: 0,
-              centerSpaceRadius: 0,
-              sections: showingSections(animation.value),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  List<PieChartSectionData> showingSections(double scale) {
-    final total = green + red + orange + white + na;
-
-    double percent(int value) {
-      return total == 0 ? 0 : (value / total) * 100;
-    }
-
-    return [
-      PieChartSectionData(
-        color: Colors.green,
-        value: green.toDouble() * scale,
-        title: '${percent(green).toStringAsFixed(1)}%',
-        radius: touchedIndex == 0 ? 110.0 : 100.0,
-        titleStyle: const TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
-        ),
-      ),
-      PieChartSectionData(
-        color: Colors.red,
-        value: red.toDouble() * scale,
-        title: '${percent(red).toStringAsFixed(1)}%',
-        radius: touchedIndex == 1 ? 110.0 : 100.0,
-        titleStyle: const TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
-        ),
-      ),
-      PieChartSectionData(
-        color: Colors.orange,
-        value: orange.toDouble() * scale,
-        title: '${percent(orange).toStringAsFixed(1)}%',
-        radius: touchedIndex == 2 ? 110.0 : 100.0,
-        titleStyle: const TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
-        ),
-      ),
-      PieChartSectionData(
-        color: Colors.white,
-        value: white.toDouble() * scale,
-        title: '${percent(white).toStringAsFixed(1)}%',
-        radius: touchedIndex == 3 ? 110.0 : 100.0,
-        titleStyle: const TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-          color: Color.fromARGB(255, 207, 191, 191),
-        ),
-      ),
-      PieChartSectionData(
-        color: Colors.black,
-        value: na.toDouble() * scale,
-        title: '${percent(na).toStringAsFixed(1)}%',
-        radius: touchedIndex == 3 ? 110.0 : 100.0,
-        titleStyle: const TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-          color: Color.fromARGB(255, 207, 191, 191),
-        ),
-      ),
-    ];
   }
 }
 

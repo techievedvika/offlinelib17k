@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:lib17000ft/configs/color/color.dart';
 import 'package:lib17000ft/configs/routes/routes_name.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CustomDrawer extends StatefulWidget {
@@ -17,6 +18,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
   String? school;
   String? rights;
   String?role;
+  String? currentVersion;
 
   @override
   void initState() {
@@ -32,6 +34,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
       school = prefs.getString('school');
       rights = prefs.getString('rights');
        role = prefs.getString('role');
+       currentVersion = prefs.getString('currentVersion');
     
     });
   }
@@ -123,6 +126,27 @@ class _CustomDrawerState extends State<CustomDrawer> {
                       ) : const SizedBox(),
 
                     ]),
+
+                    // _buildDrawerSection('App Version', [
+                    //    _buildDrawerItem(
+                    //     icon: FontAwesomeIcons.appStore,
+                    //     title: '$currentVersion',
+                    //      route: '',
+                    //   ),
+                    //
+                    // ]),
+
+                    const SizedBox(height: 15),
+                    Text(
+                      "App Version : $currentVersion",
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        //color: Theme.of(context).primaryColor.withOpacity(0.7),
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                    //const SizedBox(height: 5),
                   ],
                 ),
               ),

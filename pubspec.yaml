@@ -2,7 +2,7 @@ name: lib17000ft
 description: "A new Flutter project."
 publish_to: 'none'
 #Version Update
-version: 1.0.1+5
+version: 1.0.1+6
 
 environment:
   sdk: ^3.5.4
@@ -52,6 +52,9 @@ dependencies:
   flutter_local_notifications: ^19.4.2
   flutter_background_service: ^5.1.0
   change_app_package_name: ^1.5.0
+  fluttertoast: ^9.0.0
+  package_info_plus: ^9.0.0
+  url_launcher: ^6.3.2
 
 dev_dependencies:
   flutter_test:

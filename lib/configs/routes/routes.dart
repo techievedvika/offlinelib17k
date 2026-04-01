@@ -10,8 +10,10 @@ import 'package:lib17000ft/splash/splash.dart';
 import '../../forms/book_issue/book_issue.dart';
 import '../../forms/book_return/book_return.dart';
 import '../../forms/lib_activity_log/screen/lib_activity_form_screen.dart';
+import '../../forms/student/student_edit.dart';
 import '../../forms/student/student_registration.dart';
 import '../../login/login.dart';
+import '../../models/student_registration/student_model.dart';
 
 class Routes {
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -29,6 +31,11 @@ class Routes {
       case '/student_registration':
         return MaterialPageRoute(
             builder: (context) => const StudentRegistration());
+      case '/student_edit':
+        final student = settings.arguments as StudentModel?;
+        return MaterialPageRoute(
+          builder: (context) => EditStudentScreen(student: student),
+        );
       case '/book_issue':
         return MaterialPageRoute(builder: (context) => const BookIssue());
       case '/book_return':

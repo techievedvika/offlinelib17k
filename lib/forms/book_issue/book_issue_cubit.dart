@@ -7,6 +7,7 @@ import 'package:lib17000ft/models/book_issue/book_issue_model.dart';
 import 'package:lib17000ft/models/book_return_model.dart/book_return_model.dart';
 
 import '../../configs/app_urls.dart';
+import '../../models/student_registration/student_model.dart';
 import 'book_issue_repository.dart';
 
 
@@ -138,5 +139,78 @@ class BookIssueCubit extends Cubit<BookIssueState> {
       _isLoading = false; // Reset loading flag
     }
   }
+
+  Future<List<StudentModel>> fetchStudentByRollno(String rollno) async {
+    try {
+      final url = Uri.parse(AppUrls.studentDetailApi);
+
+      final response = await http.post(
+        url,
+        body: {
+          "action": 'get',
+          "rollno": rollno
+
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final jsonData = jsonDecode(response.body);
+
+        if (jsonData['error'] == false) {
+          List dataList = jsonData['student'];
+
+          // ✅ Convert JSON → Freezed Model
+          return dataList
+              .map((e) => StudentModel.fromJson(e))
+              .toList();
+        } else {
+          throw Exception(jsonData['message']);
+        }
+      } else {
+        throw Exception("Server Error: ${response.statusCode}");
+      }
+    } catch (e) {
+      print("Error: $e");
+      throw Exception("Error: $e");
+    }
+  }
+  // Future<List<StudentModel>> fetchStudentByRollno(String rollno) async {
+  //   try {
+  //     final url = Uri.parse(AppUrls.studentDetailApi);
+  //
+  //     final response = await http.post(
+  //       url,
+  //       body: {
+  //         "action": "get",
+  //         "rollno": rollno
+  //       },
+  //     );
+  //
+  //     if (response.statusCode == 200) {
+  //       final jsonData = jsonDecode(response.body);
+  //
+  //       if (jsonData['error'] == "false") {
+  //         List dataList = jsonData['student'] ?? [];
+  //
+  //         // ✅ CHECK FOR THE "NA" RECORD FROM YOUR PHP
+  //         // If the first record has id == 'NA', it means no student was found.
+  //         if (dataList.isNotEmpty && dataList[0]['id'] == 'NA') {
+  //           return []; // Return empty list to signify no real student found
+  //         }
+  //
+  //         return dataList
+  //             .map((e) => StudentModel.fromJson(e))
+  //             .toList();
+  //       } else {
+  //         throw Exception(jsonData['message'] ?? "API Error");
+  //       }
+  //     } else {
+  //       throw Exception("Server Error: ${response.statusCode}");
+  //     }
+  //   } catch (e) {
+  //     // Re-throw the error so the UI catch block handles it
+  //     throw Exception(e.toString());
+  //   }
+  // }
 
 }

@@ -19,6 +19,8 @@ class AppUrls {
   static String fcmTokenApi = '${AppUrls.baseUrl}/setFCMToken.php';
   static String getGradeApi = '${AppUrls.baseUrl}/getGrade.php';
   static String getBooksApi = '${AppUrls.baseUrl}/getBook.php';
+  static String studentDetailApi = '${AppUrls.baseUrl}/studentDetail.php';
+  static String getAppVersionApi = '${AppUrls.baseUrl}/getAppVersion.php';
   static String testGetBooksApi = '${AppUrls.baseUrl}/test_getBook.php';
   static String insertFormApi = 'https://library.17000ft.org/library_activity_log/insert.php';
 }

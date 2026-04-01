@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:lib17000ft/models/student_registration/student_model.dart';
 
+import 'custom_button.dart';
+
 /// Shows a modal bottom sheet with details for the given [student].
 void showStudentDetailsBottomSheet(BuildContext context, StudentModel student) {
   showModalBottomSheet(
@@ -91,6 +93,18 @@ void showStudentDetailsBottomSheet(BuildContext context, StudentModel student) {
                         Text(
                           'APAAR ID: ${student.apaarId ?? 'N/A'}',
                           style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                        const SizedBox(height: 8),
+                        CustomButton(
+                          onPressedButton: (){
+                            Navigator.pushNamed(
+                              context,
+                              '/student_edit',
+                              arguments: student,
+                            );
+                          },
+                          title: 'Edit',
+                          icon: Icons.edit,
                         ),
                       ],
                     ),

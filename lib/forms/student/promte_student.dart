@@ -954,17 +954,115 @@ class _PromoteStudentListState extends State<PromoteStudentList> {
                   if (lastPromoted != null) {
                     // If student was promoted before, show the info dialog
                     if (context.mounted) {
+                      // showDialog(
+                      //   context: context,
+                      //   builder: (context) => AlertDialog(
+                      //     title: const Text('Already Promoted'),
+                      //     content: Text('This student was previously promoted on:\n$lastPromoted'),
+                      //     actions: [
+                      //       TextButton(
+                      //         onPressed: () => Navigator.pop(context),
+                      //         child: const Text('OK'),
+                      //       ),
+                      //     ],
+                      //   ),
+                      // );
                       showDialog(
                         context: context,
-                        builder: (context) => AlertDialog(
-                          title: const Text('Already Promoted'),
-                          content: Text('This student was previously promoted on:\n$lastPromoted'),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(context),
-                              child: const Text('OK'),
+                        builder: (context) => Dialog(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          elevation: 0,
+                          backgroundColor: Theme.of(context).colorScheme.surface,
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(24, 28, 24, 20),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  width: 52,
+                                  height: 52,
+                                  decoration: const BoxDecoration(
+                                    color: AppColors.errorContainer,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.warning_amber_rounded,
+                                    color: AppColors.onErrorContainer,
+                                    size: 26,
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  'Already Promoted',
+                                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  'This student was previously promoted on',
+                                  textAlign: TextAlign.center,
+                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                    height: 1.5,
+                                  ),
+                                ),
+                                const SizedBox(height: 14),
+                                Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                                  decoration: BoxDecoration(
+                                    color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(
+                                      color: Theme.of(context).colorScheme.outlineVariant,
+                                      width: 0.5,
+                                    ),
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      Text(
+                                        'DATE',
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          letterSpacing: 0.8,
+                                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        lastPromoted,
+                                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: FilledButton(
+                                    onPressed: () => Navigator.pop(context),
+                                    style: FilledButton.styleFrom(
+                                      backgroundColor: AppColors.primary,
+                                      padding: const EdgeInsets.symmetric(vertical: 13),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                    child: const Text(
+                                      'Got it',
+                                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
+                          ),
                         ),
                       );
                     }

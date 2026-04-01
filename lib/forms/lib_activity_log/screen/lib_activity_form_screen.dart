@@ -1,12 +1,15 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'package:lib17000ft/forms/lib_activity_log/submit.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../components/custom_appbar.dart';
+import '../../../components/custom_labeltext.dart';
 import '../../../components/custom_textField.dart';
 import '../../../configs/app_urls.dart';
 import '../../../configs/color/color.dart';
@@ -19,6 +22,7 @@ import '../conducted_by.dart';
 import '../description.dart';
 import '../grade_selection.dart';
 import '../total_participants.dart';
+import '../upload_activity_img.dart';
 
 class LibActivityFormScreen extends StatelessWidget {
   const LibActivityFormScreen({super.key});
@@ -91,7 +95,7 @@ class _LibActivityFormState extends State<LibActivityForm> {
   String? _userId;
   String? _school;
   DateTime? _selectedDate;
-  //String _date = '';
+  List<File> selectedImages = [];
   String _activityName = '';
   String _description = '';
   List<Book> _books = [];
@@ -196,128 +200,372 @@ class _LibActivityFormState extends State<LibActivityForm> {
     }
   }
 
+  // Future<void> _submitForm() async {
+  //   print("Submit button pressed. Validating form...");
+  //
+  //   if (!_formKey.currentState!.validate()) {
+  //     print("Form validation failed.");
+  //     return;
+  //   }
+  //
+  //   if (_selectedDate == null) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(
+  //         content: Text('Please select a date.'),
+  //         backgroundColor: AppColors.error,
+  //       ),
+  //     );
+  //     return;
+  //   }
+  //
+  //   if (_books.isEmpty) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(
+  //         content: Text('Please add at least one book detail.'),
+  //         backgroundColor: AppColors.error,
+  //       ),
+  //     );
+  //     return;
+  //   }
+  //
+  //   if (_participatingGrades.isEmpty) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(
+  //         content: Text('Please select at least one participating grade.'),
+  //         backgroundColor: AppColors.error,
+  //       ),
+  //     );
+  //     return;
+  //   }
+  //
+  //   if (selectedImages.isEmpty) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(
+  //         content: Text('Please select at least one image.'),
+  //         backgroundColor: AppColors.error,
+  //       ),
+  //     );
+  //     return;
+  //   }
+  //
+  //   print("Total images uploading: ${selectedImages.length}");
+  //
+  //   widget.setSubmitting(true);
+  //
+  //   final List<Map<String, dynamic>> bookDetailsJson = _books.map((book) {
+  //     return {
+  //       'book_code': book.isbn,
+  //       'book_title': book.title,
+  //       'genre': book.genre,
+  //       'language': book.language,
+  //     };
+  //   }).toList();
+  //
+  //   try {
+  //     var uri = Uri.parse(AppUrls.insertFormApi);
+  //
+  //     var request = http.MultipartRequest("POST", uri);
+  //
+  //     request.fields['created_by'] = _userId!;
+  //     request.fields['school'] = _school!;
+  //     request.fields['date'] =
+  //         DateFormat('yyyy-MM-dd').format(_selectedDate!);
+  //     request.fields['activity_name'] = _activityName;
+  //     request.fields['activity_description'] = _description;
+  //     request.fields['participants_number'] = _totalParticipants;
+  //     request.fields['conducted_by'] = _conductedBy;
+  //     request.fields['participants_grades'] =
+  //     "[${_participatingGrades.join(',')}]";
+  //     request.fields['book_details'] = jsonEncode(bookDetailsJson);
+  //
+  //     /// IMAGE UPLOAD
+  //     if (selectedImages.isNotEmpty) {
+  //       for (var image in selectedImages) {
+  //         request.files.add(
+  //           await http.MultipartFile.fromPath(
+  //             'photo[]',
+  //             image.path,
+  //           ),
+  //         );
+  //       }
+  //     }
+  //
+  //     print("Submitting with fields: ${request.fields}");
+  //
+  //     var response = await request.send();
+  //
+  //     var responseData = await response.stream.bytesToString();
+  //
+  //     print("API Response Status: ${response.statusCode}");
+  //     print("API Response Body: $responseData");
+  //
+  //     if (response.statusCode == 200 && mounted) {
+  //       final decoded = json.decode(responseData);
+  //
+  //       if (decoded['error'] == false) {
+  //         ScaffoldMessenger.of(context)
+  //           ..hideCurrentSnackBar()
+  //           ..showSnackBar(
+  //             const SnackBar(
+  //               content: Text('Activity Logged Successfully!'),
+  //               backgroundColor: AppColors.primary,
+  //             ),
+  //           );
+  //
+  //         _formKey.currentState?.reset();
+  //
+  //         setState(() {
+  //           _selectedDate = null;
+  //           _activityName = '';
+  //           _description = '';
+  //           _books = [];
+  //           _participatingGrades = [];
+  //           _totalParticipants = '';
+  //           _conductedBy = '';
+  //           selectedImages = [];
+  //         });
+  //
+  //         Navigator.pushNamed(context, '/dashboard');
+  //       } else {
+  //         throw Exception(decoded['message'] ?? 'API returned an error.');
+  //       }
+  //     } else {
+  //       throw Exception('Server returned error: ${response.statusCode}');
+  //     }
+  //   } catch (e) {
+  //     if (mounted) {
+  //       ScaffoldMessenger.of(context)
+  //         ..hideCurrentSnackBar()
+  //         ..showSnackBar(
+  //           SnackBar(
+  //             content: Text('Submission Failed: ${e.toString()}'),
+  //             backgroundColor: AppColors.error,
+  //           ),
+  //         );
+  //     }
+  //   } finally {
+  //     widget.setSubmitting(false);
+  //   }
+  // }
+  // Future<void> _submitForm() async {
+  //   // 1. Basic Form Validation (Textfields)
+  //   if (!_formKey.currentState!.validate()) {
+  //     return;
+  //   }
+  //
+  //   // 2. Custom Validations with SnackBars
+  //   String? errorMessage;
+  //
+  //   if (_selectedDate == null) {
+  //     errorMessage = 'Please select a date.';
+  //   } else if (_activityName.trim().isEmpty) {
+  //     errorMessage = 'Please enter an activity name.';
+  //   } else if (_description.trim().length < 25) {
+  //     errorMessage = 'Description must be at least 25 characters.';
+  //   } else if (selectedImages.isEmpty) {
+  //     errorMessage = 'Please upload at least one image.';
+  //   } else if (_books.isEmpty) {
+  //     errorMessage = 'Please scan at least one book.';
+  //   } else if (_participatingGrades.isEmpty) {
+  //     errorMessage = 'Please select participating grades.';
+  //   } else if (_totalParticipants.trim().isEmpty) {
+  //     errorMessage = 'Please enter total participants.';
+  //   } else if (_conductedBy.trim().isEmpty) {
+  //     errorMessage = 'Please enter who conducted the activity.';
+  //   }
+  //
+  //   if (errorMessage != null) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(
+  //         content: Text(errorMessage),
+  //         backgroundColor: AppColors.error,
+  //         behavior: SnackBarBehavior.floating,
+  //       ),
+  //     );
+  //     return;
+  //   }
+  //   // if (errorMessage != null) {
+  //   //   Fluttertoast.showToast(
+  //   //     msg: errorMessage,
+  //   //     toastLength: Toast.LENGTH_SHORT,
+  //   //     gravity: ToastGravity.BOTTOM,
+  //   //     backgroundColor: AppColors.error,
+  //   //     textColor: Colors.white,
+  //   //     fontSize: 14.0,
+  //   //   );
+  //   //   return;
+  //   // }
+  //
+  //   // 3. Proceed with Submission
+  //   widget.setSubmitting(true);
+  //
+  //   try {
+  //     var uri = Uri.parse(AppUrls.insertFormApi);
+  //     var request = http.MultipartRequest("POST", uri);
+  //
+  //     // Prepare book details
+  //     final List<Map<String, dynamic>> bookDetailsJson = _books.map((book) => {
+  //       'book_code': book.isbn,
+  //       'book_title': book.title,
+  //       'genre': book.genre,
+  //       'language': book.language,
+  //     }).toList();
+  //
+  //     request.fields.addAll({
+  //       'created_by': _userId ?? '',
+  //       'school': _school ?? '',
+  //       'date': DateFormat('yyyy-MM-dd').format(_selectedDate!),
+  //       'activity_name': _activityName,
+  //       'activity_description': _description,
+  //       'participants_number': _totalParticipants,
+  //       'conducted_by': _conductedBy,
+  //       'participants_grades': "[${_participatingGrades.join(',')}]",
+  //       'book_details': jsonEncode(bookDetailsJson),
+  //     });
+  //
+  //     for (var image in selectedImages) {
+  //       request.files.add(await http.MultipartFile.fromPath('photo[]', image.path));
+  //     }
+  //
+  //     var response = await request.send();
+  //     var responseData = await response.stream.bytesToString();
+  //
+  //     if (response.statusCode == 200 && mounted) {
+  //       final decoded = json.decode(responseData);
+  //       if (decoded['error'] == false) {
+  //
+  //         // --- KEY FIX FOR SNACKBAR VISIBILITY ---
+  //         // Use the root ScaffoldMessenger so it persists across navigation
+  //         ScaffoldMessenger.of(context).showSnackBar(
+  //           const SnackBar(
+  //             content: Text('Activity Logged Successfully!'),
+  //             backgroundColor: AppColors.primary,
+  //             duration: Duration(seconds: 2),
+  //           ),
+  //         );
+  //
+  //         // Delay navigation slightly so they see the success message
+  //         await Future.delayed(const Duration(milliseconds: 500));
+  //
+  //         if (mounted) {
+  //           Navigator.pushNamedAndRemoveUntil(context, '/dashboard', (route) => false);
+  //         }
+  //       } else {
+  //         throw Exception(decoded['message'] ?? 'API Error');
+  //       }
+  //     } else {
+  //       throw Exception('Server Error: ${response.statusCode}');
+  //     }
+  //   } catch (e) {
+  //     if (mounted) {
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         SnackBar(
+  //           content: Text('Submission Failed: $e'),
+  //           backgroundColor: AppColors.error,
+  //         ),
+  //       );
+  //     }
+  //   } finally {
+  //     widget.setSubmitting(false);
+  //   }
+  // }
   Future<void> _submitForm() async {
-    print("Submit button pressed. Validating form...");
+    // 1. Run standard form validation (for red error text under fields)
+    bool isFormValid = _formKey.currentState!.validate();
 
-    if (!_formKey.currentState!.validate()) {
-      print("Form validation failed.");
-      return;
-    }
-    print("Form validation successful.");
+    // 2. Custom Validation Logic with Toasts
+    String? errorMessage;
 
     if (_selectedDate == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please select a date.'),
-          backgroundColor: AppColors.error,
-        ),
+      errorMessage = 'Please select a date.';
+    } else if (_activityName.trim().isEmpty) {
+      errorMessage = 'Activity Name cannot be empty.';
+    } else if (_description.trim().isEmpty) {
+      errorMessage = 'Description cannot be empty.';
+    } else if (_description.trim().length < 25) {
+      errorMessage = 'Description must be at least 25 characters.';
+    } else if (selectedImages.isEmpty) {
+      errorMessage = 'Please upload at least one image.';
+    } else if (_books.isEmpty) {
+      errorMessage = 'Please scan at least one book.';
+    } else if (_participatingGrades.isEmpty) {
+      errorMessage = 'Please select participating grades.';
+    } else if (_totalParticipants.trim().isEmpty) {
+      errorMessage = 'Total participants field is empty.';
+    } else if (_conductedBy.trim().isEmpty) {
+      errorMessage = 'Conducted by field is empty.';
+    }
+
+    // If form is invalid or custom validation fails, show Toast and stop
+    if (!isFormValid || errorMessage != null) {
+      Fluttertoast.showToast(
+        msg: errorMessage ?? "Please fix errors in the form",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: AppColors.error,
+        textColor: Colors.white,
       );
       return;
     }
 
-    if (_books.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please add at least one book detail.'),
-          backgroundColor: AppColors.error,
-        ),
-      );
-      return;
-    }
-
-    if (_participatingGrades.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please select at least one participating grade.'),
-          backgroundColor: AppColors.error,
-        ),
-      );
-      return;
-    }
-
-
+    // 3. Proceed with API Submission
     widget.setSubmitting(true);
 
-    final List<Map<String, dynamic>> bookDetailsJson = _books.map((book) {
-      return {
+    try {
+      final List<Map<String, dynamic>> bookDetailsJson = _books.map((book) => {
         'book_code': book.isbn,
         'book_title': book.title,
         'genre': book.genre,
         'language': book.language,
-      };
-    }).toList();
+      }).toList();
 
-    final body = {
-      'created_by': _userId,
-      'school': _school,
-      'date': DateFormat('yyyy-MM-dd').format(_selectedDate!), // ✅ formatted string
-      'activity_name': _activityName,
-      'activity_description': _description,
-      'participants_number': _totalParticipants,
-      'conducted_by': _conductedBy,
-      'participants_grades':"[${_participatingGrades.join(',')}]", // list → string
-      //'book_details': _books.map((book) => book.isbn).toList().join(','), // list → string
-      'book_details': jsonEncode(bookDetailsJson),
-    };
+      var uri = Uri.parse(AppUrls.insertFormApi);
+      var request = http.MultipartRequest("POST", uri);
 
-    print("Submitting with body: $body");
+      request.fields.addAll({
+        'created_by': _userId ?? '',
+        'school': _school ?? '',
+        'date': DateFormat('yyyy-MM-dd').format(_selectedDate!),
+        'activity_name': _activityName,
+        'activity_description': _description,
+        'participants_number': _totalParticipants,
+        'conducted_by': _conductedBy,
+        'participants_grades': "[${_participatingGrades.join(',')}]",
+        'book_details': jsonEncode(bookDetailsJson),
+      });
 
-    try {
-      final response = await http.post(
-        Uri.parse(AppUrls.insertFormApi),
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: body,
-      );
+      for (var image in selectedImages) {
+        request.files.add(await http.MultipartFile.fromPath('photo[]', image.path));
+      }
 
-      print("API Response Status: ${response.statusCode}");
-      print("API Response Body: ${response.body}");
+      var response = await request.send();
+      var responseData = await response.stream.bytesToString();
 
-      if (response.statusCode == 200 && mounted) {
-        final responseData = json.decode(response.body);
-
-        if (responseData['error'] == false) {
-          ScaffoldMessenger.of(context)
-            ..hideCurrentSnackBar()
-            ..showSnackBar(
-              const SnackBar(
-                content: Text('Activity Logged Successfully!'),
-                backgroundColor: AppColors.primary,
-              ),
-            );
-
-          // ✅ Reset form & clear states
-          _formKey.currentState?.reset();
-          setState(() {
-            _selectedDate = null;
-            _activityName = '';
-            _description = '';
-            _books = [];
-            _participatingGrades = [];
-            _totalParticipants = '';
-            _conductedBy = '';
-          });
-
-          Navigator.pushNamed(
-            context,
-            '/dashboard',
+      if (response.statusCode == 200) {
+        final decoded = json.decode(responseData);
+        if (decoded['error'] == false) {
+          Fluttertoast.showToast(
+            msg: "Activity Logged Successfully!",
+            backgroundColor: AppColors.primary,
+            textColor: Colors.white,
           );
+
+          if (mounted) {
+            // Use pushNamedAndRemoveUntil to clear stack and ensure fresh state
+            Navigator.pushNamedAndRemoveUntil(context, '/dashboard', (route) => false);
+          }
         } else {
-          throw Exception(responseData['message'] ?? 'API returned an error.');
+          throw Exception(decoded['message'] ?? 'Submission failed');
         }
       } else {
-        throw Exception('Server returned an error: ${response.statusCode}');
+        throw Exception('Server error: ${response.statusCode}');
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context)
-          ..hideCurrentSnackBar()
-          ..showSnackBar(
-            SnackBar(
-              content: Text('Submission Failed: ${e.toString()}'),
-              backgroundColor: AppColors.error,
-            ),
-          );
-      }
+      Fluttertoast.showToast(
+        msg: "Error: ${e.toString()}",
+        backgroundColor: AppColors.error,
+        textColor: Colors.white,
+      );
     } finally {
       widget.setSubmitting(false);
     }
@@ -334,12 +582,12 @@ class _LibActivityFormState extends State<LibActivityForm> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 16),
-
-            // 📅 Inline Date Picker Field
+            LabelText(label: "Activity Description"),
+            const SizedBox(height: 10),
             CustomTextFormField(
               readOnly: true,
-              labelText: 'Activity Date',
+              //labelText: 'Activity Date',
+              hintText: 'Activity Date',
               textController: TextEditingController(
                 text: _selectedDate != null
                     ? DateFormat('yyyy-MM-dd').format(_selectedDate!)
@@ -368,17 +616,31 @@ class _LibActivityFormState extends State<LibActivityForm> {
               },
             ),
 
-            const SizedBox(height: 16),
+            const SizedBox(height: 22),
             ActivityNameInput(onChanged: (value) => _activityName = value),
-            const SizedBox(height: 16),
+            const SizedBox(height: 22),
             DescriptionInput(onChanged: (value) => _description = value),
-            const SizedBox(height: 24),
+            const SizedBox(height: 22),
+            UploadActivityImg(
+              selectedImages: selectedImages,
+              // onImagesSelected: (images) {
+              //   setState(() {
+              //     selectedImages.addAll(images);
+              //   });
+              // },
+              onImagesSelected: (updatedImages) {
+                setState(() {
+                  selectedImages = updatedImages;
+                });
+              },
+            ),
+            const SizedBox(height: 22),
             BookScannerSection(onScan: _scanISBN),
             BookList(
               books: _books,
               onBookRemoved: (book) => setState(() => _books.remove(book)),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
             GradesSelection(
               isLoading: _isLoadingGrades,
               availableGrades: _availableGrades,
@@ -389,12 +651,14 @@ class _LibActivityFormState extends State<LibActivityForm> {
                 });
               },
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 22),
             TotalParticipantsInput(onChanged: (value) => _totalParticipants = value),
-            const SizedBox(height: 16),
+            const SizedBox(height: 22),
             ConductedByInput(onChanged: (value) => _conductedBy = value),
             const SizedBox(height: 32),
-            SubmitButton(onPressed: _submitForm),
+            SafeArea(
+              child:SubmitButton(onPressed: _submitForm),
+            ),
           ],
         ),
       ),

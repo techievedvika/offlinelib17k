@@ -64,48 +64,6 @@ class _AllStudentListState extends State<AllStudentList> {
     super.initState();
     _loadUserId();
   }
-  Future<bool> _requestStoragePermission() async {
-    if (Platform.isAndroid) {
-      // For Android 11 (API 30) and above
-      if (await Permission.manageExternalStorage.isGranted) return true;
-
-      final status = await Permission.manageExternalStorage.request();
-      if (status.isGranted) return true;
-
-      // Fallback for older Android versions (API < 30)
-      final legacyStatus = await Permission.storage.request();
-      if (legacyStatus.isGranted) return true;
-
-      // If permanently denied, open app settings
-      if (status.isPermanentlyDenied || legacyStatus.isPermanentlyDenied) {
-        await openAppSettings();
-
-      }
-
-      return false;
-    } else if (Platform.isIOS) {
-      // iOS doesn't require storage permission to write within app sandbox
-      // Ensure you're saving file to app directory
-      return true;
-    } else {
-      return false;
-    }
-  }
-//   Future<bool> _requestStoragePermission() async {
-//   var status = await Permission.storage.status;
-//
-//   if (!status.isGranted) {
-//     status = await Permission.storage.request();
-//   }
-//
-//   if (status.isGranted) {
-//     return true;
-//   } else if (status.isPermanentlyDenied) {
-//     openAppSettings();
-//     return false;
-//   }
-//   return false;
-// }
   @override
   void dispose() {
     _scrollController.dispose();
@@ -403,26 +361,6 @@ class _AllStudentListState extends State<AllStudentList> {
                     }
                   }
                 },
-                // onPressed: () async {
-                //   //final granted = await _requestStoragePermission();
-                //   final granted = await PermissionService.requestStoragePermission();
-                //   if (granted) {
-                //     // You'll need to implement or call your _exportToCSV method here
-                //     await _exportToCSV(state.studentList);
-                //     // ScaffoldMessenger.of(context).showSnackBar(
-                //     //   const SnackBar(content: Text('Exporting CSV...')),
-                //     // );
-                //   } else {
-                //     // The bottom sheet will be shown automatically if needed.
-                //     // This SnackBar is a fallback for other denial cases.
-                //     if (mounted) {
-                //       ScaffoldMessenger.of(context).showSnackBar(
-                //         const SnackBar(
-                //             content: Text('Storage permission is required to export data.')),
-                //       );
-                //     }
-                //   }
-                // },
                 tooltip: 'Export CSV',
                 child: const Icon(Icons.download,
                     size: 20), // optional but good for accessibility
@@ -434,67 +372,6 @@ class _AllStudentListState extends State<AllStudentList> {
       ),
     );
   }
-  // Future<void> _exportToCSV(List<StudentModel> students) async {
-  //   final List<List<String>> rows = [
-  //     [
-  //       'Name',
-  //       'Gender',
-  //       'Student ID',
-  //       'Class',
-  //       'APAAR ID',
-  //       'School'
-  //     ], // CSV headers
-  //     ...students.map((student) => [
-  //       student.name,
-  //       student.gender,
-  //       student.rollNo,
-  //       student.classs,
-  //       student.apaarId ?? 'N/A',
-  //       student.school!,
-  //     ])
-  //   ];
-  //
-  //   final csvData = const ListToCsvConverter().convert(rows);
-  //   final directory = await getExternalStorageDirectory();
-  //   final path = '${directory!.path}/students_list.csv';
-  //
-  //   final file = File(path);
-  //   await file.writeAsString(csvData);
-  //   if (await Permission.manageExternalStorage.request().isGranted ||
-  //       await Permission.storage.request().isGranted) {
-  //     Directory? downloadsDir;
-  //
-  //     if (Platform.isAndroid) {
-  //       downloadsDir =
-  //           Directory('/storage/emulated/0/Download'); // public Downloads
-  //     } else {
-  //       downloadsDir = await getApplicationDocumentsDirectory(); // iOS fallback
-  //     }
-  //     final now = DateTime.now();
-  //     final formattedDate =
-  //         "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}_${now.hour.toString().padLeft(2, '0')}-${now.minute.toString().padLeft(2, '0')}";
-  //     final file = File("${downloadsDir.path}/Student_List_$formattedDate.csv");
-  //
-  //     //final file = File("${downloadsDir.path}/students.csv");
-  //     await file.writeAsString(csvData);
-  //     print("File saved to: ${file.path}");
-  //   } else {
-  //     print("Storage permission not granted");
-  //   }
-  //
-  //   // Save using FileSaver for Android/iOS support
-  //   await FileSaver.instance.saveFile(
-  //     name: 'students_list',
-  //     bytes: file.readAsBytesSync(),
-  //     ext: 'csv',
-  //     mimeType: MimeType.csv,
-  //   );
-  //
-  //   ScaffoldMessenger.of(context).showSnackBar(
-  //     const SnackBar(content: Text('Student list exported successfully!')),
-  //   );
-  // }
-  // lib/forms/student/all_student.dart
 
   Future<void> _exportToCSV(List<StudentModel> students) async {
     try {

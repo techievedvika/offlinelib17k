@@ -176,4 +176,29 @@ Future<String> getUniqueId(String? location) async {
     }
   }
 
+  Future<dynamic> updateStudent(dynamic data) async {
+    // Note: You should add 'updateStudentApi' to your AppUrls config file
+    // If not present, you can use a string, but AppUrls.updateStudentApi is better.
+    final response = await _api.postApi(AppUrls.studentDetailApi, data);
+    print("Raw API Response: $response");
+
+    try {
+      // Assuming your API returns { "error": false, "message": "..." } on success
+      if (response['error'] == false || response['error'] == 0) {
+        return {
+          "error": 0,
+          "message": response['message'],
+        };
+      } else {
+        return {
+          "error": 1,
+          "message": response['message'] ?? "Failed to update student",
+        };
+      }
+    } catch (e) {
+      print('Error at update student repository: $e');
+      rethrow;
+    }
+  }
+
 }
