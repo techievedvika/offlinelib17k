@@ -20,6 +20,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../configs/routes/routes_name.dart';
+import '../../models/student_registration/student_model.dart';
 import '../../services/permission_storage.dart';
 
 class AllBookReturnList extends StatefulWidget {
@@ -51,6 +53,7 @@ class _AllBookReturnListState extends State<AllBookReturnList> {
   String? userRole;
   String? userSchool;
   bool isSuperAdmin = false;
+  bool _isDescending = true;
 
   @override
   void initState() {
@@ -95,6 +98,21 @@ class _AllBookReturnListState extends State<AllBookReturnList> {
       return studentName.contains(query.toLowerCase()) ||
           bookTitle.contains(query.toLowerCase());
     }).toList();
+  }
+
+  int _getGradeWeight(String grade) {
+    String g = grade.toLowerCase().trim();
+    if (g.contains('nursery')) return 1;
+    if (g.contains('lkg')) return 2;
+    if (g.contains('ukg')) return 3;
+
+    // Extract digits for numeric grades (e.g., "Grade 1" or "1st" becomes 1)
+    final numericMatch = RegExp(r'\d+').firstMatch(g);
+    if (numericMatch != null) {
+      return int.parse(numericMatch.group(0)!) + 3; // +3 to stay after UKG
+    }
+
+    return 999; // Fallback for unknown strings
   }
 
   @override
@@ -154,9 +172,27 @@ class _AllBookReturnListState extends State<AllBookReturnList> {
                 final filteredReturnedBooks =
                     _filterBookReturned(state.bookReturnedList, _searchQuery);
 
+                Map<String, List<BookReturnModel>> groupedStudents = {};
+                for (var student in filteredReturnedBooks) {
+                  String grade = student.studentnclass ?? 'Unknown';
+                  if (!groupedStudents.containsKey(grade)) {
+                    groupedStudents[grade] = [];
+                  }
+                  groupedStudents[grade]!.add(student);
+                }
+                //final sortedGrades = groupedBooks.keys.toList()..sort();
+                var sortedGrades = groupedStudents.keys.toList()
+                  ..sort((a, b) {
+                    int weightA = _getGradeWeight(a);
+                    int weightB = _getGradeWeight(b);
+                    return _isDescending
+                        ? weightA.compareTo(weightB)
+                        : weightB.compareTo(weightA);
+                  });
+
                 return Column(
                   children: [
-                    // 🔍 Search bar always visible
+                    //  Search bar always visible
                     Padding(
                       padding: EdgeInsets.symmetric(
                         horizontal: isPortrait ? 16 : 32,
@@ -166,7 +202,7 @@ class _AllBookReturnListState extends State<AllBookReturnList> {
                         Expanded(
                           child: SearchBar(
                             hintText:
-                                'Search book by book title or student name',
+                                'Search book by student ID or book title',
                             hintStyle: WidgetStateProperty.all(
                                 const TextStyle(color: Colors.grey)
                             ),
@@ -217,21 +253,49 @@ class _AllBookReturnListState extends State<AllBookReturnList> {
                       ]),
                     ),
 
-                    // 🧮 Result count or message
+                    //  Result count or message
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
                       child: Align(
                         alignment: Alignment.centerLeft,
-                        child: Text(
-                          '${filteredReturnedBooks.length} ${filteredReturnedBooks.length == 1 ? 'pending return' : 'pending returns'} found',
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: Colors.grey[600],
-                          ),
+                        child: Row(
+                          children: [
+                            Text(
+                              '${filteredReturnedBooks.length} ${filteredReturnedBooks.length == 1 ? 'pending return' : 'pending returns'} found',
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                            Spacer(),
+                            SizedBox(
+                              height: 48,
+                              width: 48,
+                              child: IconButton(
+                                onPressed: () {
+                                  setState(() {
+                                    _isDescending = !_isDescending;
+                                  });
+                                },
+                                icon: Icon(
+                                  _isDescending ? Icons.arrow_upward : Icons.arrow_downward,
+                                  size: 20,
+                                  color: AppColors.tertiary,
+                                ),
+                                tooltip:  _isDescending ? 'Sort: High to Low' : 'Sort: Low to High',
+                                style: IconButton.styleFrom(
+                                  backgroundColor: AppColors.primary.withOpacity(0.1),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
 
-                    // 📚 List or Empty State
+                    //  List or Empty State
                     Expanded(
                       child: filteredReturnedBooks.isEmpty
                           ? Center(
@@ -278,24 +342,99 @@ class _AllBookReturnListState extends State<AllBookReturnList> {
                                         : screenWidth * 0.1,
                                     vertical: 8,
                                   ),
-                                  itemCount: filteredReturnedBooks.length +
-                                      (_isLoadingMore ? 1 : 0),
+                                  itemCount: sortedGrades.length,
+
+                                  // itemCount: filteredReturnedBooks.length +
+                                  //     (_isLoadingMore ? 1 : 0),
                                   itemBuilder: (context, index) {
-                                    if (index >= filteredReturnedBooks.length) {
-                                      return const Padding(
-                                        padding: EdgeInsets.all(16.0),
-                                        child: Center(
-                                          child: CircularProgressIndicator(),
+                                    final grade = sortedGrades[index];
+                                    final booksInGrade = groupedStudents[grade]!;
+
+                                    return Padding(
+                                      padding: const EdgeInsets.only(bottom: 12.0),
+                                      child: Theme(
+                                        data: theme.copyWith(dividerColor: Colors.transparent),
+                                        child: ExpansionTile(
+                                          maintainState: true,
+                                          tilePadding: const EdgeInsets.symmetric(horizontal: 12),
+                                          collapsedBackgroundColor: AppColors.primary.withOpacity(0.05),
+                                          backgroundColor: AppColors.primary.withOpacity(0.05),
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                          collapsedShape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                          title: Text(
+                                            '$grade (${booksInGrade.length} Pending)',
+                                            style: theme.textTheme.titleMedium?.copyWith(
+                                              fontWeight: FontWeight.bold,
+                                              color: AppColors.tertiary,
+                                            ),
+                                          ),
+                                          children: [
+                                            ListView.builder(
+                                              shrinkWrap: true,
+                                              physics: const NeverScrollableScrollPhysics(),
+                                              itemCount: booksInGrade.length,
+                                              itemBuilder: (context, bookIndex) {
+                                                final student = booksInGrade[bookIndex];
+                                                final studentJsonData = jsonEncode(student.toJson());
+                                                return _buildStudentCard(student, context, studentJsonData);
+                                              },
+                                            ),
+                                            const SizedBox(height: 8),
+                                          ],
                                         ),
-                                      );
-                                    }
+                                      ),
+                                    );
 
-                                    final student = filteredReturnedBooks[index];
-                                    final studentJsonData =
-                                    jsonEncode(student.toJson());
+                                    // if (index >= filteredReturnedBooks.length) {
+                                    //   // return const Padding(
+                                    //   //   padding: EdgeInsets.all(16.0),
+                                    //   //   child: Center(
+                                    //   //     child: CircularProgressIndicator(),
+                                    //   //   ),
+                                    //   // );
+                                    //   return Padding(
+                                    //     padding: const EdgeInsets.only(bottom: 12.0),
+                                    //     child: Theme(
+                                    //       data: theme.copyWith(dividerColor: Colors.transparent),
+                                    //       child: ExpansionTile(
+                                    //         maintainState: true,
+                                    //         tilePadding: const EdgeInsets.symmetric(horizontal: 12),
+                                    //         collapsedBackgroundColor: AppColors.primary.withOpacity(0.05),
+                                    //         backgroundColor: AppColors.primary.withOpacity(0.05),
+                                    //         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                    //         collapsedShape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                    //         title: Text(
+                                    //           'Class: $grade (${booksInGrade.length} Pending)',
+                                    //           style: theme.textTheme.titleMedium?.copyWith(
+                                    //             fontWeight: FontWeight.bold,
+                                    //             color: AppColors.primary,
+                                    //           ),
+                                    //         ),
+                                    //         children: [
+                                    //           ListView.builder(
+                                    //             shrinkWrap: true,
+                                    //             physics: const NeverScrollableScrollPhysics(),
+                                    //             itemCount: booksInGrade.length,
+                                    //             itemBuilder: (context, bookIndex) {
+                                    //               final student = booksInGrade[bookIndex];
+                                    //               final studentJsonData = jsonEncode(student.toJson());
+                                    //               return _buildStudentCard(student, context, studentJsonData);
+                                    //             },
+                                    //           ),
+                                    //           const SizedBox(height: 8),
+                                    //         ],
+                                    //       ),
+                                    //     ),
+                                    //   );
+                                    // }
 
-                                    return _buildStudentCard(
-                                        student, context, studentJsonData);
+                                    // final student = filteredReturnedBooks[index];
+                                    // print("This is student data : $student");
+                                    // final studentJsonData =
+                                    // jsonEncode(student.toJson());
+                                    //
+                                    // return _buildStudentCard(
+                                    //     student, context, studentJsonData);
                                   },
                                 ),
                               ),
@@ -595,6 +734,9 @@ class _AllBookReturnListState extends State<AllBookReturnList> {
       BookReturnModel bookReturn, BuildContext context, String studentData) {
     final theme = Theme.of(context);
     final isDarkMode = theme.brightness == Brightness.dark;
+    final isPortrait =
+        MediaQuery.of(context).orientation == Orientation.portrait;
+    final colorScheme = theme.colorScheme;
 
     return Card(
       elevation: 2,
@@ -604,7 +746,7 @@ class _AllBookReturnListState extends State<AllBookReturnList> {
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
-        onTap: () => _showBookReturnDetails(context, bookReturn),
+        //onTap: () => _showBookReturnDetails(context, bookReturn),
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: Column(
@@ -627,10 +769,12 @@ class _AllBookReturnListState extends State<AllBookReturnList> {
                         color: theme.primaryColor,
                         borderRadius: BorderRadius.circular(6),
                       ),
-                      child: const Icon(
-                        Icons.book,
-                        size: 20,
+                      child: IconButton(
+                        icon: const Icon(Icons.book,size: 20),
                         color: Colors.white,
+                        onPressed: (){
+                          _showBookReturnDetails(context, bookReturn);
+                        }
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -647,22 +791,53 @@ class _AllBookReturnListState extends State<AllBookReturnList> {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          Text(
-                            bookReturn.uniqid,
-                            style: theme.textTheme.bodySmall
-                                ?.copyWith(color: Colors.grey[600]),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
+                          // Text(
+                          //   bookReturn.uniqid.length > 4
+                          //       ? '${bookReturn.uniqid.substring(0, 4)}******'
+                          //       : bookReturn.uniqid,
+                          //   style: theme.textTheme.bodySmall
+                          //       ?.copyWith(color: Colors.grey[600]),
+                          //   maxLines: 1,
+                          //   overflow: TextOverflow.ellipsis,
+                          // ),
                         ],
                       ),
                     ),
 
                     // Visual cue for tappability
-                    Icon(
-                      Icons.chevron_right,
-                      color: theme.primaryColor,
-                      size: 24,
+                    OutlinedButton(
+                      onPressed: () => Navigator.pushNamed(
+                        context,
+                        RoutesName.bookReturn,
+                        arguments: {
+                          'student': studentData,
+                        },
+                      ),
+                      // onPressed: () => Navigator.push(
+                      //   context,
+                      //   MaterialPageRoute(
+                      //     builder: (context) => StudentIdCard(
+                      //       studentData: studentData,
+                      //     ),
+                      //   ),
+                      // ),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: colorScheme.primary,
+                        side: BorderSide(color: colorScheme.primary),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: isPortrait ? 12 : 16,
+                          vertical: 8,
+                        ),
+                      ),
+                      child: Text(
+                        'Return Book',
+                        style: theme.textTheme.labelMedium?.copyWith(
+                          color: colorScheme.primary,
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -750,18 +925,18 @@ class _AllBookReturnListState extends State<AllBookReturnList> {
                         maxLines: 1,
                       ),
                       const SizedBox(height: 2),
-                      Text(
-                        'STUDENT ID:${bookReturn.uniqid}',
-                        style: Theme.of(context).textTheme.bodyMedium,
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                      ),
-                      Text(
-                        'APAAR ID:${bookReturn.apparId}',
-                        style: Theme.of(context).textTheme.bodyMedium,
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                      ),
+                      // Text(
+                      //   'STUDENT ID:${bookReturn.uniqid}',
+                      //   style: Theme.of(context).textTheme.bodyMedium,
+                      //   overflow: TextOverflow.ellipsis,
+                      //   maxLines: 1,
+                      // ),
+                      // Text(
+                      //   'APAAR ID:${bookReturn.apparId}',
+                      //   style: Theme.of(context).textTheme.bodyMedium,
+                      //   overflow: TextOverflow.ellipsis,
+                      //   maxLines: 1,
+                      // ),
                     ],
                   ),
                 ),

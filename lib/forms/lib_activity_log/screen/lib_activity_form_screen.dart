@@ -7,10 +7,14 @@ import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'package:lib17000ft/forms/lib_activity_log/submit.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../components/custom_appbar.dart';
+import '../../../components/custom_button.dart';
 import '../../../components/custom_labeltext.dart';
 import '../../../components/custom_textField.dart';
+import '../../../components/info_dialog.dart';
 import '../../../configs/app_urls.dart';
 import '../../../configs/color/color.dart';
 import '../../../configs/helper/responsive_helper.dart';
@@ -23,6 +27,7 @@ import '../description.dart';
 import '../grade_selection.dart';
 import '../total_participants.dart';
 import '../upload_activity_img.dart';
+import '../widget/ocr_reader_button.dart';
 
 class LibActivityFormScreen extends StatelessWidget {
   const LibActivityFormScreen({super.key});
@@ -101,9 +106,12 @@ class _LibActivityFormState extends State<LibActivityForm> {
   List<Book> _books = [];
   List<String> _participatingGrades = [];
   String _totalParticipants = '';
+  List<GradeParticipant> _gradeParticipants = [];
   String _conductedBy = '';
   List<String> _availableGrades = [];
   bool _isLoadingGrades = true;
+
+  final TextEditingController _isbnController = TextEditingController();
 
   @override
   void initState() {
@@ -131,13 +139,16 @@ class _LibActivityFormState extends State<LibActivityForm> {
       setState(() => _isLoadingGrades = true);
     }
     try {
-      final response = await http.get(Uri.parse(AppUrls.getGradeApi));
+      final response = await http.post(Uri.parse(AppUrls.getGradeApi));
+      print("Grade API Response: ${response.body}");
       if (response.statusCode == 200 && mounted) {
         final data = json.decode(response.body);
         if (data is Map<String, dynamic> && data['error'] == false) {
           List<dynamic> messageList = data['message'];
           setState(() {
-            _availableGrades = messageList.map((item) => item['grade'].toString()).toList();
+            _availableGrades = messageList.map((item) => item.toString()).toList();
+
+            _gradeParticipants = _availableGrades.map((g) => GradeParticipant(grade: g)).toList();
           });
         } else {
           throw Exception('Failed to load grades: Invalid data format');
@@ -147,6 +158,7 @@ class _LibActivityFormState extends State<LibActivityForm> {
       }
     } catch (e) {
       if (mounted) {
+        print("Error fetching grades: $e");
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Error fetching grades: $e"), backgroundColor: AppColors.error),
         );
@@ -185,7 +197,8 @@ class _LibActivityFormState extends State<LibActivityForm> {
   }
 
   Future<Book?> _fetchBookDetails(String isbn) async {
-    final url = Uri.parse(AppUrls.getBooksApi);
+    // final url = Uri.parse(AppUrls.getBooksApi);
+    final url = Uri.parse(AppUrls.getBookApi);
     try {
       final response = await http.post(url, body: {"isbn": isbn});
       if (response.statusCode == 200) {
@@ -201,165 +214,24 @@ class _LibActivityFormState extends State<LibActivityForm> {
   }
 
   // Future<void> _submitForm() async {
-  //   print("Submit button pressed. Validating form...");
+  //   // 1. Run standard form validation (for red error text under fields)
+  //   bool isFormValid = _formKey.currentState!.validate();
   //
-  //   if (!_formKey.currentState!.validate()) {
-  //     print("Form validation failed.");
-  //     return;
-  //   }
+  //   final selectedData = _gradeParticipants
+  //       .where((p) => _participatingGrades.contains(p.grade))
+  //       .toList();
   //
-  //   if (_selectedDate == null) {
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       const SnackBar(
-  //         content: Text('Please select a date.'),
-  //         backgroundColor: AppColors.error,
-  //       ),
-  //     );
-  //     return;
-  //   }
+  //   int totalCount = selectedData.fold(0, (sum, p) => sum + p.total);
   //
-  //   if (_books.isEmpty) {
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       const SnackBar(
-  //         content: Text('Please add at least one book detail.'),
-  //         backgroundColor: AppColors.error,
-  //       ),
-  //     );
-  //     return;
-  //   }
-  //
-  //   if (_participatingGrades.isEmpty) {
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       const SnackBar(
-  //         content: Text('Please select at least one participating grade.'),
-  //         backgroundColor: AppColors.error,
-  //       ),
-  //     );
-  //     return;
-  //   }
-  //
-  //   if (selectedImages.isEmpty) {
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       const SnackBar(
-  //         content: Text('Please select at least one image.'),
-  //         backgroundColor: AppColors.error,
-  //       ),
-  //     );
-  //     return;
-  //   }
-  //
-  //   print("Total images uploading: ${selectedImages.length}");
-  //
-  //   widget.setSubmitting(true);
-  //
-  //   final List<Map<String, dynamic>> bookDetailsJson = _books.map((book) {
-  //     return {
-  //       'book_code': book.isbn,
-  //       'book_title': book.title,
-  //       'genre': book.genre,
-  //       'language': book.language,
-  //     };
-  //   }).toList();
-  //
-  //   try {
-  //     var uri = Uri.parse(AppUrls.insertFormApi);
-  //
-  //     var request = http.MultipartRequest("POST", uri);
-  //
-  //     request.fields['created_by'] = _userId!;
-  //     request.fields['school'] = _school!;
-  //     request.fields['date'] =
-  //         DateFormat('yyyy-MM-dd').format(_selectedDate!);
-  //     request.fields['activity_name'] = _activityName;
-  //     request.fields['activity_description'] = _description;
-  //     request.fields['participants_number'] = _totalParticipants;
-  //     request.fields['conducted_by'] = _conductedBy;
-  //     request.fields['participants_grades'] =
-  //     "[${_participatingGrades.join(',')}]";
-  //     request.fields['book_details'] = jsonEncode(bookDetailsJson);
-  //
-  //     /// IMAGE UPLOAD
-  //     if (selectedImages.isNotEmpty) {
-  //       for (var image in selectedImages) {
-  //         request.files.add(
-  //           await http.MultipartFile.fromPath(
-  //             'photo[]',
-  //             image.path,
-  //           ),
-  //         );
-  //       }
-  //     }
-  //
-  //     print("Submitting with fields: ${request.fields}");
-  //
-  //     var response = await request.send();
-  //
-  //     var responseData = await response.stream.bytesToString();
-  //
-  //     print("API Response Status: ${response.statusCode}");
-  //     print("API Response Body: $responseData");
-  //
-  //     if (response.statusCode == 200 && mounted) {
-  //       final decoded = json.decode(responseData);
-  //
-  //       if (decoded['error'] == false) {
-  //         ScaffoldMessenger.of(context)
-  //           ..hideCurrentSnackBar()
-  //           ..showSnackBar(
-  //             const SnackBar(
-  //               content: Text('Activity Logged Successfully!'),
-  //               backgroundColor: AppColors.primary,
-  //             ),
-  //           );
-  //
-  //         _formKey.currentState?.reset();
-  //
-  //         setState(() {
-  //           _selectedDate = null;
-  //           _activityName = '';
-  //           _description = '';
-  //           _books = [];
-  //           _participatingGrades = [];
-  //           _totalParticipants = '';
-  //           _conductedBy = '';
-  //           selectedImages = [];
-  //         });
-  //
-  //         Navigator.pushNamed(context, '/dashboard');
-  //       } else {
-  //         throw Exception(decoded['message'] ?? 'API returned an error.');
-  //       }
-  //     } else {
-  //       throw Exception('Server returned error: ${response.statusCode}');
-  //     }
-  //   } catch (e) {
-  //     if (mounted) {
-  //       ScaffoldMessenger.of(context)
-  //         ..hideCurrentSnackBar()
-  //         ..showSnackBar(
-  //           SnackBar(
-  //             content: Text('Submission Failed: ${e.toString()}'),
-  //             backgroundColor: AppColors.error,
-  //           ),
-  //         );
-  //     }
-  //   } finally {
-  //     widget.setSubmitting(false);
-  //   }
-  // }
-  // Future<void> _submitForm() async {
-  //   // 1. Basic Form Validation (Textfields)
-  //   if (!_formKey.currentState!.validate()) {
-  //     return;
-  //   }
-  //
-  //   // 2. Custom Validations with SnackBars
+  //   // 2. Custom Validation Logic with Toasts
   //   String? errorMessage;
   //
   //   if (_selectedDate == null) {
   //     errorMessage = 'Please select a date.';
   //   } else if (_activityName.trim().isEmpty) {
-  //     errorMessage = 'Please enter an activity name.';
+  //     errorMessage = 'Activity Name cannot be empty.';
+  //   } else if (_description.trim().isEmpty) {
+  //     errorMessage = 'Description cannot be empty.';
   //   } else if (_description.trim().length < 25) {
   //     errorMessage = 'Description must be at least 25 characters.';
   //   } else if (selectedImages.isEmpty) {
@@ -368,42 +240,32 @@ class _LibActivityFormState extends State<LibActivityForm> {
   //     errorMessage = 'Please scan at least one book.';
   //   } else if (_participatingGrades.isEmpty) {
   //     errorMessage = 'Please select participating grades.';
-  //   } else if (_totalParticipants.trim().isEmpty) {
-  //     errorMessage = 'Please enter total participants.';
-  //   } else if (_conductedBy.trim().isEmpty) {
-  //     errorMessage = 'Please enter who conducted the activity.';
+  //   }
+  //   // else if (_totalParticipants.trim().isEmpty) {
+  //   //   errorMessage = 'Total participants field is empty.';
+  //   // }
+  //   else if (_conductedBy.trim().isEmpty) {
+  //     errorMessage = 'Conducted by field is empty.';
+  //   } else if (totalCount <= 0) {
+  //     errorMessage = 'Total participants must be greater than 0.';
   //   }
   //
-  //   if (errorMessage != null) {
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       SnackBar(
-  //         content: Text(errorMessage),
-  //         backgroundColor: AppColors.error,
-  //         behavior: SnackBarBehavior.floating,
-  //       ),
+  //   // If form is invalid or custom validation fails, show Toast and stop
+  //   if (!isFormValid || errorMessage != null) {
+  //     Fluttertoast.showToast(
+  //       msg: errorMessage ?? "Please fix errors in the form",
+  //       toastLength: Toast.LENGTH_SHORT,
+  //       gravity: ToastGravity.BOTTOM,
+  //       backgroundColor: AppColors.error,
+  //       textColor: Colors.white,
   //     );
   //     return;
   //   }
-  //   // if (errorMessage != null) {
-  //   //   Fluttertoast.showToast(
-  //   //     msg: errorMessage,
-  //   //     toastLength: Toast.LENGTH_SHORT,
-  //   //     gravity: ToastGravity.BOTTOM,
-  //   //     backgroundColor: AppColors.error,
-  //   //     textColor: Colors.white,
-  //   //     fontSize: 14.0,
-  //   //   );
-  //   //   return;
-  //   // }
   //
-  //   // 3. Proceed with Submission
+  //   // 3. Proceed with API Submission
   //   widget.setSubmitting(true);
   //
   //   try {
-  //     var uri = Uri.parse(AppUrls.insertFormApi);
-  //     var request = http.MultipartRequest("POST", uri);
-  //
-  //     // Prepare book details
   //     final List<Map<String, dynamic>> bookDetailsJson = _books.map((book) => {
   //       'book_code': book.isbn,
   //       'book_title': book.title,
@@ -411,17 +273,27 @@ class _LibActivityFormState extends State<LibActivityForm> {
   //       'language': book.language,
   //     }).toList();
   //
+  //     var uri = Uri.parse(AppUrls.insertFormApi);
+  //     var request = http.MultipartRequest("POST", uri);
+  //
   //     request.fields.addAll({
   //       'created_by': _userId ?? '',
   //       'school': _school ?? '',
   //       'date': DateFormat('yyyy-MM-dd').format(_selectedDate!),
   //       'activity_name': _activityName,
   //       'activity_description': _description,
-  //       'participants_number': _totalParticipants,
+  //       //'participants_number': _totalParticipants,
   //       'conducted_by': _conductedBy,
   //       'participants_grades': "[${_participatingGrades.join(',')}]",
   //       'book_details': jsonEncode(bookDetailsJson),
+  //       'participants_number': jsonEncode(selectedData.map((e) => {
+  //         'grade': e.grade,
+  //         'boys': e.boys,
+  //         'girls': e.girls,
+  //         'total': e.total // Including total per grade just in case
+  //       }).toList()),
   //     });
+  //
   //
   //     for (var image in selectedImages) {
   //       request.files.add(await http.MultipartFile.fromPath('photo[]', image.path));
@@ -430,41 +302,31 @@ class _LibActivityFormState extends State<LibActivityForm> {
   //     var response = await request.send();
   //     var responseData = await response.stream.bytesToString();
   //
-  //     if (response.statusCode == 200 && mounted) {
+  //     if (response.statusCode == 200) {
   //       final decoded = json.decode(responseData);
   //       if (decoded['error'] == false) {
-  //
-  //         // --- KEY FIX FOR SNACKBAR VISIBILITY ---
-  //         // Use the root ScaffoldMessenger so it persists across navigation
-  //         ScaffoldMessenger.of(context).showSnackBar(
-  //           const SnackBar(
-  //             content: Text('Activity Logged Successfully!'),
-  //             backgroundColor: AppColors.primary,
-  //             duration: Duration(seconds: 2),
-  //           ),
+  //         Fluttertoast.showToast(
+  //           msg: "Activity Logged Successfully!",
+  //           backgroundColor: AppColors.primary,
+  //           textColor: Colors.white,
   //         );
   //
-  //         // Delay navigation slightly so they see the success message
-  //         await Future.delayed(const Duration(milliseconds: 500));
-  //
   //         if (mounted) {
+  //           // Use pushNamedAndRemoveUntil to clear stack and ensure fresh state
   //           Navigator.pushNamedAndRemoveUntil(context, '/dashboard', (route) => false);
   //         }
   //       } else {
-  //         throw Exception(decoded['message'] ?? 'API Error');
+  //         throw Exception(decoded['message'] ?? 'Submission failed');
   //       }
   //     } else {
-  //       throw Exception('Server Error: ${response.statusCode}');
+  //       throw Exception('Server error: ${response.statusCode}');
   //     }
   //   } catch (e) {
-  //     if (mounted) {
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         SnackBar(
-  //           content: Text('Submission Failed: $e'),
-  //           backgroundColor: AppColors.error,
-  //         ),
-  //       );
-  //     }
+  //     Fluttertoast.showToast(
+  //       msg: "Error: ${e.toString()}",
+  //       backgroundColor: AppColors.error,
+  //       textColor: Colors.white,
+  //     );
   //   } finally {
   //     widget.setSubmitting(false);
   //   }
@@ -472,6 +334,12 @@ class _LibActivityFormState extends State<LibActivityForm> {
   Future<void> _submitForm() async {
     // 1. Run standard form validation (for red error text under fields)
     bool isFormValid = _formKey.currentState!.validate();
+
+    final selectedData = _gradeParticipants
+        .where((p) => _participatingGrades.contains(p.grade))
+        .toList();
+
+    int totalCount = selectedData.fold(0, (sum, p) => sum + p.total);
 
     // 2. Custom Validation Logic with Toasts
     String? errorMessage;
@@ -490,10 +358,10 @@ class _LibActivityFormState extends State<LibActivityForm> {
       errorMessage = 'Please scan at least one book.';
     } else if (_participatingGrades.isEmpty) {
       errorMessage = 'Please select participating grades.';
-    } else if (_totalParticipants.trim().isEmpty) {
-      errorMessage = 'Total participants field is empty.';
     } else if (_conductedBy.trim().isEmpty) {
       errorMessage = 'Conducted by field is empty.';
+    } else if (totalCount <= 0) {
+      errorMessage = 'Total participants must be greater than 0.';
     }
 
     // If form is invalid or custom validation fails, show Toast and stop
@@ -508,18 +376,80 @@ class _LibActivityFormState extends State<LibActivityForm> {
       return;
     }
 
-    // 3. Proceed with API Submission
+    // ================= DEBUG PRINTS =================
+
+    print("\n========== LIB ACTIVITY FORM DATA ==========");
+
+    print("User ID: $_userId");
+    print("School: $_school");
+
+    print(
+      "Selected Date: ${_selectedDate != null ? DateFormat('yyyy-MM-dd').format(_selectedDate!) : 'NULL'}",
+    );
+
+    print("Activity Name: $_activityName");
+
+    print("Description:");
+    print(_description);
+
+    print("Conducted By: $_conductedBy");
+
+    print("\n========== SELECTED GRADES ==========");
+    print(_participatingGrades);
+
+    print("\n========== GRADE PARTICIPANTS ==========");
+
+    for (var participant in selectedData) {
+      print({
+        'grade': participant.grade,
+        'boys': participant.boys,
+        'girls': participant.girls,
+        'total': participant.total,
+      });
+    }
+
+    print("Total Participants Count: $totalCount");
+
+    print("\n========== BOOK DETAILS ==========");
+
+    for (var book in _books) {
+      print({
+        'isbn': book.isbn,
+        'title': book.title,
+        'genre': book.genre,
+        'language': book.language,
+      });
+    }
+
+    print("\n========== SELECTED IMAGES ==========");
+
+    for (var image in selectedImages) {
+      print("Image Path: ${image.path}");
+    }
+
+    print("Total Images: ${selectedImages.length}");
+
+    print("============================================\n");
+
+    // ================= API SUBMISSION =================
+
     widget.setSubmitting(true);
 
     try {
-      final List<Map<String, dynamic>> bookDetailsJson = _books.map((book) => {
-        'book_code': book.isbn,
-        'book_title': book.title,
-        'genre': book.genre,
-        'language': book.language,
-      }).toList();
+      final List<Map<String, dynamic>> bookDetailsJson = _books
+          .map(
+            (book) => {
+          'book_code': book.isbn,
+          'book_title': book.title,
+          'genre': book.genre,
+          'language': book.language,
+        },
+      )
+          .toList();
 
-      var uri = Uri.parse(AppUrls.insertFormApi);
+      // var uri = Uri.parse(AppUrls.insertFormApi);
+      var uri = Uri.parse(AppUrls.insertLibFormApi);
+
       var request = http.MultipartRequest("POST", uri);
 
       request.fields.addAll({
@@ -528,21 +458,66 @@ class _LibActivityFormState extends State<LibActivityForm> {
         'date': DateFormat('yyyy-MM-dd').format(_selectedDate!),
         'activity_name': _activityName,
         'activity_description': _description,
-        'participants_number': _totalParticipants,
         'conducted_by': _conductedBy,
-        'participants_grades': "[${_participatingGrades.join(',')}]",
+        'participants_grades':
+        "[${_participatingGrades.join(',')}]",
         'book_details': jsonEncode(bookDetailsJson),
+        'participants_number': jsonEncode(
+          selectedData
+              .map(
+                (e) => {
+              'grade': e.grade,
+              'boys': e.boys,
+              'girls': e.girls,
+              'total': e.total,
+            },
+          )
+              .toList(),
+        ),
       });
 
+      // Add Images
       for (var image in selectedImages) {
-        request.files.add(await http.MultipartFile.fromPath('photo[]', image.path));
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            'photo[]',
+            image.path,
+          ),
+        );
       }
 
+      // ================= REQUEST DEBUG =================
+
+      print("\n========== API REQUEST FIELDS ==========");
+      request.fields.forEach((key, value) {
+        print("$key : $value");
+      });
+
+      print("\n========== API REQUEST FILES ==========");
+
+      for (var file in request.files) {
+        print("File Name: ${file.filename}");
+      }
+
+      print("========================================\n");
+
+      // ================= SEND REQUEST =================
+
       var response = await request.send();
+
       var responseData = await response.stream.bytesToString();
+
+      // ================= RESPONSE DEBUG =================
+
+      print("\n========== API RESPONSE ==========");
+      print("Status Code: ${response.statusCode}");
+      print("Response Body:");
+      print(responseData);
+      print("==================================\n");
 
       if (response.statusCode == 200) {
         final decoded = json.decode(responseData);
+
         if (decoded['error'] == false) {
           Fluttertoast.showToast(
             msg: "Activity Logged Successfully!",
@@ -551,16 +526,27 @@ class _LibActivityFormState extends State<LibActivityForm> {
           );
 
           if (mounted) {
-            // Use pushNamedAndRemoveUntil to clear stack and ensure fresh state
-            Navigator.pushNamedAndRemoveUntil(context, '/dashboard', (route) => false);
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              '/dashboard',
+                  (route) => false,
+            );
           }
         } else {
-          throw Exception(decoded['message'] ?? 'Submission failed');
+          throw Exception(
+            decoded['message'] ?? 'Submission failed',
+          );
         }
       } else {
-        throw Exception('Server error: ${response.statusCode}');
+        throw Exception(
+          'Server error: ${response.statusCode}',
+        );
       }
     } catch (e) {
+      print("\n========== SUBMIT ERROR ==========");
+      print(e.toString());
+      print("==================================\n");
+
       Fluttertoast.showToast(
         msg: "Error: ${e.toString()}",
         backgroundColor: AppColors.error,
@@ -582,7 +568,7 @@ class _LibActivityFormState extends State<LibActivityForm> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            LabelText(label: "Activity Description"),
+            LabelText(label: "Activity Date"),
             const SizedBox(height: 10),
             CustomTextFormField(
               readOnly: true,
@@ -618,24 +604,90 @@ class _LibActivityFormState extends State<LibActivityForm> {
 
             const SizedBox(height: 22),
             ActivityNameInput(onChanged: (value) => _activityName = value),
+
             const SizedBox(height: 22),
-            DescriptionInput(onChanged: (value) => _description = value),
-            const SizedBox(height: 22),
-            UploadActivityImg(
-              selectedImages: selectedImages,
-              // onImagesSelected: (images) {
-              //   setState(() {
-              //     selectedImages.addAll(images);
-              //   });
-              // },
-              onImagesSelected: (updatedImages) {
-                setState(() {
-                  selectedImages = updatedImages;
-                });
-              },
+            Row(
+              children: [
+                BookScannerSection(onScan: _scanISBN),
+                IconButton(
+                  icon: const Icon(Icons.info_outline, color: AppColors.tertiary),
+                  onPressed: (){
+                    ImageDialog.show(
+                      context,
+                      imagePath: 'assets/barcode.png',
+                    );
+                  },
+                ),
+              ],
             ),
-            const SizedBox(height: 22),
-            BookScannerSection(onScan: _scanISBN),
+            SizedBox(height: 22,child:  LabelText(label: 'OR')),
+
+            Row(
+              children: [
+                OcrReaderButton(  onLoading: (isLoading) => widget.setSubmitting(isLoading),
+                  onIsbnDetected: (isbn) async {
+                    // Re-use your existing fetch logic
+                    final bookDetails = await _fetchBookDetails(isbn);
+                    if (mounted) {
+                      if (bookDetails != null) {
+                        setState(() {
+                          // Prevent duplicates
+                          if (!_books.any((b) => b.isbn == bookDetails.isbn)) {
+                            _books.add(bookDetails);
+                          }
+                        });
+                        Fluttertoast.showToast(msg: "Book added: ${bookDetails.title}");
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Book not found in database.'), backgroundColor: AppColors.error),
+                        );
+                      }
+                    }
+                  },
+                ),
+                IconButton(
+                  icon: const Icon(Icons.info_outline, color: AppColors.tertiary),
+                  onPressed: (){
+                    ImageDialog.show(
+                      context,
+                      imagePath: 'assets/digit.png',
+                    );
+                  },
+                ),
+              ],
+            ),
+            //SizedBox(height: 22,child:  LabelText(label: 'OR')),
+            LabelText(label: "ISBN "),
+            const SizedBox(height: 8),
+            CustomTextFormField(
+              textController: _isbnController,
+              hintText: "Fill ISBN Manually",
+               validator: (value) => null,
+              suffixIcon: IconButton(
+                onPressed: () async{
+                  print("Book ISBN : ${_isbnController.text}");
+                  final bookDetails = await _fetchBookDetails(_isbnController.text);
+                  if (mounted) {
+                    if (bookDetails != null) {
+                      setState(() {
+                        // Prevent duplicates
+                        if (!_books.any((b) => b.isbn == bookDetails.isbn)) {
+                          _books.add(bookDetails);
+                        }
+                        _isbnController.clear();
+                      });
+                      Fluttertoast.showToast(msg: "Book added: ${bookDetails.title}");
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Book not found in database.'), backgroundColor: AppColors.error),
+                      );
+                    }
+                  }
+                }  ,
+                icon: const Icon(Icons.search, color: AppColors.primary),
+              ),
+            ),
+            const SizedBox(height: 10),
             BookList(
               books: _books,
               onBookRemoved: (book) => setState(() => _books.remove(book)),
@@ -652,12 +704,36 @@ class _LibActivityFormState extends State<LibActivityForm> {
               },
             ),
             const SizedBox(height: 22),
-            TotalParticipantsInput(onChanged: (value) => _totalParticipants = value),
+            // TotalParticipantsInput(onChanged: (value) => _totalParticipants = value),
+            TotalParticipantsInput(
+              // Filter the list to show only selected grades
+              participants: _gradeParticipants
+                  .where((p) => _participatingGrades.contains(p.grade))
+                  .toList(),
+              onUpdate: () => setState(() {}),
+            ),
             const SizedBox(height: 22),
             ConductedByInput(onChanged: (value) => _conductedBy = value),
+            const SizedBox(height: 22),
+            DescriptionInput(onChanged: (value) => _description = value),
+            const SizedBox(height: 22),
+            UploadActivityImg(
+              selectedImages: selectedImages,
+              // onImagesSelected: (images) {
+              //   setState(() {
+              //     selectedImages.addAll(images);
+              //   });
+              // },
+              onImagesSelected: (updatedImages) {
+                setState(() {
+                  selectedImages = updatedImages;
+                });
+              },
+            ),
             const SizedBox(height: 32),
             SafeArea(
               child:SubmitButton(onPressed: _submitForm),
+
             ),
           ],
         ),

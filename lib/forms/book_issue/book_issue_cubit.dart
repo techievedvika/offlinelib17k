@@ -21,12 +21,12 @@ class BookIssueCubit extends Cubit<BookIssueState> {
 
 
   // MODIFICATION 1: Update the method signature to accept 'status'
-  void bookIssue(dynamic bookIssue, String status) async {
+  void bookIssueReturn(dynamic bookIssueReturn, String status) async {
     emit(BookIssueLoading());
     // The Future.delayed is for simulation and can be removed if not needed.
     await Future.delayed(const Duration(seconds: 1));
     try {
-      final value = await _bookIssueRepository.bookIssue(bookIssue);
+      final value = await _bookIssueRepository.bookIssueReturn(bookIssueReturn);
 
       if (value!['error'] == true || value['error'] == 1) {
         print('this is value message ${value['message']}');
@@ -67,10 +67,10 @@ class BookIssueCubit extends Cubit<BookIssueState> {
       final value = await _bookIssueRepository.getBookReturn(adminId,stateName,district,block,school,from,to,level,language, page: _page,);  // Pass page number to API
 
       if (value is Map<String, dynamic>) {
-        if (value['error'] == 1) {
+        if (value['error'] == true || value['error'] == 1) {
           print('this is failed for fetch return ${value['error']}');
           emit(BookIssueFailure(message: value['message'].toString()));
-        } else if (value['error'] == 0) {
+        } else if (value['error'] == false || value['error'] == 0) {
           print('this is success for fetch return ${value['error']}');
           List<BookReturnModel> bookReturn = (value['data'] as List)
               .map((student) => BookReturnModel.fromJson(student))
@@ -94,6 +94,51 @@ class BookIssueCubit extends Cubit<BookIssueState> {
     }
   }
 
+  // Future<void> fetchBookIssued({
+  //   required dynamic adminId,
+  //   String? stateName,
+  //   String? district,
+  //   String? block,
+  //   String? school,
+  //   String? from,
+  //   String? to,
+  //   String? level,
+  //   String? language
+  // }) async {
+  //   if (_isLoading || !_hasMoreData) return;  // Prevent multiple simultaneous requests
+  //   _isLoading = true;
+  //   emit(BookIssueLoading()); // Show loading state
+  //
+  //   await Future.delayed(const Duration(seconds: 1)); // Simulating API call
+  //
+  //   try {
+  //     final value = await _bookIssueRepository.getIssuedBook(adminId,stateName,district,block,school,from,to,level,language, page: _page) ;  // Pass page number to API
+  //
+  //     if (value is Map<String, dynamic>) {
+  //       if (value['error'] == true) {
+  //         emit(BookIssueFailure(message: value['message'].toString()));
+  //       } else if (value['error'] == false) {
+  //         List<BookIssueModel> bookReturn = (value['data'] as List)
+  //             .map((student) => BookIssueModel.fromJson(student))
+  //             .toList();
+  //
+  //         _hasMoreData = value['data'].length > 0;
+  //
+  //         if (_hasMoreData) {
+  //           _page++;
+  //         }
+  //
+  //         emit(BookIssuedListSuccess(bookIssuedList: bookReturn, message: value['message'].toString()));
+  //       }
+  //     } else {
+  //       emit(BookIssueFailure(message: 'Unexpected response format'));
+  //     }
+  //   } catch (error) {
+  //     emit(BookIssueFailure(message: error.toString()));
+  //   } finally {
+  //     _isLoading = false; // Reset loading flag
+  //   }
+  // }
   Future<void> fetchBookIssued({
     required dynamic adminId,
     String? stateName,
@@ -105,38 +150,72 @@ class BookIssueCubit extends Cubit<BookIssueState> {
     String? level,
     String? language
   }) async {
-    if (_isLoading || !_hasMoreData) return;  // Prevent multiple simultaneous requests
-    _isLoading = true;
-    emit(BookIssueLoading()); // Show loading state
+    // Prevent multiple requests
+    if (_isLoading) return;
 
-    await Future.delayed(const Duration(seconds: 1)); // Simulating API call
+    _isLoading = true;
+    emit(BookIssueLoading());
 
     try {
-      final value = await _bookIssueRepository.getIssuedBook(adminId,stateName,district,block,school,from,to,level,language, page: _page) ;  // Pass page number to API
+      final value = await _bookIssueRepository.getIssuedBook(
+          adminId,
+          stateName,
+          district,
+          block,
+          school,
+          from,
+          to,
+          level,
+          language,
+          page: _page
+      );
 
-      if (value is Map<String, dynamic>) {
-        if (value['error'] == 1) {
-          emit(BookIssueFailure(message: value['message'].toString()));
-        } else if (value['error'] == 0) {
-          List<BookIssueModel> bookReturn = (value['data'] as List)
-              .map((student) => BookIssueModel.fromJson(student))
-              .toList();
+      if (value == null) {
+        emit(BookIssueFailure(message: "Empty response from server"));
+        return;
+      }
 
-          _hasMoreData = value['data'].length > 0;
+      // Check for Error status (matching your response: "error": false)
+      if (value['error'] == true || value['error'] == 1) {
+        _hasMoreData = false;
+        emit(BookIssueFailure(message: (value['message'] ?? "No Record Found").toString()));
+      }
+      else if (value['error'] == false || value['error'] == 0) {
+        final dynamic rawData = value['data'];
 
+        if (rawData is List) {
+          List<BookIssueModel> parsedList = [];
+
+          for (var item in rawData) {
+            try {
+              // Parse each individual item using the model
+              parsedList.add(BookIssueModel.fromJson(item as Map<String, dynamic?>));
+            } catch (e) {
+              print("Error parsing individual record: $e");
+              continue; // Skip bad records
+            }
+          }
+
+          // Update pagination status based on whether we got data
+          _hasMoreData = rawData.isNotEmpty;
           if (_hasMoreData) {
             _page++;
           }
 
-          emit(BookIssuedListSuccess(bookIssuedList: bookReturn, message: value['message'].toString()));
+          // Emit success ONCE after the loop is finished
+          emit(BookIssuedListSuccess(
+              bookIssuedList: parsedList,
+              message: (value['message'] ?? "Success").toString()
+          ));
+        } else {
+          emit(BookIssueFailure(message: "Invalid data format received"));
         }
-      } else {
-        emit(BookIssueFailure(message: 'Unexpected response format'));
       }
     } catch (error) {
-      emit(BookIssueFailure(message: error.toString()));
+      print("Cubit Error: $error");
+      emit(BookIssueFailure(message: "Data formatting error: $error"));
     } finally {
-      _isLoading = false; // Reset loading flag
+      _isLoading = false;
     }
   }
 
@@ -159,7 +238,6 @@ class BookIssueCubit extends Cubit<BookIssueState> {
         if (jsonData['error'] == false) {
           List dataList = jsonData['student'];
 
-          // ✅ Convert JSON → Freezed Model
           return dataList
               .map((e) => StudentModel.fromJson(e))
               .toList();

@@ -124,9 +124,18 @@ class _StudentIdCardState extends State<StudentIdCard> {
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
+                                // const SizedBox(height: 8),
+                                // Text(
+                                //   'Student Code - ${student['rollno'] ?? ''}',
+                                //
+                                //   style: const TextStyle(
+                                //     fontSize: 16,
+                                //     fontWeight: FontWeight.w500,
+                                //   ),
+                                // ),
                                 const SizedBox(height: 8),
                                 Text(
-                                  'Student Code - ${student['rollno'] ?? ''}',
+                                  'School - ${student['school'] ?? ''}',
 
                                   style: const TextStyle(
                                     fontSize: 16,
@@ -135,12 +144,22 @@ class _StudentIdCardState extends State<StudentIdCard> {
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
-                                  'APAAR ID - ${student['apaarId'] ?? 'XXXXX'}',
+                                  'Lib Code - lib/${student['id'] ?? ''}',
+
                                   style: const TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
+
+                                // const SizedBox(height: 8),
+                                // Text(
+                                //   'APAAR ID - ${student['apaarId'] ?? 'XXXXX'}',
+                                //   style: const TextStyle(
+                                //     fontSize: 16,
+                                //     fontWeight: FontWeight.w500,
+                                //   ),
+                                // ),
                               ],
                             ),
                           ),

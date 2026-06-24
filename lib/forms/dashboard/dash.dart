@@ -21,6 +21,7 @@ import 'package:lib17000ft/components/component.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../components/animated_pie_chart.dart';
+import 'gradebargraph.dart';
 
 class DashBoard extends StatefulWidget {
   const DashBoard({super.key});
@@ -47,6 +48,12 @@ class _DashBoardState extends State<DashBoard>
   String? rights;
   bool? isSuperAdmin;
   String? libSchool;
+
+  List<String> optionBarGraph = [
+      "Month-wise Books Issued",
+      "Grade-wise Books Issued"
+  ];
+  String barGraphValue = "Month-wise Books Issued";
 
   @override
   void initState() {
@@ -76,12 +83,6 @@ class _DashBoardState extends State<DashBoard>
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
 
-    //current = prefs.getString('userId');
-
-    // String version = packageInfo.version; // e.g. 1.0.0
-    // String buildNumber = packageInfo.buildNumber; // e.g. 1
-
-    // final currentVersion = "$version+$buildNumber";
     final currentVersion = prefs.getString('currentVersion');
 
     final libVersion = await context.read<DashCubit>().fetchLibVersion();
@@ -175,7 +176,7 @@ class _DashBoardState extends State<DashBoard>
   Future<void> _loadUserId() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     userId = prefs.getString('userId');
-    role = prefs.getString('role')?.toLowerCase().toString();
+    role = prefs.getString('role');
     rights = prefs.getString('rights');
     role ??= 'Guest';
     libSchool = prefs.getString('school');
@@ -183,8 +184,10 @@ class _DashBoardState extends State<DashBoard>
     if (userId != null && mounted) {
       print('fetchdashdata is called');
       context.read<DashCubit>().dashData(adminId: userId!);
+
+      context.read<DashCubit>().fetchFormLogs(adminId: userId!);
     }
-    if(role =='Admin'.toLowerCase().trim() || role =='Librarian'.toLowerCase().trim()){
+    if(role?.toLowerCase().toString() =='Admin'.toLowerCase().trim() || role?.toLowerCase().toString() =='Librarian'.toLowerCase().trim()){
       isSuperAdmin = false;
     } else {
       isSuperAdmin = true;
@@ -265,6 +268,7 @@ class _DashBoardState extends State<DashBoard>
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 600;
     final isTablet = screenWidth < 900;
@@ -272,7 +276,6 @@ class _DashBoardState extends State<DashBoard>
     return Scaffold(
       appBar: const CustomAppbar(
         title: 'Dashboard',
-        notification: true,
       ),
       drawer: const CustomDrawer(),
       body: SafeArea(
@@ -326,21 +329,60 @@ class _DashBoardState extends State<DashBoard>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildHeader(isMobile),
-                    const SizedBox(height: 14),
+                    //const SizedBox(height: 14),
                     // New Filter Section
                     //_buildFiltersSection(isMobile),
                     const SizedBox(height: 14),
-                    const SizedBox(height: 20),
                     _buildMetricsGrid(isMobile, isTablet),
+                    // const SizedBox(height: 14),
+                    // _buildBookActivityChart(isMobile),
                     const SizedBox(height: 14),
-                    _buildBookActivityChart(isMobile),
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
+                          children: [
+                            CustomDropdownFormField(
+                              //height: size.height * 0.2,
+                              labelText: 'Select Bargraph',
+                              options: optionBarGraph,
+                              selectedOption: barGraphValue, // Auto-fills with current value
+                              onChanged: (value) {
+                                setState(() {
+                                  barGraphValue = value!;
+                                });
+                              },
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return "Please select a grade";
+                                }
+                                return null;
+                              },
+                            ),
+                            SizedBox(height: size.height * 0.01),
+                            if(barGraphValue == optionBarGraph[0])
+                            BookStatsChart(
+                              barGraphData: dashData!.bargraph,
+                              //An totalBooksIssued: totalBooksIssued!,
+                            ),
+                            if(barGraphValue == optionBarGraph[1])
+                              GradeBookStatsChart(
+                                gradeBarGraphData: dashData!.gradebargraph,
+                                //An totalBooksIssued: totalBooksIssued!,
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
                     // : const SizedBox(),
-                    const SizedBox(height: 14),
-                    BookStatsChart(
-                      barGraphData: dashData!.bargraph,
-                      //An totalBooksIssued: totalBooksIssued!,
-                    )
-                    // : const SizedBox(),
+                    // const SizedBox(height: 14),
+                    // GradeBookStatsChart(
+                    //   gradeBarGraphData: dashData!.gradebargraph,
+                    //   //An totalBooksIssued: totalBooksIssued!,
+                    // ),
+                    const SizedBox(height:14),
+                    _buildFormLogsSection(isMobile),
+
                   ],
                 ),
               ),
@@ -415,7 +457,8 @@ class _DashBoardState extends State<DashBoard>
                 style: TextStyle(
                   fontSize: isMobile ? 16 : 24,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.primary,
+                  //color: AppColors.primary,
+                  color: AppColors.secondary,
                 ),
                 overflow: TextOverflow.ellipsis,
               ),
@@ -425,7 +468,7 @@ class _DashBoardState extends State<DashBoard>
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (rights?.contains("7") ?? false)
+                if ((rights?.contains("7") ?? false) && role != 'Librarian')
                   IconButton(
                     onPressed: () {
                       showFilterBottomSheet(
@@ -466,7 +509,7 @@ class _DashBoardState extends State<DashBoard>
                         const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     margin: const EdgeInsets.only(left: 6),
                     decoration: BoxDecoration(
-                      color: Colors.indigo[50],
+                      color: AppColors.primaryContainer,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(
@@ -478,7 +521,7 @@ class _DashBoardState extends State<DashBoard>
                             style: const TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w500,
-                              color: AppColors.primary,
+                              color: AppColors.secondary,
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
@@ -499,7 +542,7 @@ class _DashBoardState extends State<DashBoard>
                           child: const Icon(
                             Icons.close,
                             size: 16,
-                            color: Colors.grey,
+                            color: AppColors.tertiary,
                           ),
                         ),
                       ],
@@ -638,7 +681,7 @@ class _DashBoardState extends State<DashBoard>
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      color.withOpacity(0.1),
+                      color.withOpacity(0.4),
                       color.withOpacity(0.05),
                     ],
                   ),
@@ -654,12 +697,14 @@ class _DashBoardState extends State<DashBoard>
                         Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: color.withOpacity(0.2),
+                            //color: color.withOpacity(0.2),
+                            color: AppColors.secondary.withOpacity(0.2),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Icon(
                             icon,
-                            color: color,
+                            //color: color,
+                            color: AppColors.secondary,
                             size: Responsive(context).screenWidth() < 600
                                 ? 16
                                 : 26,
@@ -683,7 +728,8 @@ class _DashBoardState extends State<DashBoard>
                         Text(
                           value,
                           style: TextStyle(
-                            color: color,
+                            //color: color,
+                            color: AppColors.secondary,
                             fontSize: fontSizeValue,
                             fontWeight: FontWeight.bold,
                           ),
@@ -707,17 +753,17 @@ class _DashBoardState extends State<DashBoard>
         borderRadius: BorderRadius.circular(16),
       ),
       child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Colors.indigo.withOpacity(0.05),
-              Colors.indigo.withOpacity(0.02),
-            ],
-          ),
-        ),
+        // decoration: BoxDecoration(
+        //   borderRadius: BorderRadius.circular(16),
+        //   gradient: LinearGradient(
+        //     begin: Alignment.topLeft,
+        //     end: Alignment.bottomRight,
+        //     colors: [
+        //       Colors.indigo.withOpacity(0.05),
+        //       Colors.indigo.withOpacity(0.02),
+        //     ],
+        //   ),
+        // ),
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -936,6 +982,114 @@ class _DashBoardState extends State<DashBoard>
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildFormLogsSection(bool isMobile) {
+    return Card(
+      elevation: 3,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Colors.indigo.withOpacity(0.05),
+              Colors.indigo.withOpacity(0.02),
+            ],
+          ),
+        ),
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              "Recent Activity Logs",
+              style: TextStyle(fontSize:18, fontWeight: FontWeight.bold,color: AppColors.secondary),
+            ),
+            const SizedBox(height: 12),
+            FutureBuilder<List<dynamic>?>(
+              future: context.read<DashCubit>().fetchFormLogs(adminId: userId ?? ""),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (snapshot.hasError || snapshot.data == null || snapshot.data!.isEmpty) {
+                  return const Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: Center(child: Text("No recent activity logs found.")),
+                  );
+                }
+
+                final logs = snapshot.data!;
+                return ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: logs.length > 2 ? 2 : logs.length, // Show last 5
+                  itemBuilder: (context, index) {
+                    final log = logs[index];
+                    return Card(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        side: BorderSide(color: Colors.grey.shade200),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: ListTile(
+                        leading: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withOpacity(0.1),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.description_outlined, color: AppColors.primary),
+                        ),
+                        title: Text(
+                          log['activity_name'] ?? 'Form Submission',
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        subtitle: Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text("Date: ${log['created_at'] ?? 'N/A'}"),
+                            // const SizedBox(height: 4),
+                            // Text("Participants : ${log['participants_number'] ?? 'N/A'}"),
+                            // const SizedBox(height: 4),
+                            // Text("Grade: ${log['participants_grades'] ?? 'N/A'}"),
+                          ],
+                        ),
+
+                        //trailing: const Icon(Icons.arrow_forward_ios, size: 14),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+            Center(
+              child: TextButton(
+                  child: const Text('View All',style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.secondary,
+                  )),
+                  onPressed: (){
+                    Navigator.pushNamed(
+                      context,
+                      '/lib_activity_list',
+                    );
+                  }
+              ),
+            ),
+
+          ],
+        ),
       ),
     );
   }

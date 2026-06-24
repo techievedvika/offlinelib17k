@@ -57,6 +57,7 @@ Future<void> getToken() async {
        emit(LoginSuccess(value.message));
       }
     } catch (error) {
+      print('this is error $error');
     emit(LoginFailure('Something went wrong'));
     }
   }

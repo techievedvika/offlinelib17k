@@ -19,6 +19,7 @@ class DashModel with _$DashModel {
     @JsonKey(name: 'white') required int white,
     @JsonKey(name: 'na') required int na,
     @JsonKey(name: 'barGraph') required List<dynamic> bargraph,
+    @JsonKey(name: 'gradeBarGraph') required List<dynamic> gradebargraph,
 
     
   }) = _DashModel;

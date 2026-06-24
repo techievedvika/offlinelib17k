@@ -19,6 +19,7 @@ _$DashModelImpl _$$DashModelImplFromJson(Map<String, dynamic> json) =>
       white: (json['white'] as num).toInt(),
       na: (json['na'] as num).toInt(),
       bargraph: json['barGraph'] as List<dynamic>,
+      gradebargraph: json['gradeBarGraph'] as List<dynamic>,
     );
 
 Map<String, dynamic> _$$DashModelImplToJson(_$DashModelImpl instance) =>
@@ -34,4 +35,5 @@ Map<String, dynamic> _$$DashModelImplToJson(_$DashModelImpl instance) =>
       'white': instance.white,
       'na': instance.na,
       'barGraph': instance.bargraph,
+      'gradeBarGraph': instance.gradebargraph,
     };

@@ -71,7 +71,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 height: 20,
               ),
               Image.asset(
-                'assets/logo.png',
+                'assets/logo_17k.png',
                 height: responsive.responsiveValue(
                     small: 200.0, medium: 220.0, large: 100.0),
                 width: responsive.responsiveValue(
@@ -83,7 +83,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   alignment: Alignment.topLeft,
                   child: Text(
                     'Login',
-                    style: AppStyles.heading1(context, AppColors.primary),
+                    style: AppStyles.heading1(context, AppColors.secondary),
                   ),
                 ),
               ),
@@ -113,6 +113,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         CustomTextFormField(
+
                           textController: usernameController,
                           textInputType: TextInputType.text,
                           prefixIcon: Icons.person,
@@ -186,6 +187,13 @@ class _LoginScreenState extends State<LoginScreen> {
                           height: responsive.responsiveValue(
                               small: 10.0, medium: 20.0, large: 30.0),
                         ),
+                        // const Divider(),
+                        // TextButton(
+                        //   child: const Text("Forgot Password"),
+                        //   onPressed: (){
+                        //
+                        //   },
+                        // ),
                       ],
                     ),
                   );

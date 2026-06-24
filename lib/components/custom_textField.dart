@@ -68,8 +68,8 @@ class CustomTextFormField extends StatelessWidget {
       decoration: InputDecoration(
         prefixIcon: prefixIcon != null ? Icon(prefixIcon) : null,
         suffixIcon: suffixIcon,
-        prefixIconColor: AppColors.outline,
-        suffixIconColor: AppColors.outline,
+        prefixIconColor: AppColors.tertiary,
+        suffixIconColor: AppColors.tertiary,
         label: labelText != null
             ? Text(
                 labelText!,
@@ -82,7 +82,7 @@ class CustomTextFormField extends StatelessWidget {
         enabledBorder: const OutlineInputBorder(
           borderRadius: BorderRadius.all(Radius.circular(10)),
           borderSide: BorderSide(
-            width: 1,
+            width: 1.5,
             color: AppColors.onBackground,
           ),
         ),

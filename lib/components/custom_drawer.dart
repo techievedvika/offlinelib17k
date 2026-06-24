@@ -61,11 +61,11 @@ class _CustomDrawerState extends State<CustomDrawer> {
                   children: [
                     _buildDrawerSection('Navigation', [
 
-                      _buildDrawerItem(
-                        icon: FontAwesomeIcons.home,
-                        title: 'Home',
-                        route: RoutesName.homeScreen,
-                      ),
+                      // _buildDrawerItem(
+                      //   icon: FontAwesomeIcons.home,
+                      //   title: 'Home',
+                      //   route: RoutesName.homeScreen,
+                      // ),
 
                       rights!.contains("1") ?  _buildDrawerItem(
                         icon: FontAwesomeIcons.chartLine,
@@ -75,28 +75,28 @@ class _CustomDrawerState extends State<CustomDrawer> {
 
                     ]),
 
-                    _buildDrawerSection('Book Management', [
-                      rights!.contains("5") ?       _buildDrawerItem(
-                        icon: FontAwesomeIcons.book,
-                        title: 'Issue Book',
-                        route: RoutesName.bookIssue,
-                      ) : const SizedBox(),
-                      rights!.contains("5") ?       _buildDrawerItem(
-                        icon: FontAwesomeIcons.bookBookmark,
-                        title: 'Return Book',
-                        route: RoutesName.bookReturn,
-                      ) : const SizedBox(),
-                      rights!.contains("4") ?     _buildDrawerItem(
-                        icon: FontAwesomeIcons.bookOpen,
-                        title: 'All Issued Books',
-                        route: RoutesName.allbookIssue,
-                      ) : const SizedBox(),
-                      rights!.contains("4") ?    _buildDrawerItem(
-                        icon: Icons.pending,
-                        title: 'Pending Returns',
-                        route: RoutesName.allbookReturn,
-                      ) : const SizedBox(),
-                    ]),
+                    // _buildDrawerSection('Book Management', [
+                    //   rights!.contains("5") ?       _buildDrawerItem(
+                    //     icon: FontAwesomeIcons.book,
+                    //     title: 'Issue Book',
+                    //     route: RoutesName.bookIssue,
+                    //   ) : const SizedBox(),
+                    //   rights!.contains("5") ?       _buildDrawerItem(
+                    //     icon: FontAwesomeIcons.bookBookmark,
+                    //     title: 'Return Book',
+                    //     route: RoutesName.bookReturn,
+                    //   ) : const SizedBox(),
+                    //   rights!.contains("4") ?     _buildDrawerItem(
+                    //     icon: FontAwesomeIcons.bookOpen,
+                    //     title: 'All Issued Books',
+                    //     route: RoutesName.allbookIssue,
+                    //   ) : const SizedBox(),
+                    //   rights!.contains("4") ?    _buildDrawerItem(
+                    //     icon: Icons.pending,
+                    //     title: 'Pending Returns',
+                    //     route: RoutesName.allbookReturn,
+                    //   ) : const SizedBox(),
+                    // ]),
 
                     _buildDrawerSection('Student Management', [
                       rights!.contains("6") ?   _buildDrawerItem(
@@ -105,12 +105,12 @@ class _CustomDrawerState extends State<CustomDrawer> {
                         route: RoutesName.studentRegistration,
                       ) : const SizedBox(),
                       rights!.contains("3") ?     _buildDrawerItem(
-                        icon: FontAwesomeIcons.userPlus,
+                        icon: FontAwesomeIcons.peopleGroup,
                         title: 'All Students',
                         route: RoutesName.allStudent,
                       ) : const SizedBox(),
                       rights!.contains("3") ?   _buildDrawerItem(
-                        icon: FontAwesomeIcons.userPlus,
+                        icon: FontAwesomeIcons.userPen,
                         title: 'Promote Students',
                         route: RoutesName.promoteStudent,
                       ) : const SizedBox(),
@@ -118,11 +118,17 @@ class _CustomDrawerState extends State<CustomDrawer> {
                     ]),
 
                     ///This is for the form section
-                    _buildDrawerSection('Forms', [
+                    _buildDrawerSection('Library Activity', [
                       rights!.contains("6") ?   _buildDrawerItem(
                         icon: FontAwesomeIcons.file,
                         title: 'Activity Log Form',
                         route: RoutesName.libActivityLog,
+                      ) : const SizedBox(),
+
+                      rights!.contains("6") ?   _buildDrawerItem(
+                        icon: FontAwesomeIcons.list,
+                        title: 'Activity Log List',
+                        route: RoutesName.libActivityList,
                       ) : const SizedBox(),
 
                     ]),
@@ -208,9 +214,10 @@ class _CustomDrawerState extends State<CustomDrawer> {
                     overflow: TextOverflow.ellipsis,
                   ),
                   Text(
-                  username ?? 'User',
+                    (username != null && username!.isNotEmpty)? username![0].toUpperCase() + username!.substring(1).toLowerCase()
+                        : 'User',
                     style: const TextStyle(
-                    color: AppColors.onPrimary,
+                      color: AppColors.onPrimary,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
@@ -290,8 +297,8 @@ class _CustomDrawerState extends State<CustomDrawer> {
         icon: const FaIcon(FontAwesomeIcons.rightFromBracket, size: 16),
         label: const Text('LOGOUT'),
         style: OutlinedButton.styleFrom(
-          foregroundColor: theme.colorScheme.error,
-          side: BorderSide(color: theme.colorScheme.error),
+          foregroundColor: theme.colorScheme.primary,
+          side: BorderSide(color: theme.colorScheme.primary),
           padding: const EdgeInsets.symmetric(vertical: 12),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),

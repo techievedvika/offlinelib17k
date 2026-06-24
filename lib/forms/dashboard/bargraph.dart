@@ -19,19 +19,26 @@ class _BookStatsChartState extends State<BookStatsChart> {
   int getTotalBooksIssued() {
     return widget.barGraphData.fold<int>(
       0,
-      (sum, item) => sum + ((item['total_issues'] ?? 0) as num).toInt(),
+          (sum, item) => sum + _toDouble(item['total_issues']).toInt(),
     );
   }
 
+  String formatMonthYear(String value) {
+    final parts = value.split(' ');
+    if (parts.length != 2) return value;
+
+    return '${parts[0].substring(0, 3)} ${parts[1]}';
+  }
+
   double getMaxY() {
-  if (widget.barGraphData.isEmpty) return 10; // Or any default safe value
+    if (widget.barGraphData.isEmpty) return 10;
 
-  final max = widget.barGraphData
-      .map((e) => (e['total_issues'] ?? 0) as num)
-      .reduce((a, b) => a > b ? a : b);
+    final max = widget.barGraphData
+        .map((e) => _toDouble(e['total_issues']))
+        .reduce((a, b) => a > b ? a : b);
 
-  return (max * 1.2).ceilToDouble(); // Adds 20% headroom
-}
+    return (max * 1.2).ceilToDouble();
+  }
 
   double getDynamicInterval(double maxY) {
     if (maxY <= 10) return 1;
@@ -44,11 +51,12 @@ class _BookStatsChartState extends State<BookStatsChart> {
 
   @override
   Widget build(BuildContext context) {
-   
+
     final totalBooksIssued = getTotalBooksIssued();
     final maxY = getMaxY();
     final interval = getDynamicInterval(maxY);
-    
+
+
 
     return Card(
       //margin: const EdgeInsets.all(16),
@@ -60,12 +68,12 @@ class _BookStatsChartState extends State<BookStatsChart> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Month-wise Book Issues',
+              'Month-wise Book Issued',
               style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                   //color: Colors.deepPurple
-                color: AppColors.primary,
+                color: AppColors.secondary,
               ),
             ),
             const SizedBox(height: 20),
@@ -73,32 +81,63 @@ class _BookStatsChartState extends State<BookStatsChart> {
             /// Scrollable graph
      widget.barGraphData.isNotEmpty
     ? SizedBox(
-        height: 220,
+        height: 230,
         child: SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: SizedBox(
             //width: MediaQuery.sizeOf(context).width,
-            width: widget.barGraphData.length * 90,
+            width: widget.barGraphData.length * 65,
             child: BarChart(
               BarChartData(
                 maxY: maxY,
                 barGroups: _buildChartData(),
                 borderData: FlBorderData(show: false),
                 gridData: const FlGridData(
-                    show: true,
-                    verticalInterval: 10,
-                    horizontalInterval: 10,
+                  show: true,
+                  verticalInterval: 5,
+                  horizontalInterval: 10,
                   drawHorizontalLine: true,
                   drawVerticalLine: true,
                 ),
                 barTouchData: BarTouchData(
                   enabled: true,
+
                   touchTooltipData: BarTouchTooltipData(
-                    tooltipBgColor: Colors.deepPurple,
+                    tooltipBgColor: Colors.black87,
+                    direction: TooltipDirection.auto,
+                    fitInsideVertically: true,
                     getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                      final data = widget.barGraphData[group.x.toInt()];
+                      final fullMonth = data['issue_month'];
+
                       return BarTooltipItem(
-                        '${rod.toY.toInt()} books',
-                        const TextStyle(color: Colors.white),
+                        '${formatMonthYear(fullMonth)}\n',
+                        const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        children: [
+                          TextSpan(
+                            text: 'Green: ${data['green']}\n',
+                            style: const TextStyle(color: Colors.green),
+                          ),
+                          TextSpan(
+                            text: 'Red: ${data['red']}\n',
+                            style: const TextStyle(color: Colors.red),
+                          ),
+                          TextSpan(
+                            text: 'Orange: ${data['orange']}\n',
+                            style: const TextStyle(color: Colors.orange),
+                          ),
+                          TextSpan(
+                            text: 'White: ${data['white']}\n',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          TextSpan(
+                            text: 'Others: ${data['na']}',
+                            style: TextStyle(color: Colors.grey.shade400),
+                          ),
+                        ],
                       );
                     },
                   ),
@@ -108,14 +147,19 @@ class _BookStatsChartState extends State<BookStatsChart> {
                     sideTitles: SideTitles(
                       showTitles: true,
                       getTitlesWidget: (value, meta) {
+                        final fullMonth = widget.barGraphData[value.toInt()]['issue_month'];
+                        final shortMonth = fullMonth.split(' ')[0].substring(0, 3);
+
                         if (value.toInt() >= 0 &&
                             value.toInt() < widget.barGraphData.length) {
                           return Padding(
                             padding: const EdgeInsets.only(top: 8),
                             child: Text(
-                              widget.barGraphData[value.toInt()]['issue_month'],
-                              style: const TextStyle(
-                                  fontSize: 8, color: Colors.grey),
+                              formatMonthYear(fullMonth), // Apr, Sep, Oct...
+                              style: const TextStyle(fontSize: 10, color: Colors.grey),
+                              // widget.barGraphData[value.toInt()]['issue_month'],
+                              // style: const TextStyle(
+                              //     fontSize: 8, color: Colors.grey),
                             ),
                           );
                         }
@@ -131,7 +175,7 @@ class _BookStatsChartState extends State<BookStatsChart> {
                         value.toInt().toString(),
                         style: const TextStyle(fontSize: 10, color: Colors.grey),
                       ),
-                      reservedSize: 28,
+                      reservedSize: 18,
                     ),
                   ),
                   rightTitles: const AxisTitles(),
@@ -152,33 +196,41 @@ class _BookStatsChartState extends State<BookStatsChart> {
         ),
       ),
 
-            const SizedBox(height: 24),
-
-            const Divider(height: 1, color: Colors.grey),
-            const SizedBox(height: 16),
-
-            /// Total books issued
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'Total Books Issued',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                ),
-                Text(
-                  totalBooksIssued.toString(),
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.deepPurple,
-                  ),
-                ),
-              ],
-            ),
+            // const SizedBox(height: 24),
+            //
+            // const Divider(height: 1, color: Colors.grey),
+            // const SizedBox(height: 16),
+            //
+            // /// Total books issued
+            // Row(
+            //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            //   children: [
+            //     const Text(
+            //       'Total Books Issued',
+            //       style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            //     ),
+            //     Text(
+            //       totalBooksIssued.toString(),
+            //       style: const TextStyle(
+            //         fontSize: 18,
+            //         fontWeight: FontWeight.bold,
+            //         color: Colors.deepPurple,
+            //       ),
+            //     ),
+            //   ],
+            // ),
           ],
         ),
       ),
     );
+  }
+
+
+  double _toDouble(dynamic value) {
+    if (value == null) return 0.0;
+    if (value is num) return value.toDouble();
+    if (value is String) return double.tryParse(value) ?? 0.0;
+    return 0.0;
   }
 
   List<BarChartGroupData> _buildChartData() {
@@ -186,14 +238,60 @@ class _BookStatsChartState extends State<BookStatsChart> {
       final index = entry.key;
       final data = entry.value;
 
+
+      double start = 0;
+      double green = _toDouble(data['green']);
+      double red = _toDouble(data['red']);
+      double orange = _toDouble(data['orange']);
+      double white = _toDouble(data['white']);
+      double others = _toDouble(data['na']);
+      double total = green + red + orange + white;
+
       return BarChartGroupData(
         x: index,
+        //showingTooltipIndicators: [0],
         barRods: [
           BarChartRodData(
-            toY: (data['total_issues'] ?? 0).toDouble(),
-            color: Colors.deepPurple,
+            toY: green + red + orange + white + others,
             width: 24,
             borderRadius: BorderRadius.circular(6),
+
+            ///  STACKED SECTIONS
+            rodStackItems: [
+              /// GREEN
+              BarChartRodStackItem(
+                start,
+                start += green,
+                Colors.green.shade400,
+              ),
+
+              /// RED
+              BarChartRodStackItem(
+                start,
+                start += red,
+                Colors.red.shade400,
+              ),
+
+              /// ORANGE
+              BarChartRodStackItem(
+                start,
+                start += orange,
+                Colors.orange.shade400,
+              ),
+
+              /// WHITE (use light grey for visibility)
+              BarChartRodStackItem(
+                start,
+                start += white,
+                Colors.grey.shade300,
+              ),
+
+              BarChartRodStackItem(
+                start,
+                start += others,
+                Colors.grey.shade600,
+              ),
+            ],
           ),
         ],
       );

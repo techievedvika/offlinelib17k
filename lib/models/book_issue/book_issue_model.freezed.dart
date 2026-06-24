@@ -20,6 +20,24 @@ BookIssueModel _$BookIssueModelFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$BookIssueModel {
+// @JsonKey(name: 'name') String? name,
+// @JsonKey(name: 'title')  String? title,
+// @JsonKey(name: 'school')  String? school,
+// @JsonKey(name: 'class')  String? studentnclass,
+// @JsonKey(name: 'gender')  String? gender,
+// @JsonKey(name: 'unique_id')  String? uniqid,
+// @JsonKey(name: 'apaarId')  String? apparId,
+// @JsonKey(name: 'issued_date')  String? issuedDate,
+// @JsonKey(name: 'returned_date')  String? returnedDate,
+// @JsonKey(name: 'created_by')  String? createdBy,
+// @JsonKey(name: 'isbn')  String? isbn,
+// @JsonKey(name: 'publisher')  String? publisher,
+// @JsonKey(name: 'author')  String? author,
+// @JsonKey(name: 'language')  String? language,
+// @JsonKey(name: 'gener')  String? gener,
+// @JsonKey(name: 'level')  String? level,
+// @JsonKey(name: 'code')  String? code,
+// @JsonKey(name: 'student_created_at') String? studentCreatedAt,
   @JsonKey(name: 'name')
   String? get name => throw _privateConstructorUsedError;
   @JsonKey(name: 'title')
@@ -54,6 +72,8 @@ mixin _$BookIssueModel {
   String? get level => throw _privateConstructorUsedError;
   @JsonKey(name: 'code')
   String? get code => throw _privateConstructorUsedError;
+  @JsonKey(name: 'student_created_at')
+  String? get studentCreatedAt => throw _privateConstructorUsedError;
 
   /// Serializes this BookIssueModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -88,7 +108,8 @@ abstract class $BookIssueModelCopyWith<$Res> {
       @JsonKey(name: 'language') String? language,
       @JsonKey(name: 'gener') String? gener,
       @JsonKey(name: 'level') String? level,
-      @JsonKey(name: 'code') String? code});
+      @JsonKey(name: 'code') String? code,
+      @JsonKey(name: 'student_created_at') String? studentCreatedAt});
 }
 
 /// @nodoc
@@ -123,6 +144,7 @@ class _$BookIssueModelCopyWithImpl<$Res, $Val extends BookIssueModel>
     Object? gener = freezed,
     Object? level = freezed,
     Object? code = freezed,
+    Object? studentCreatedAt = freezed,
   }) {
     return _then(_value.copyWith(
       name: freezed == name
@@ -193,6 +215,10 @@ class _$BookIssueModelCopyWithImpl<$Res, $Val extends BookIssueModel>
           ? _value.code
           : code // ignore: cast_nullable_to_non_nullable
               as String?,
+      studentCreatedAt: freezed == studentCreatedAt
+          ? _value.studentCreatedAt
+          : studentCreatedAt // ignore: cast_nullable_to_non_nullable
+              as String?,
     ) as $Val);
   }
 }
@@ -222,7 +248,8 @@ abstract class _$$BookIssueModelImplCopyWith<$Res>
       @JsonKey(name: 'language') String? language,
       @JsonKey(name: 'gener') String? gener,
       @JsonKey(name: 'level') String? level,
-      @JsonKey(name: 'code') String? code});
+      @JsonKey(name: 'code') String? code,
+      @JsonKey(name: 'student_created_at') String? studentCreatedAt});
 }
 
 /// @nodoc
@@ -255,6 +282,7 @@ class __$$BookIssueModelImplCopyWithImpl<$Res>
     Object? gener = freezed,
     Object? level = freezed,
     Object? code = freezed,
+    Object? studentCreatedAt = freezed,
   }) {
     return _then(_$BookIssueModelImpl(
       name: freezed == name
@@ -325,6 +353,10 @@ class __$$BookIssueModelImplCopyWithImpl<$Res>
           ? _value.code
           : code // ignore: cast_nullable_to_non_nullable
               as String?,
+      studentCreatedAt: freezed == studentCreatedAt
+          ? _value.studentCreatedAt
+          : studentCreatedAt // ignore: cast_nullable_to_non_nullable
+              as String?,
     ));
   }
 }
@@ -349,11 +381,30 @@ class _$BookIssueModelImpl implements _BookIssueModel {
       @JsonKey(name: 'language') this.language,
       @JsonKey(name: 'gener') this.gener,
       @JsonKey(name: 'level') this.level,
-      @JsonKey(name: 'code') this.code});
+      @JsonKey(name: 'code') this.code,
+      @JsonKey(name: 'student_created_at') this.studentCreatedAt});
 
   factory _$BookIssueModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$BookIssueModelImplFromJson(json);
 
+// @JsonKey(name: 'name') String? name,
+// @JsonKey(name: 'title')  String? title,
+// @JsonKey(name: 'school')  String? school,
+// @JsonKey(name: 'class')  String? studentnclass,
+// @JsonKey(name: 'gender')  String? gender,
+// @JsonKey(name: 'unique_id')  String? uniqid,
+// @JsonKey(name: 'apaarId')  String? apparId,
+// @JsonKey(name: 'issued_date')  String? issuedDate,
+// @JsonKey(name: 'returned_date')  String? returnedDate,
+// @JsonKey(name: 'created_by')  String? createdBy,
+// @JsonKey(name: 'isbn')  String? isbn,
+// @JsonKey(name: 'publisher')  String? publisher,
+// @JsonKey(name: 'author')  String? author,
+// @JsonKey(name: 'language')  String? language,
+// @JsonKey(name: 'gener')  String? gener,
+// @JsonKey(name: 'level')  String? level,
+// @JsonKey(name: 'code')  String? code,
+// @JsonKey(name: 'student_created_at') String? studentCreatedAt,
   @override
   @JsonKey(name: 'name')
   final String? name;
@@ -405,10 +456,13 @@ class _$BookIssueModelImpl implements _BookIssueModel {
   @override
   @JsonKey(name: 'code')
   final String? code;
+  @override
+  @JsonKey(name: 'student_created_at')
+  final String? studentCreatedAt;
 
   @override
   String toString() {
-    return 'BookIssueModel(name: $name, title: $title, school: $school, studentnclass: $studentnclass, gender: $gender, uniqid: $uniqid, apparId: $apparId, issuedDate: $issuedDate, returnedDate: $returnedDate, createdBy: $createdBy, isbn: $isbn, publisher: $publisher, author: $author, language: $language, gener: $gener, level: $level, code: $code)';
+    return 'BookIssueModel(name: $name, title: $title, school: $school, studentnclass: $studentnclass, gender: $gender, uniqid: $uniqid, apparId: $apparId, issuedDate: $issuedDate, returnedDate: $returnedDate, createdBy: $createdBy, isbn: $isbn, publisher: $publisher, author: $author, language: $language, gener: $gener, level: $level, code: $code, studentCreatedAt: $studentCreatedAt)';
   }
 
   @override
@@ -438,7 +492,9 @@ class _$BookIssueModelImpl implements _BookIssueModel {
                 other.language == language) &&
             (identical(other.gener, gener) || other.gener == gener) &&
             (identical(other.level, level) || other.level == level) &&
-            (identical(other.code, code) || other.code == code));
+            (identical(other.code, code) || other.code == code) &&
+            (identical(other.studentCreatedAt, studentCreatedAt) ||
+                other.studentCreatedAt == studentCreatedAt));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -461,7 +517,8 @@ class _$BookIssueModelImpl implements _BookIssueModel {
       language,
       gener,
       level,
-      code);
+      code,
+      studentCreatedAt);
 
   /// Create a copy of BookIssueModel
   /// with the given fields replaced by the non-null parameter values.
@@ -498,11 +555,31 @@ abstract class _BookIssueModel implements BookIssueModel {
       @JsonKey(name: 'language') final String? language,
       @JsonKey(name: 'gener') final String? gener,
       @JsonKey(name: 'level') final String? level,
-      @JsonKey(name: 'code') final String? code}) = _$BookIssueModelImpl;
+      @JsonKey(name: 'code') final String? code,
+      @JsonKey(name: 'student_created_at')
+      final String? studentCreatedAt}) = _$BookIssueModelImpl;
 
   factory _BookIssueModel.fromJson(Map<String, dynamic> json) =
       _$BookIssueModelImpl.fromJson;
 
+// @JsonKey(name: 'name') String? name,
+// @JsonKey(name: 'title')  String? title,
+// @JsonKey(name: 'school')  String? school,
+// @JsonKey(name: 'class')  String? studentnclass,
+// @JsonKey(name: 'gender')  String? gender,
+// @JsonKey(name: 'unique_id')  String? uniqid,
+// @JsonKey(name: 'apaarId')  String? apparId,
+// @JsonKey(name: 'issued_date')  String? issuedDate,
+// @JsonKey(name: 'returned_date')  String? returnedDate,
+// @JsonKey(name: 'created_by')  String? createdBy,
+// @JsonKey(name: 'isbn')  String? isbn,
+// @JsonKey(name: 'publisher')  String? publisher,
+// @JsonKey(name: 'author')  String? author,
+// @JsonKey(name: 'language')  String? language,
+// @JsonKey(name: 'gener')  String? gener,
+// @JsonKey(name: 'level')  String? level,
+// @JsonKey(name: 'code')  String? code,
+// @JsonKey(name: 'student_created_at') String? studentCreatedAt,
   @override
   @JsonKey(name: 'name')
   String? get name;
@@ -554,6 +631,9 @@ abstract class _BookIssueModel implements BookIssueModel {
   @override
   @JsonKey(name: 'code')
   String? get code;
+  @override
+  @JsonKey(name: 'student_created_at')
+  String? get studentCreatedAt;
 
   /// Create a copy of BookIssueModel
   /// with the given fields replaced by the non-null parameter values.

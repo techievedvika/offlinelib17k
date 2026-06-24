@@ -25,6 +25,7 @@ _$BookIssueModelImpl _$$BookIssueModelImplFromJson(Map<String, dynamic> json) =>
       gener: json['gener'] as String?,
       level: json['level'] as String?,
       code: json['code'] as String?,
+      studentCreatedAt: json['student_created_at'] as String?,
     );
 
 Map<String, dynamic> _$$BookIssueModelImplToJson(
@@ -47,4 +48,5 @@ Map<String, dynamic> _$$BookIssueModelImplToJson(
       'gener': instance.gener,
       'level': instance.level,
       'code': instance.code,
+      'student_created_at': instance.studentCreatedAt,
     };

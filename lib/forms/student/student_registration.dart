@@ -606,6 +606,7 @@ class _StudentRegistrationState extends State<StudentRegistration> {
   final TextEditingController _rollNoController = TextEditingController();
   final TextEditingController _dynamicIdController = TextEditingController();
   final TextEditingController _apparController = TextEditingController();
+  final TextEditingController _penController = TextEditingController();
 
   // Keys for resetting custom form field widgets
   final _genderRadioKey = GlobalKey<_ResettableRadioState>();
@@ -623,6 +624,12 @@ class _StudentRegistrationState extends State<StudentRegistration> {
   // State for dynamically loading grades
   List<String> _gradesOptions = [];
   bool _isLoadingGrades = true;
+
+  final List<String> idOptions = ["Apaar ID", "PEN ID", "Student ID"];
+  String? selectedValue;
+  int selectedIndex = 0;
+
+  bool isVisible = false;
 
   @override
   void initState() {
@@ -666,26 +673,48 @@ class _StudentRegistrationState extends State<StudentRegistration> {
   }
 
   /// Handles the registration logic when the form is submitted.
-  void _onRegisterPressed() {
+  // void _onRegisterPressed() {
+  //   if (_formKey.currentState!.validate()) {
+  //     final student = StudentModel(
+  //       createdBy: userId!,
+  //       name: _nameController.text,
+  //       rollNo: idValue == 'Yes' ? _rollNoController.text : _dynamicIdController
+  //           .text,
+  //       gender: genderValue!,
+  //       classs: gradeValue!,
+  //       apaarId: _apparController.text.isEmpty ? 'NA' : _apparController.text,
+  //       penId: _penController.text.isEmpty ? 'NA' : _penController.text,
+  //       school: 'hell',
+  //       uniqueId: _rollNoController.text,
+  //       // Note: This value is hardcoded
+  //       id: ' ', // Note: This value is hardcoded
+  //     );
+  //
+  //     final studentData = student.toJson();
+  //     print("this is raw data : $studentData");
+  //     studentJsonData = jsonEncode(studentData);
+  //     print("this is encoded data : $studentJsonData");
+  //
+  //     // Call the cubit to register the student
+  //     context.read<StudentCubit>().registerStudent(studentData);
+  //   }
+  // }
+
+  // Inside your _StudentRegistrationState where you submit the form:
+
+  void _register() {
     if (_formKey.currentState!.validate()) {
-      final student = StudentModel(
-        createdBy: userId!,
-        name: _nameController.text,
-        rollNo: idValue == 'Yes' ? _rollNoController.text : _dynamicIdController
-            .text,
-        gender: genderValue!,
-        classs: gradeValue!,
-        apaarId: _apparController.text.isEmpty ? 'NA' : _apparController.text,
-        school: 'hell',
-        // Note: This value is hardcoded
-        id: ' ', // Note: This value is hardcoded
-      );
+      final Map<String, dynamic> data = {
+        'name': _nameController.text.trim(),
+        'class': gradeValue, // Dropdown value
+        'gender': genderValue, // Radio value
+        'created_by': userId, // Ensure this is the ID you got from SharedPreferences
+        'apaarId': _apparController.text.trim(),
+        'pen_id': _penController.text.trim(), // Ensure you added this controller
+        'rollno': idValue == 'No' ? _dynamicIdController.text : _rollNoController.text,
+      };
 
-      final studentData = student.toJson();
-      studentJsonData = jsonEncode(studentData);
-
-      // Call the cubit to register the student
-      context.read<StudentCubit>().registerStudent(studentData);
+      context.read<StudentCubit>().registerStudent(data);
     }
   }
 
@@ -767,7 +796,7 @@ class _StudentRegistrationState extends State<StudentRegistration> {
                         // Align labels to the left
                         children: [
                           LabelText(
-                            label: 'Does student have unique ID?',
+                            label: 'Does student have Apaar ID/PEN ID/Student ID?',
                             astrick: true,
                           ),
                           const SizedBox(height: 10),
@@ -781,6 +810,8 @@ class _StudentRegistrationState extends State<StudentRegistration> {
                               }
                               setState(() {
                                 idValue = value;
+                                _apparController.clear();
+                                _penController.clear();
                               });
                             },
                             validator: (value) {
@@ -800,17 +831,43 @@ class _StudentRegistrationState extends State<StudentRegistration> {
                             ),
                           ],
                           if (idValue == 'Yes') ...[
-                            LabelText(label: 'Student ID', astrick: true),
+                            LabelText(label: 'Apaar ID/PEN ID/Student ID', astrick: true),
                             const SizedBox(height: 12),
-                            CustomTextFormField(
-                              labelText: 'Enter student ID',
-                              textController: _rollNoController,
+
+                            CustomDropdownFormField(
+                              options: idOptions,
+                              selectedOption: selectedValue,
+                              labelText: "Select ID Type",
+                              onChanged: (value) {
+                                setState(() {
+                                  selectedValue = value;
+
+                                  // Convert value to index
+                                  selectedIndex = idOptions.indexOf(value!);
+                                });
+
+                                print("Selected Value: $selectedValue");
+                                print("Selected Index: $selectedIndex");
+                              },
                             ),
-                            const SizedBox(height: 10),
-                            LabelText(label: 'APAAR ID', astrick: false),
-                            const SizedBox(height: 10),
+
+                            const SizedBox(height: 12),
+                            if(selectedIndex == 0)
+                            //   LabelText(label: 'APAAR ID', astrick: false),
+                            // const SizedBox(height: 10),
                             CustomTextFormField(
+                              suffixIcon: IconButton(
+                                icon: isVisible ? const Icon(Icons.visibility) : const Icon(Icons.visibility_off),
+                                onPressed: () {
+                                  setState(() {
+                                    isVisible = !isVisible;
+                                  });
+                                },
+                              ),
+                              obscureText: !isVisible,
+                              maxlength: 12,
                               labelText: 'Enter APAAR ID',
+                              textInputType: TextInputType.number,
                               textController: _apparController,
                               validator: (value) {
                                 if (value != null && value.isNotEmpty &&
@@ -820,6 +877,63 @@ class _StudentRegistrationState extends State<StudentRegistration> {
                                 return null;
                               },
                             ),
+                            if(selectedIndex == 1)
+                            //   LabelText(label: 'PEN ID', astrick: false),
+                            // const SizedBox(height: 10),
+                              CustomTextFormField(
+                                suffixIcon: IconButton(
+                                  icon: isVisible ? const Icon(Icons.visibility) : const Icon(Icons.visibility_off),
+                                  onPressed: () {
+                                    setState(() {
+                                      isVisible = !isVisible;
+                                    });
+                                  },
+                                ),
+                                obscureText: !isVisible,
+                                maxlength: 11,
+                                labelText: 'Enter PEN ID',
+                                textInputType: TextInputType.number,
+                                textController: _penController,
+                                validator: (value) {
+                                  if (value != null && value.isNotEmpty &&
+                                      value.length != 11) {
+                                    return 'APAAR ID must be 11 characters long';
+                                  }
+                                  return null;
+                                },
+                              ),
+                            if(selectedIndex == 2)
+                              // LabelText(label: 'Student ID', astrick: false),
+                              // const SizedBox(height: 10),
+                            CustomTextFormField(
+                              suffixIcon: IconButton(
+                                icon: isVisible ? const Icon(Icons.visibility) : const Icon(Icons.visibility_off),
+                                onPressed: () {
+                                  setState(() {
+                                    isVisible = !isVisible;
+                                  });
+                                },
+                              ),
+                              obscureText: !isVisible,
+                              labelText: 'Enter student ID',
+                              textController: _rollNoController,
+                            ),
+                            // const SizedBox(height: 10),
+                            // LabelText(label: 'APAAR ID', astrick: false),
+                            // const SizedBox(height: 10),
+                            // CustomTextFormField(
+                            //   maxlength: 12,
+                            //   labelText: 'Enter APAAR ID',
+                            //   textInputType: TextInputType.number,
+                            //   textController: _apparController,
+                            //   validator: (value) {
+                            //     if (value != null && value.isNotEmpty &&
+                            //         value.length != 12) {
+                            //       return 'APAAR ID must be 12 characters long';
+                            //     }
+                            //     return null;
+                            //   },
+                            // ),
                           ],
                           const SizedBox(height: 10),
                           LabelText(label: 'Student Name', astrick: true),
@@ -880,7 +994,8 @@ class _StudentRegistrationState extends State<StudentRegistration> {
                             )
                           else
                             CustomButton(
-                              onPressedButton: _onRegisterPressed,
+                              // onPressedButton: _onRegisterPressed,
+                              onPressedButton: _register,
                               title: 'Register',
                             ),
                         ],

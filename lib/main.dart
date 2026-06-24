@@ -8,6 +8,7 @@ import 'package:lib17000ft/forms/dashboard/dash_cubit.dart';
 import 'package:lib17000ft/forms/filters/filter_cubit.dart';
 import 'package:lib17000ft/services/push_notification_service.dart';
 
+import 'configs/color/color.dart';
 import 'configs/routes/routes.dart';
 import 'configs/routes/routes_name.dart';
 import 'forms/student/student_cubit.dart';
@@ -70,13 +71,14 @@ class MyApp extends StatelessWidget {
             debugShowCheckedModeBanner: false,
             title: 'Library App 17000ft Foundation',
             theme: ThemeData(
-              colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+              colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primary),
               useMaterial3: true,
             ),
             initialRoute: RoutesName.splashScreen,
             //home: IssueBookDummyScreen(),
 
-            onGenerateRoute: Routes.generateRoute));
+            onGenerateRoute: Routes.generateRoute)
+    );
   }
 }
 

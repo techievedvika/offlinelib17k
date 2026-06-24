@@ -41,10 +41,14 @@ Future<DashModel?> fetchDashData(
 }
 
 
-    final uri = Uri.parse(AppUrls.dashapi).replace(queryParameters: queryParams);
+    print('this is query params $queryParams');
+    //final uri = Uri.parse(AppUrls.dashapi).replace(queryParameters: queryParams);
+    //final uri = Uri.parse(AppUrls.testDashapi).replace(queryParameters: queryParams);
+    final uri = Uri.parse(AppUrls.dashboardApi);
     print('this is my final url for dashboard data $uri');
 
-    final response = await _api.getApi(uri.toString());
+    //final response = await _api.getApi(uri.toString());
+    final response = await _api.postApi(uri.toString(),queryParams);
     print('this is response from dash $response');
 
     return DashModel.fromJson(response);
@@ -53,5 +57,29 @@ Future<DashModel?> fetchDashData(
     rethrow;
   }
 }
+
+//To fetch lib activity log form
+  Future<List<dynamic>?> fetchFormLogs(String adminId) async {
+    try {
+
+      final queryParams = <String, String>{'created_by': adminId};
+      //final url = "${AppUrls.getFormApi}?created_by=$adminId";
+      final url = AppUrls.getLibFormApi;
+      // final response = await _api.getApi(url);
+      final response = await _api.postApi(url,queryParams);
+
+      print(response);
+
+      // Assuming the API returns { "status": "success", "data": [...] }
+      // or directly a list. Adjust based on your actual JSON structure.
+      if (response != null && response['error'] == false) {
+        return response['data'];
+      }
+      return [];
+    } catch (e) {
+      print('Error fetching form logs: $e');
+      return null;
+    }
+  }
 
 }

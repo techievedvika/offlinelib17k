@@ -26,8 +26,8 @@ class _CustomButtonState extends State<CustomButton> {
     final responsive = Responsive(context);
     return SizedBox(
         height:
-            responsive.responsiveValue(small: 60.0, medium: 60.0, large: 65.0),
-        width: responsive.responsiveValue(
+            widget.height ?? responsive.responsiveValue(small: 60.0, medium: 60.0, large: 65.0),
+        width: widget.width ?? responsive.responsiveValue(
             small: 190.0, medium: 260.0, large: 280.0),
         child: Center(
           child: ElevatedButton(

@@ -13,20 +13,23 @@ class DashCubit extends Cubit<DashState> {
 
   Future<String?> fetchLibVersion() async {
     try {
-      final response = await http.get(
+      final response = await http.post(
         Uri.parse(AppUrls.getAppVersionApi),
       );
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
 
+        // if (data['error'] == false) {
+        //   // If response is list: [{lib_version: "1.0.5"}]
+        //   final list = data['message'];
+        //
+        //   if (list != null && list.isNotEmpty) {
+        //     return list[0]['lib_version'];
+        //   }
+        // }
         if (data['error'] == false) {
-          // If response is list: [{lib_version: "1.0.5"}]
-          final list = data['message'];
-
-          if (list != null && list.isNotEmpty) {
-            return list[0]['lib_version'];
-          }
+          return data['message']?.toString();
         }
       } else {
         print('Server Error: ${response.statusCode}');
@@ -64,6 +67,17 @@ class DashCubit extends Cubit<DashState> {
       }
     } catch (error) {
       emit(DashFailure('Something went wrong: $error'));
+    }
+  }
+
+  //To fetch form logs
+  Future<List<dynamic>?> fetchFormLogs({required String adminId}) async {
+    try {
+      final logs = await _dashRepository.fetchFormLogs(adminId);
+      return logs;
+    } catch (e) {
+      print('Cubit Error: $e');
+      return null;
     }
   }
 }

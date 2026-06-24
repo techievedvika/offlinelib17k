@@ -11,25 +11,63 @@ class StudentCubit extends Cubit<StudentState> {
   int _page = 1; // For pagination, assuming 1 as the starting page
   bool _hasMoreData = true; // Flag to check if there's more data
 
-  void registerStudent(dynamic student) async {
+  void registerStudent(dynamic data) async {
+  //   emit(StudentLoading());
+  //   print('this is student data $student');
+  //   await Future.delayed(const Duration(seconds: 1)); // Simulating API call
+  //   try {
+  //     final value = await _studentRepository.registerStudent(student);
+  //     print('this is got');
+  //     print('This is the Value : $value');
+  //
+  //     if (value!['error'] == 1) {
+  //       emit(StudentFailure(message: value['message'].toString()));
+  //     } else if (value['error'] == 0) {
+  //       emit(StudentSuccess(message: value['message'].toString()));
+  //     }
+  //   } catch (error) {
+  //     print('this error occured $error');
+  //     emit(StudentFailure(message: error.toString()));
+  //   }
+  //   // emit(StudentRegistered());
+  // }
     emit(StudentLoading());
-    print('this is student data $student');
-    await Future.delayed(const Duration(seconds: 1)); // Simulating API call
     try {
-      final value = await _studentRepository.registerStudent(student);
-      print('this is got');
-      print(value);
+      // FIX: Ensure data['created_by'] is converted to String BEFORE parsing
+      // This handles cases where created_by is already an int OR a String.
+      // final String rawCreatedBy = data['created_by']?.toString() ?? '0';
+      // final int creatorId = int.parse(rawCreatedBy);
 
-      if (value!['error'] == 1) {
+      // Construct payload ensuring all String fields are actually Strings
+      final payload = {
+        'name': data['name']?.toString() ?? '',
+        'class': data['class']?.toString() ?? '',
+        'gender': data['gender']?.toString() ?? '',
+        'created_by': data['created_by']?.toString() ?? '0',
+        'apaarId': (data['apaarId'] == null || data['apaarId'].toString().trim().isEmpty)
+            ? 'NA'
+            : data['apaarId'].toString(),
+        'pen_id': (data['pen_id'] == null || data['pen_id'].toString().trim().isEmpty)
+            ? 'NA'
+            : data['pen_id'].toString(),
+        'rollno': (data['rollno'] == null || data['rollno'].toString().trim().isEmpty)
+            ? 'NA'
+            : data['rollno'].toString(),
+      };
+
+      print("Sending Payload to API: $payload");
+
+      final value = await _studentRepository.registerStudent(payload);
+
+      if (value['error'] == 1) {
         emit(StudentFailure(message: value['message'].toString()));
-      } else if (value['error'] == 0) {
+      } else {
         emit(StudentSuccess(message: value['message'].toString()));
       }
     } catch (error) {
-      print('this error occured $error');
-      emit(StudentFailure(message: error.toString()));
+      print("Cubit Error Trace: $error");
+      emit(StudentFailure(message: "Registration Error: ${error.toString()}"));
     }
-    // emit(StudentRegistered());
   }
 
   void updateStudent(StudentModel? student) async {
@@ -44,8 +82,12 @@ class StudentCubit extends Cubit<StudentState> {
       "gender": student?.gender,
       "class": student?.classs,
       "apaarId": student?.apaarId,
+      "penId": student?.penId,
+      "uniqueId": student?.uniqueId,
       "school": student?.school,
       "created_by" : student?.createdBy,
+      "status" : student?.status,
+      "reason" : student?.reason,
     };
 
     try {
@@ -150,8 +192,8 @@ class StudentCubit extends Cubit<StudentState> {
         emit(StudentPromote(message: value['message'].toString()));
       }
     } catch (error) {
-      print('catch error $error')
-;      emit(StudentFailure(message: error.toString()));
+      print('catch error $error');
+      emit(StudentFailure(message: error.toString()));
     }
     // emit(StudentRegistered());
   }

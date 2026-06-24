@@ -9,7 +9,7 @@ part 'user.g.dart';
 class User with _$User {
   factory User({
     @JsonKey(name: 'username') required String username,
-    @JsonKey(name: 'password') required String password,
+    //@JsonKey(name: 'password') required String password,
     @JsonKey(name: 'state') required String state,
     @JsonKey(name: 'district') required String district,
     @JsonKey(name: 'location') required String location,

@@ -21,6 +21,7 @@ import 'package:lib17000ft/services/csv_exporter.dart';
 import 'package:lib17000ft/components/student_details_bottom_sheet.dart';
 import 'package:lib17000ft/forms/filters/filter_content_widget.dart';
 
+import '../../configs/routes/routes_name.dart';
 import '../../services/permission_storage.dart';
 
 class AllStudentList extends StatefulWidget {
@@ -58,6 +59,9 @@ class _AllStudentListState extends State<AllStudentList> {
   String? _tempSelectedBlock;
   String? _tempSelectedSchool;
   DateTimeRange? _tempSelectedDateRange;
+
+  bool _isAscending = true;
+
 
   @override
   void initState() {
@@ -174,7 +178,7 @@ class _AllStudentListState extends State<AllStudentList> {
                           // Search Bar takes all remaining space
                           Expanded(
                             child: SearchBar(
-                              hintText: 'Search students by name or ID',
+                              hintText: 'Search students by name or grade',
                               hintStyle: WidgetStateProperty.all(
                                   const TextStyle(color: Colors.grey)
                               ),
@@ -257,20 +261,228 @@ class _AllStudentListState extends State<AllStudentList> {
 
 
                     // 🧮 Student count
+                    // Padding(
+                    //   padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    //   child: Align(
+                    //     alignment: Alignment.centerLeft,
+                    //     child: Text(
+                    //       '${filteredStudents.length} ${filteredStudents.length == 1 ? 'student' : 'students'} found',
+                    //       style: theme.textTheme.bodySmall?.copyWith(
+                    //         color: Colors.grey[600],
+                    //       ),
+                    //     ),
+                    //   ),
+                    // ),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          '${filteredStudents.length} ${filteredStudents.length == 1 ? 'student' : 'students'} found',
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: Colors.grey[600],
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        //alignment: Alignment.centerLeft,
+                        children: [
+                          Text(
+                            '${filteredStudents.length} ${filteredStudents.length == 1 ? 'student' : 'students'} found',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: Colors.grey[600],
+                            ),
                           ),
-                        ),
+                          IconButton(
+                            icon: Icon(_isAscending == false ? Icons.arrow_upward : Icons.arrow_downward,
+                              size: 20,
+                              color: AppColors.tertiary,),
+                            onPressed: () {
+                              setState(() {
+                                _isAscending = !_isAscending;
+                              });
+                            },
+                            style: IconButton.styleFrom(
+                              backgroundColor: AppColors.primary.withOpacity(0.1),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          ),
+
+                        ],
                       ),
                     ),
 
                     // 🧑‍🎓 Student list or empty state
+                    // Expanded(
+                    //   child: filteredStudents.isEmpty
+                    //       ? Center(
+                    //     child: Column(
+                    //       mainAxisAlignment: MainAxisAlignment.center,
+                    //       children: [
+                    //         Icon(Icons.school_outlined,
+                    //             size: 64,
+                    //             color: theme.primaryColor.withOpacity(0.3)),
+                    //         const SizedBox(height: 16),
+                    //         Text(
+                    //           _searchQuery.isEmpty
+                    //               ? 'No students found'
+                    //               : 'No matching students',
+                    //           style:
+                    //           theme.textTheme.headlineSmall?.copyWith(
+                    //             color: Colors.grey[600],
+                    //           ),
+                    //         ),
+                    //         const SizedBox(height: 8),
+                    //         Text(
+                    //           _searchQuery.isEmpty
+                    //               ? 'Add a new student to get started'
+                    //               : 'Try a different search',
+                    //           style: theme.textTheme.bodyMedium,
+                    //         ),
+                    //       ],
+                    //     ),
+                    //   )
+                    //       : RefreshIndicator(
+                    //     color: theme.primaryColor,
+                    //     onRefresh: () async {
+                    //       await context
+                    //           .read<StudentCubit>()
+                    //           .fetchStudents(adminId:  userId);
+                    //     },
+                    //     child: ListView.builder(
+                    //       controller: _scrollController,
+                    //       padding: EdgeInsets.symmetric(
+                    //         horizontal: isPortrait
+                    //             ? screenWidth * 0.03
+                    //             : screenWidth * 0.1,
+                    //         vertical: 8,
+                    //       ),
+                    //       itemCount: filteredStudents.length +
+                    //           (_isLoadingMore ? 1 : 0),
+                    //       itemBuilder: (context, index) {
+                    //         if (index >= filteredStudents.length) {
+                    //           return const Padding(
+                    //             padding: EdgeInsets.all(16.0),
+                    //             child: Center(
+                    //               child: CircularProgressIndicator(),
+                    //             ),
+                    //           );
+                    //         }
+                    //
+                    //         final student = filteredStudents[index];
+                    //         final studentJsonData =
+                    //         jsonEncode(student.toJson());
+                    //
+                    //         return _buildStudentCard(
+                    //             student, context, studentJsonData);
+                    //       },
+                    //     ),
+                    //   ),
+                    // ),
+                    // Expanded(
+                    //   child: filteredStudents.isEmpty
+                    //       ? Center(
+                    //     child: Column(
+                    //       mainAxisAlignment: MainAxisAlignment.center,
+                    //       children: [
+                    //         Icon(Icons.school_outlined,
+                    //             size: 64,
+                    //             color: theme.primaryColor.withOpacity(0.3)),
+                    //         const SizedBox(height: 16),
+                    //         Text(
+                    //           _searchQuery.isEmpty
+                    //               ? 'No students found'
+                    //               : 'No matching students',
+                    //           style: theme.textTheme.headlineSmall?.copyWith(
+                    //             color: Colors.grey[600],
+                    //           ),
+                    //         ),
+                    //         const SizedBox(height: 8),
+                    //         Text(
+                    //           _searchQuery.isEmpty
+                    //               ? 'Add a new student to get started'
+                    //               : 'Try a different search',
+                    //           style: theme.textTheme.bodyMedium,
+                    //         ),
+                    //       ],
+                    //     ),
+                    //   )
+                    //       : () {
+                    //     // Group students by class/grade
+                    //     Map<String, List<StudentModel>> groupedStudents = {};
+                    //     for (var student in filteredStudents) {
+                    //       String grade = student.classs;
+                    //       if (!groupedStudents.containsKey(grade)) {
+                    //         groupedStudents[grade] = [];
+                    //       }
+                    //       groupedStudents[grade]!.add(student);
+                    //     }
+                    //
+                    //     // Sort grades (optional, e.g., 1, 2, 3...)
+                    //     var sortedGrades = groupedStudents.keys.toList()..sort();
+                    //
+                    //     return ListView.builder(
+                    //       padding: const EdgeInsets.all(16),
+                    //       itemCount: sortedGrades.length,
+                    //       itemBuilder: (context, index) {
+                    //         String grade = sortedGrades[index];
+                    //         List<StudentModel> studentsInGrade = groupedStudents[grade]!;
+                    //
+                    //         return Column(
+                    //           crossAxisAlignment: CrossAxisAlignment.start,
+                    //           children: [
+                    //             // Grade Header
+                    //             Container(
+                    //               width: double.infinity,
+                    //               padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                    //               decoration: BoxDecoration(
+                    //                 color: AppColors.primary.withOpacity(0.1),
+                    //                 borderRadius: BorderRadius.circular(8),
+                    //               ),
+                    //               child: Text(
+                    //                 '$grade (${studentsInGrade.length})',
+                    //                 style: theme.textTheme.titleMedium?.copyWith(
+                    //                   fontWeight: FontWeight.bold,
+                    //                   color: AppColors.primary,
+                    //                 ),
+                    //               ),
+                    //             ),
+                    //             const SizedBox(height: 8),
+                    //             // Students in this grade
+                    //             ListView.builder(
+                    //               shrinkWrap: true, // Important for nested lists
+                    //               physics: const NeverScrollableScrollPhysics(),
+                    //               itemCount: studentsInGrade.length,
+                    //               itemBuilder: (context, studentIndex) {
+                    //                 final student = studentsInGrade[studentIndex];
+                    //                 // return Card(
+                    //                 //   margin: const EdgeInsets.only(bottom: 8),
+                    //                 //   child: ListTile(
+                    //                 //     leading: CircleAvatar(
+                    //                 //       backgroundColor: AppColors.primary,
+                    //                 //       child: Text(
+                    //                 //         student.name[0].toUpperCase(),
+                    //                 //         style: const TextStyle(color: Colors.white),
+                    //                 //       ),
+                    //                 //     ),
+                    //                 //     title: Text(student.name),
+                    //                 //     subtitle: Text('Roll No: ${student.rollNo}'),
+                    //                 //     trailing: const Icon(Icons.chevron_right),
+                    //                 //     onTap: () {
+                    //                 //       // Existing logic to show student details
+                    //                 //       showStudentDetailsBottomSheet(context, student);
+                    //                 //     },
+                    //                 //   ),
+                    //                 // );
+                    //                 final studentJsonData =
+                    //                 jsonEncode(student.toJson());
+                    //
+                    //                 return _buildStudentCard(
+                    //                     student, context, studentJsonData);
+                    //               },
+                    //             ),
+                    //             const SizedBox(height: 16),
+                    //           ],
+                    //         );
+                    //       },
+                    //     );
+                    //   }(),
+                    // ),
+
                     Expanded(
                       child: filteredStudents.isEmpty
                           ? Center(
@@ -282,66 +494,146 @@ class _AllStudentListState extends State<AllStudentList> {
                                 color: theme.primaryColor.withOpacity(0.3)),
                             const SizedBox(height: 16),
                             Text(
-                              _searchQuery.isEmpty
-                                  ? 'No students found'
-                                  : 'No matching students',
-                              style:
-                              theme.textTheme.headlineSmall?.copyWith(
-                                color: Colors.grey[600],
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              _searchQuery.isEmpty
-                                  ? 'Add a new student to get started'
-                                  : 'Try a different search',
-                              style: theme.textTheme.bodyMedium,
+                              _searchQuery.isEmpty ? 'No students found' : 'No matching students',
+                              style: theme.textTheme.headlineSmall?.copyWith(color: Colors.grey[600]),
                             ),
                           ],
                         ),
                       )
-                          : RefreshIndicator(
-                        color: theme.primaryColor,
-                        onRefresh: () async {
-                          await context
-                              .read<StudentCubit>()
-                              .fetchStudents(adminId:  userId);
-                        },
-                        child: ListView.builder(
-                          controller: _scrollController,
-                          padding: EdgeInsets.symmetric(
-                            horizontal: isPortrait
-                                ? screenWidth * 0.03
-                                : screenWidth * 0.1,
-                            vertical: 8,
-                          ),
-                          itemCount: filteredStudents.length +
-                              (_isLoadingMore ? 1 : 0),
+                          : () {
+                        // 1. Group students by class/grade
+                        Map<String, List<StudentModel>> groupedStudents = {};
+                        for (var student in filteredStudents) {
+                          String grade = student.classs ?? 'Unknown';
+                          if (!groupedStudents.containsKey(grade)) {
+                            groupedStudents[grade] = [];
+                          }
+                          groupedStudents[grade]!.add(student);
+                        }
+
+                        // 2. Sort grades (optional, e.g., 1, 2, 3...)
+                        // var sortedGrades = groupedStudents.keys.toList()
+                        //   ..sort((a, b) => _isAscending ? a.compareTo(b) : b.compareTo(a));
+
+                        var sortedGrades = groupedStudents.keys.toList()
+                          ..sort((a, b) {
+                            int weightA = _getGradeWeight(a);
+                            int weightB = _getGradeWeight(b);
+                            return _isAscending
+                                ? weightA.compareTo(weightB)
+                                : weightB.compareTo(weightA);
+                          });
+
+
+
+                        // return ListView.builder(
+                        //   padding: const EdgeInsets.all(16),
+                        //   itemCount: sortedGrades.length,
+                        //   itemBuilder: (context, index) {
+                        //     String grade = sortedGrades[index];
+                        //     List<StudentModel> studentsInGrade = groupedStudents[grade]!;
+                        //
+                        //     return Column(
+                        //       crossAxisAlignment: CrossAxisAlignment.start,
+                        //       children: [
+                        //         // Grade Header
+                        //         Container(
+                        //           width: double.infinity,
+                        //           padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                        //           decoration: BoxDecoration(
+                        //             color: AppColors.primary.withOpacity(0.1),
+                        //             borderRadius: BorderRadius.circular(8),
+                        //           ),
+                        //           child: Text(
+                        //             '$grade ("Students: ${studentsInGrade.length}")',
+                        //             style: theme.textTheme.titleMedium?.copyWith(
+                        //               fontWeight: FontWeight.bold,
+                        //               color: AppColors.primary,
+                        //             ),
+                        //           ),
+                        //         ),
+                        //         const SizedBox(height: 8),
+                        //
+                        //         // Students in this specific grade
+                        //         ListView.builder(
+                        //           shrinkWrap: true,
+                        //           physics: const NeverScrollableScrollPhysics(),
+                        //           itemCount: studentsInGrade.length,
+                        //           itemBuilder: (context, studentIndex) {
+                        //             final student = studentsInGrade[studentIndex];
+                        //             final studentJsonData = jsonEncode(student.toJson());
+                        //             print('Student Detail : $studentJsonData');
+                        //             return _buildStudentCard(
+                        //                 student, context, studentJsonData);
+                        //
+                        //           },
+                        //         ),
+                        //         const SizedBox(height: 16),
+                        //       ],
+                        //     );
+                        //   },
+                        // );
+                        return ListView.builder(
+                          padding: const EdgeInsets.all(16),
+                          itemCount: sortedGrades.length,
                           itemBuilder: (context, index) {
-                            if (index >= filteredStudents.length) {
-                              return const Padding(
-                                padding: EdgeInsets.all(16.0),
-                                child: Center(
-                                  child: CircularProgressIndicator(),
+                            String grade = sortedGrades[index];
+                            List<StudentModel> studentsInGrade = groupedStudents[grade]!;
+
+                            return Padding(
+                              padding: const EdgeInsets.only(top:12),
+                              child: Theme(
+                                // This removes the default border lines from ExpansionTile
+                                data: theme.copyWith(dividerColor: Colors.transparent),
+                                child: ExpansionTile(
+                                  maintainState: true,
+
+                                  tilePadding: const EdgeInsets.symmetric(horizontal: 12),
+
+                                  // This replaces your previous Container grade header
+                                  title: Container(
+                                    width: double.infinity,
+                                    padding: const EdgeInsets.symmetric(vertical: 8),
+                                    child: Text(
+                                      '$grade (Students: ${studentsInGrade.length})',
+                                      style: theme.textTheme.titleMedium?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        color: AppColors.tertiary,
+                                      ),
+                                    ),
+                                  ),
+                                  collapsedBackgroundColor: AppColors.primary.withOpacity(0.05),
+                                  backgroundColor: AppColors.primary.withOpacity(0.05),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                  collapsedShape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                  children: [
+
+                                    // Students in this specific grade
+                                    ListView.builder(
+
+                                      shrinkWrap: true,
+                                      physics: const NeverScrollableScrollPhysics(),
+                                      itemCount: studentsInGrade.length,
+                                      itemBuilder: (context, studentIndex) {
+                                        final student = studentsInGrade[studentIndex];
+                                        final studentJsonData = jsonEncode(student.toJson());
+                                        return _buildStudentCard(
+                                            student, context, studentJsonData);
+                                      },
+                                    ),
+                                    const SizedBox(height: 8),
+                                  ],
                                 ),
-                              );
-                            }
-
-                            final student = filteredStudents[index];
-                            final studentJsonData =
-                            jsonEncode(student.toJson());
-
-                            return _buildStudentCard(
-                                student, context, studentJsonData);
+                              ),
+                            );
                           },
-                        ),
-                      ),
+                        );
+                      }(),
                     ),
                   ],
                 ),
               );
             }
-
             return const Center(child: Text('No students found'));
           },
         ),
@@ -371,6 +663,22 @@ class _AllStudentListState extends State<AllStudentList> {
         ),
       ),
     );
+  }
+
+  //To set weight of the grade to arrange them in ascending order or descending.
+  int _getGradeWeight(String grade) {
+    String g = grade.toLowerCase().trim();
+    if (g.contains('nursery')) return 1;
+    if (g.contains('lkg')) return 2;
+    if (g.contains('ukg')) return 3;
+
+    // Extract digits for numeric grades (e.g., "Grade 1" or "1st" becomes 1)
+    final numericMatch = RegExp(r'\d+').firstMatch(g);
+    if (numericMatch != null) {
+      return int.parse(numericMatch.group(0)!) + 3; // +3 to stay after UKG
+    }
+
+    return 999; // Fallback for unknown strings
   }
 
   Future<void> _exportToCSV(List<StudentModel> students) async {
@@ -562,33 +870,61 @@ class _AllStudentListState extends State<AllStudentList> {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Student ID: ${student.rollNo}',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                    Text(
-                      'APAAR ID: ${student.apaarId ?? "XXXXXXXXXX"}',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: Colors.grey[600],
-                      ),
-                    ),
+                    // const SizedBox(height: 4),
+                    // Text(
+                    //   'Lib Code - lib/${student.id ?? ''}',
+                    //
+
+                    //   style: Theme.of(context).textTheme.bodySmall,
+                    // ),
+                    // Text(
+                    //   'Student ID: ${student.rollNo}',
+                    //   style: theme.textTheme.bodyMedium?.copyWith(
+                    //     color: Colors.grey[600],
+                    //   ),
+                    // ),
+                    // if(student.apaarId != null && student.apaarId != "NA" && student.penId == "NA")
+                    //   Text(
+                    //     'APAAR ID: ${student.apaarId}',
+                    //     style: theme.textTheme.bodyMedium?.copyWith(
+                    //       color: Colors.grey[600],
+                    //     ),
+                    //   ),
+                    // if(student.penId != "NA" && student.penId != null && student.apaarId == "NA")
+                    //   Text(
+                    //     'PEN ID: ${student.penId}',
+                    //     style: theme.textTheme.bodyMedium?.copyWith(
+                    //       color: Colors.grey[600],
+                    //     ),
+                    //   ),
+                    // if(student.apaarId == "NA" && student.penId == "NA")
+                    //   Text(
+                    //     'No APAAR ID/ PEN ID',
+                    //     style: theme.textTheme.bodyMedium?.copyWith(
+                    //       color: Colors.grey[600],
+                    //     ),
+                    //   ),
                   ],
                 ),
               ),
 
               // View button
               OutlinedButton(
-                onPressed: () => Navigator.push(
+                onPressed: () => Navigator.pushNamed(
                   context,
-                  MaterialPageRoute(
-                    builder: (context) => StudentIdCard(
-                      studentData: studentData,
-                    ),
-                  ),
+                  RoutesName.bookIssue,
+                  arguments: {
+                    'student': studentData,
+                  },
                 ),
+                // onPressed: () => Navigator.push(
+                //   context,
+                //   MaterialPageRoute(
+                //     builder: (context) => StudentIdCard(
+                //       studentData: studentData,
+                //     ),
+                //   ),
+                // ),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: colorScheme.primary,
                   side: BorderSide(color: colorScheme.primary),
@@ -601,7 +937,7 @@ class _AllStudentListState extends State<AllStudentList> {
                   ),
                 ),
                 child: Text(
-                  'View Card',
+                  'Issue Book',
                   style: theme.textTheme.labelMedium?.copyWith(
                     color: colorScheme.primary,
                   ),

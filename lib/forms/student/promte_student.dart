@@ -14,6 +14,7 @@ import 'package:lib17000ft/forms/filters/filter_bottom_sheet.dart';
 import 'package:lib17000ft/forms/filters/filter_cubit.dart';
 import 'package:lib17000ft/forms/filters/filter_dropdown.dart';
 import 'package:lib17000ft/forms/student/student_cubit.dart';
+import 'package:lib17000ft/forms/student/student_edit.dart';
 import 'package:lib17000ft/services/csv_exporter.dart';
 import 'package:lib17000ft/models/student_registration/student_model.dart';
 import 'package:path_provider/path_provider.dart';
@@ -21,6 +22,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:lib17000ft/forms/filters/filter_content_widget.dart';
 import '../../components/student_details_bottom_sheet.dart';
+import '../../configs/routes/routes_name.dart';
 import '../../services/permission_storage.dart';
 
 class PromoteStudentList extends StatefulWidget {
@@ -48,10 +50,10 @@ class _PromoteStudentListState extends State<PromoteStudentList> {
   String? location;
 
   String? _tempSelectedState;
-  String? _tempSelectedDistrict;
-  String? _tempSelectedBlock;
-  String? _tempSelectedSchool;
-  DateTimeRange? _tempSelectedDateRange;
+  bool _isAscending = true;
+
+  Set<String> _selectedStudentIds = {};
+  bool _isSelectAll = false;
 
   @override
   void initState() {
@@ -90,10 +92,10 @@ class _PromoteStudentListState extends State<PromoteStudentList> {
     if (query.isEmpty) return students;
     return students.where((student) {
       final name = student.name.toLowerCase();
-      final roll = student.rollNo.toLowerCase();
+      final roll = student.rollNo?.toLowerCase();
       final classs = student.classs.toLowerCase();
       return name.contains(query.toLowerCase()) ||
-          roll.contains(query.toLowerCase()) ||
+          roll!.contains(query.toLowerCase()) ||
           classs.contains(query.toLowerCase());
     }).toList();
   }
@@ -170,9 +172,24 @@ class _PromoteStudentListState extends State<PromoteStudentList> {
               final filteredStudents =
                   _filterStudents(state.studentList, _searchQuery);
 
+              filteredStudents.sort((a, b) {
+                int weightA = _getGradeWeight(a.classs ?? '');
+                int weightB = _getGradeWeight(b.classs ?? '');
+
+                // Compare weights
+                int compare = weightA.compareTo(weightB);
+
+                // If grades are the same (same weight), sort by name as a secondary criteria
+                if (compare == 0) {
+                  return (a.name ?? '').toLowerCase().compareTo((b.name ?? '').toLowerCase());
+                }
+
+                return _isAscending ? compare : -compare;
+              });
+
               return Column(
                 children: [
-                  // 🔍 Search bar always visible
+                  // Search bar always visible
 
                   Padding(
                     padding: EdgeInsets.symmetric(
@@ -295,88 +312,222 @@ class _PromoteStudentListState extends State<PromoteStudentList> {
                   ),
 
                   // 🧮 Student count
+                  // Padding(
+                  //   padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  //   child: Align(
+                  //     alignment: Alignment.centerLeft,
+                  //     child: Text(
+                  //       '${filteredStudents.length} ${filteredStudents.length == 1 ? 'student' : 'students'} found',
+                  //       style: theme.textTheme.bodySmall?.copyWith(
+                  //         color: Colors.grey[600],
+                  //       ),
+                  //     ),
+                  //   ),
+                  // ),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        '${filteredStudents.length} ${filteredStudents.length == 1 ? 'student' : 'students'} found',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: Colors.grey[600],
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      //alignment: Alignment.centerLeft,
+                      children: [
+                        Text(
+                          '${filteredStudents.length} ${filteredStudents.length == 1 ? 'student' : 'students'} found',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: Colors.grey[600],
+                          ),
                         ),
-                      ),
+                        IconButton(
+                          icon: Icon(_isAscending == false ? Icons.arrow_upward : Icons.arrow_downward),
+                          onPressed: () {
+                            setState(() {
+                              _isAscending = !_isAscending;
+                            });
+                          },
+                        ),
+                        SizedBox(
+                          width: screenWidth * 0.2,
+                        ),
+                        Expanded(
+                          child:  Column(
+                            children: [
+                              Row(
+                                children: [
+                                  Checkbox(
+                                    value: _isSelectAll,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _isSelectAll = value!;
+                                        if (_isSelectAll) {
+                                          _selectedStudentIds = filteredStudents.map((s) => s.id!).toSet();
+                                        } else {
+                                          _selectedStudentIds.clear();
+                                        }
+                                      });
+                                    },
+                                  ),
+                                  Text("Select All",style: theme.textTheme.bodySmall?.copyWith(
+                                      color: Colors.grey[600]),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+
+
+                      ],
                     ),
                   ),
 
-                  // 🧑‍🎓 Student list or empty state
                   Expanded(
-                    child: filteredStudents.isEmpty
-                        ? Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.school_outlined,
-                                    size: 64,
-                                    color: theme.primaryColor.withOpacity(0.3)),
-                                const SizedBox(height: 16),
-                                Text(
-                                  _searchQuery.isEmpty
-                                      ? 'No students found'
-                                      : 'No matching students',
-                                  style:
-                                      theme.textTheme.headlineSmall?.copyWith(
-                                    color: Colors.grey[600],
+                    child: RefreshIndicator(
+                      onRefresh: () async {
+                        // Logic to refresh the list
+                        await context.read<StudentCubit>().fetchStudents(
+                          adminId: userId,
+                          stateName: stateName, // maintains current filter
+                        );
+                      },
+                      child: filteredStudents.isEmpty
+                          ? Center(
+                        child: Text(
+                          _searchQuery.isEmpty
+                              ? 'No students found'
+                              : 'No matching students',
+                          style: theme.textTheme.titleMedium
+                              ?.copyWith(color: Colors.grey),
+                        ),
+                      )
+                          : () {
+                        // 1. Group students by class/grade
+                        Map<String, List<StudentModel>> groupedStudents = {};
+                        for (var student in filteredStudents) {
+                          String grade = student.classs ?? 'Unknown';
+                          if (!groupedStudents.containsKey(grade)) {
+                            groupedStudents[grade] = [];
+                          }
+                          groupedStudents[grade]!.add(student);
+                        }
+
+                        // 2. Sort the grade keys using the weight logic
+                        var sortedGrades = groupedStudents.keys.toList()
+                          ..sort((a, b) {
+                            int weightA = _getGradeWeight(a);
+                            int weightB = _getGradeWeight(b);
+                            return _isAscending
+                                ? weightA.compareTo(weightB)
+                                : weightB.compareTo(weightA);
+                          });
+
+                        // 3. Return the grouped ListView
+                        return ListView.builder(
+                          padding: const EdgeInsets.all(16),
+                          itemCount: sortedGrades.length,
+                          itemBuilder: (context, index) {
+                            String grade = sortedGrades[index];
+                            List<StudentModel> studentsInGrade =
+                            groupedStudents[grade]!;
+
+                            // Optional: Sort students by name within the grade
+                            studentsInGrade.sort((a, b) => (a.name ?? '')
+                                .toLowerCase()
+                                .compareTo((b.name ?? '').toLowerCase()));
+
+                            // return Padding(
+                            //   padding: const EdgeInsets.only(bottom: 16.0),
+                            //   child: Column(
+                            //     crossAxisAlignment: CrossAxisAlignment.start,
+                            //     children: [
+                            //       // Grade Header
+                            //       Container(
+                            //         width: double.infinity,
+                            //         padding: const EdgeInsets.symmetric(
+                            //             vertical: 8, horizontal: 12),
+                            //         decoration: BoxDecoration(
+                            //           color: AppColors.primary.withOpacity(0.1),
+                            //           borderRadius: BorderRadius.circular(8),
+                            //         ),
+                            //         child: Text(
+                            //           '$grade ("Students: ${studentsInGrade.length}")',
+                            //           style: theme.textTheme.titleMedium?.copyWith(
+                            //             fontWeight: FontWeight.bold,
+                            //             color: AppColors.primary,
+                            //           ),
+                            //         ),
+                            //       ),
+                            //       const SizedBox(height: 8),
+                            //
+                            //       // Students in this specific grade
+                            //       ListView.builder(
+                            //         shrinkWrap: true,
+                            //         physics:
+                            //         const NeverScrollableScrollPhysics(),
+                            //         itemCount: studentsInGrade.length,
+                            //         itemBuilder: (context, studentIndex) {
+                            //           final student =
+                            //           studentsInGrade[studentIndex];
+                            //           final studentJsonData =
+                            //           jsonEncode(student.toJson());
+                            //
+                            //           return _buildStudentCard(
+                            //               student, context, studentJsonData);
+                            //         },
+                            //       ),
+                            //     ],
+                            //   ),
+                            // );
+
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 16.0),
+                              child: ExpansionTile(
+                                maintainState: true,
+
+                                tilePadding: const EdgeInsets.symmetric(horizontal: 12),
+                                title: Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 8, horizontal: 12),
+                                  // decoration: BoxDecoration(
+                                  //   color: AppColors.primary.withOpacity(0.1),
+                                  //   borderRadius: BorderRadius.circular(8),
+                                  // ),
+                                  child: Text(
+                                    '$grade (Students: ${studentsInGrade.length})',
+                                    style: theme.textTheme.titleMedium?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.tertiary,
+                                    ),
                                   ),
                                 ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  _searchQuery.isEmpty
-                                      ? 'Add a new student to get started'
-                                      : 'Try a different search',
-                                  style: theme.textTheme.bodyMedium,
-                                ),
-                              ],
-                            ),
-                          )
-                        : RefreshIndicator(
-                            color: theme.primaryColor,
-                            onRefresh: () async {
-                              await context
-                                  .read<StudentCubit>()
-                                  .fetchStudents(adminId: userId);
-                            },
-                            child: ListView.builder(
-                              controller: _scrollController,
-                              padding: EdgeInsets.symmetric(
-                                horizontal: isPortrait
-                                    ? screenWidth * 0.03
-                                    : screenWidth * 0.1,
-                                vertical: 8,
+                                collapsedBackgroundColor: AppColors.primary.withOpacity(0.05),
+                                backgroundColor: AppColors.primary.withOpacity(0.05),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                collapsedShape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                children: [
+                                  ListView.builder(
+                                    shrinkWrap: true,
+                                    physics:
+                                    const NeverScrollableScrollPhysics(),
+                                    itemCount: studentsInGrade.length,
+                                    itemBuilder: (context, studentIndex) {
+                                      final student =
+                                      studentsInGrade[studentIndex];
+                                      final studentJsonData =
+                                      jsonEncode(student.toJson());
+
+                                      return _buildStudentCard(
+                                          student, context, studentJsonData);
+                                    },
+                                  ),
+                                ],
                               ),
-                              itemCount: filteredStudents.length +
-                                  (_isLoadingMore ? 1 : 0),
-                              itemBuilder: (context, index) {
-                                if (index >= filteredStudents.length) {
-                                  return const Padding(
-                                    padding: EdgeInsets.all(16.0),
-                                    child: Center(
-                                      child: CircularProgressIndicator(),
-                                    ),
-                                  );
-                                }
-
-                                final student = filteredStudents[index];
-                                final studentJsonData =
-                                    jsonEncode(student.toJson());
-
-                                return _buildStudentCard(
-                                    student, context, studentJsonData);
-                              },
-                            ),
-                          ),
-                  ),
-                ],
-              );
+                            );
+                          },
+                        );
+                      }(),
+                    )
+                  )
+                ]);
             }
 
             return const Center(child: Text('No students found'));
@@ -386,43 +537,50 @@ class _PromoteStudentListState extends State<PromoteStudentList> {
           builder: (context, state) {
             if (state is StudentListSuccess && state.studentList.isNotEmpty) {
               final filteredStudents = _filterStudents(state.studentList, _searchQuery);
-              return FloatingActionButton.small(
-                // onPressed: () async {
-                //   //final granted = await _requestStoragePermission();
-                //   final granted = await PermissionService.requestStoragePermission();
-                //   if (granted) {
-                //     // You'll need to implement or call your _exportToCSV method here
-                //     await _exportToCSV(state.studentList);
-                //     // ScaffoldMessenger.of(context).showSnackBar(
-                //     //   const SnackBar(content: Text('Exporting CSV...')),
-                //     // );
-                //   } else {
-                //     // The bottom sheet will be shown automatically if needed.
-                //     // This SnackBar is a fallback for other denial cases.
-                //     if (mounted) {
-                //       ScaffoldMessenger.of(context).showSnackBar(
-                //         const SnackBar(
-                //             content: Text('Storage permission is required to export data.')),
-                //       );
-                //     }
-                //   }
-                // },
-                onPressed: () async {
-                  try {
-                    await _exportToCSV(state.studentList);
-                  } catch (e) {
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Export failed: $e',style: const TextStyle(color: AppColors.onError),),
-                          backgroundColor: AppColors.error,
-                        ),
-                      );
-                    }
-                  }
-                },
-                tooltip: 'Export CSV',
-                child: const Icon(Icons.download, size: 20),
+
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  // Promote All Button
+                  if (_selectedStudentIds.isNotEmpty)
+                    FloatingActionButton.extended(
+                      heroTag: 'promote_all_button',
+                      onPressed: () {
+                        final selectedList = filteredStudents
+                            .where((s) => _selectedStudentIds.contains(s.id))
+                            .toList();
+                        _promoteSelectedStudents(selectedList);
+                      },
+                      label: Text("Promote : ${_selectedStudentIds.length}",
+                          style: const TextStyle(color: Colors.white)),
+                      icon: const Icon(Icons.arrow_circle_up, color: Colors.white),
+                      backgroundColor: AppColors.primary,
+                    ),
+
+                  const SizedBox(height: 12),
+
+                  // Export CSV Button
+                  FloatingActionButton.small(
+                    heroTag: 'export_csv_btn',
+                    onPressed: () async {
+                      try {
+                        await _exportToCSV(state.studentList);
+                      } catch (e) {
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Export failed: $e', style: const TextStyle(color: AppColors.onError)),
+                              backgroundColor: AppColors.error,
+                            ),
+                          );
+                        }
+                      }
+                    },
+                    tooltip: 'Export CSV',
+                    child: const Icon(Icons.download, size: 20),
+                  ),
+                ],
               );
             }
             return const SizedBox.shrink(); // Hide button if there's no data
@@ -433,66 +591,98 @@ class _PromoteStudentListState extends State<PromoteStudentList> {
     );
   }
 
-  // Future<void> _exportToCSV(List<StudentModel> students) async {
-  //   final List<List<String>> rows = [
-  //     [
-  //       'Name',
-  //       'Gender',
-  //       'Student ID',
-  //       'Class',
-  //       'APAAR ID',
-  //       'School'
-  //     ], // CSV headers
-  //     ...students.map((student) => [
-  //       student.name,
-  //       student.gender,
-  //       student.rollNo,
-  //       student.classs,
-  //       student.apaarId ?? 'N/A',
-  //       student.school!,
-  //     ])
-  //   ];
-  //
-  //   final csvData = const ListToCsvConverter().convert(rows);
-  //   final directory = await getExternalStorageDirectory();
-  //   final path = '${directory!.path}/students_list.csv';
-  //
-  //   final file = File(path);
-  //   await file.writeAsString(csvData);
-  //   if (await Permission.manageExternalStorage.request().isGranted ||
-  //       await Permission.storage.request().isGranted) {
-  //     Directory? downloadsDir;
-  //
-  //     if (Platform.isAndroid) {
-  //       downloadsDir =
-  //           Directory('/storage/emulated/0/Download'); // public Downloads
-  //     } else {
-  //       downloadsDir = await getApplicationDocumentsDirectory(); // iOS fallback
-  //     }
-  //     final now = DateTime.now();
-  //     final formattedDate =
-  //         "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}_${now.hour.toString().padLeft(2, '0')}-${now.minute.toString().padLeft(2, '0')}";
-  //     final file = File("${downloadsDir.path}/Student_List_$formattedDate.csv");
-  //
-  //     //final file = File("${downloadsDir.path}/students.csv");
-  //     await file.writeAsString(csvData);
-  //     print("File saved to: ${file.path}");
-  //   } else {
-  //     print("Storage permission not granted");
-  //   }
-  //
-  //   // Save using FileSaver for Android/iOS support
-  //   await FileSaver.instance.saveFile(
-  //     name: 'students_list',
-  //     bytes: file.readAsBytesSync(),
-  //     ext: 'csv',
-  //     mimeType: MimeType.csv,
-  //   );
-  //
-  //   ScaffoldMessenger.of(context).showSnackBar(
-  //     const SnackBar(content: Text('Student list exported successfully!'),backgroundColor: AppColors.primary,),
-  //   );
-  // }
+  //To get grade weight to arrange student list accrodingly
+  int _getGradeWeight(String grade) {
+    String g = grade.toLowerCase().trim();
+    if (g.contains('nursery')) return 1;
+    if (g.contains('lkg')) return 2;
+    if (g.contains('ukg')) return 3;
+
+    // Extract digits for numeric grades (e.g., "Grade 1" or "1st" becomes 1)
+    final numericMatch = RegExp(r'\d+').firstMatch(g);
+    if (numericMatch != null) {
+      return int.parse(numericMatch.group(0)!) + 3; // +3 to stay after UKG
+    }
+
+    return 999; // Fallback for unknown strings
+  }
+
+  Future<void> _promoteSelectedStudents(List<StudentModel> studentsToPromote) async {
+    final prefs = await SharedPreferences.getInstance();
+
+    // 1. Mandatory ID Check Loop
+    // If any student is missing IDs, we show the edit sheet one by one.
+    for (var student in studentsToPromote) {
+
+      bool idsExist = await uniqueID(student);
+
+      // If BOTH are missing, prompt for update
+      if (!idsExist) {
+        // We 'await' here. If the user clicks 'Proceed without updating' in the sheet,
+        // this await finishes and the loop continues to the next student or promotion.
+        await _openEditStudentSheet(student);
+      }
+    }
+
+    // 2. Final Confirmation Dialog
+    // This is reached after all selected students have been checked/edited.
+    if (!mounted) return;
+    bool? confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Confirm Batch Promotion"),
+        content: Text("Promote ${studentsToPromote.length} students to the next grade?"),
+        actions: [
+          TextButton(onPressed: () => Navigator.pushReplacementNamed(context, RoutesName.promoteStudent),
+              child: const Text("Cancel")),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text("Promote All", style: TextStyle(color: AppColors.primary)),
+          ),
+        ],
+      ),
+    );
+
+    // 3. Execution: Promotion runs regardless of ID status here
+    if (confirm == true) {
+      for (var student in studentsToPromote) {
+        Map<String, dynamic> data = {
+          "id": student.id,
+          "class": student.classs, // The Cubit logic usually handles +1 grade logic
+        };
+
+        // Store the timestamp for future records
+        final storageKey = 'promoted_${student.id}';
+        final now = DateFormat('dd-MM-yyyy HH:mm:ss').format(DateTime.now());
+        await prefs.setString(storageKey, now);
+
+        // Trigger the actual promotion
+        context.read<StudentCubit>().promoteStudent(data);
+      }
+
+      setState(() {
+        _selectedStudentIds.clear();
+        _isSelectAll = false;
+      });
+    }
+  }
+
+  Future<void> _openEditStudentSheet(StudentModel student) async {
+    await showModalBottomSheet(
+
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (context) {
+        return EditStudentScreen(
+          student: student,
+          skipOption: true,
+        );
+      },
+    );
+  }
+
+
   Future<void> _exportToCSV(List<StudentModel> students) async {
     try {
       /// 1. Prepare CSV Data
@@ -547,243 +737,6 @@ class _PromoteStudentListState extends State<PromoteStudentList> {
       }
     }
   }
-  void _applyFilters() {
-    context.read<StudentCubit>().fetchStudents(
-          adminId: userId!,
-          stateName: stateName,
-          block: block,
-          school: school,
-          from: _selectedDateRange != null
-              ? DateFormat('yyyy-MM-dd').format(_selectedDateRange!.start)
-              : null,
-          to: _selectedDateRange != null
-              ? DateFormat('yyyy-MM-dd').format(_selectedDateRange!.end)
-              : null,
-        );
-  }
-
-  // Widget _buildFilterContent(
-  //     bool isMobile, void Function(VoidCallback fn) setModalState) {
-  //   return BlocBuilder<FilterCubit, FilterState>(
-  //     builder: (context, filterState) {
-  //       context.read<FilterCubit>().fetchStates();
-  //
-  //       return Column(
-  //         mainAxisSize: MainAxisSize.min,
-  //         children: [
-  //           // State Dropdown
-  //           FilterDropdown(
-  //             value: filterState.selectedState,
-  //             hint: 'Select State',
-  //             items: ['All', ...filterState.states],
-  //             onChanged: (value) {
-  //               context.read<FilterCubit>().updateSelectedState(value!);
-  //
-  //               setState(() {
-  //                 stateName = value;
-  //               });
-  //
-  //               //  context.read<FilterCubit>().fetchBlocks(value);
-  //
-  //               setModalState(() {});
-  //             },
-  //             isMobile: isMobile,
-  //           ),
-  //
-  //           if (filterState.districts.isNotEmpty && isSuperAdmin == true)
-  //             FilterDropdown(
-  //                 value: filterState.selectedDistrict,
-  //                 hint: 'Select District',
-  //                 items: ['All', ...filterState.districts],
-  //                 onChanged: (value) {
-  //                   context.read<FilterCubit>().updateSelectedDistrict(value!);
-  //
-  //                   setState(() {
-  //                     districtName = value;
-  //                   });
-  //                   //  context.read<FilterCubit>().fetchBlocks(value);
-  //
-  //                   setModalState(() {});
-  //                 },
-  //                 isMobile: isMobile),
-  //
-  //           const SizedBox(height: 12),
-  //
-  //           // Block Dropdown
-  //           if (filterState.blocks.isNotEmpty)
-  //             FilterDropdown(
-  //               value: filterState.selectedBlock,
-  //               hint: 'Select Block',
-  //               items: ['All', ...filterState.blocks],
-  //               onChanged: (value) {
-  //                 context.read<FilterCubit>().updateSelectedBlock(value!);
-  //                 setState(() {
-  //                   block = value;
-  //                 });
-  //
-  //                 setModalState(() {});
-  //               },
-  //               isMobile: isMobile,
-  //             ),
-  //           if (filterState.blocks.isNotEmpty) const SizedBox(height: 12),
-  //
-  //           // School Dropdown
-  //           if (filterState.schools.isNotEmpty)
-  //             FilterDropdown(
-  //               value: filterState.selectedSchool,
-  //               hint: 'Select School',
-  //               items: ['All', ...filterState.schools],
-  //               onChanged: (value) {
-  //                 context.read<FilterCubit>().updateSelectedSchool(value!);
-  //                 context.read<FilterCubit>().selectSchool(value);
-  //                 setState(() {
-  //                   school = value;
-  //                 });
-  //
-  //                 setModalState(() {});
-  //               },
-  //               isMobile: isMobile,
-  //             ),
-  //           if (filterState.schools.isNotEmpty) const SizedBox(height: 12),
-  //
-  //           // Date Range
-  //           _buildDateFilterButton(isMobile, setModalState),
-  //
-  //           // Clear Filters
-  //           if (filterState.selectedState != null || _selectedDateRange != null)
-  //             TextButton(
-  //               onPressed: () {
-  //                 context.read<FilterCubit>().clearFilters();
-  //                 setState(() {
-  //                   _selectedDateRange = null;
-  //                 });
-  //                 setModalState(() {});
-  //               },
-  //               child: const Text("Clear All Filters"),
-  //             )
-  //         ],
-  //       );
-  //     },
-  //   );
-  Widget _buildFilterContent(
-      bool isMobile, void Function(VoidCallback fn) setModalState) {
-    return BlocBuilder<FilterCubit, FilterState>(
-      builder: (context, filterState) {
-        context.read<FilterCubit>().fetchStates();
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            //Only School dropDown for Librarian
-            if(isSuperAdmin == false)
-              FilterDropdown(
-                  value: filterState.selectedSchool,
-                  hint: 'Select School',
-                  items: (libSchool!= null ? [libSchool!] : []),
-                  onChanged: (value) {
-                    context.read<FilterCubit>().updateSelectedSchool(value!);
-                    context.read<FilterCubit>().selectSchool(value);
-                    setState(() {
-                      school = value;
-                    });
-                    setModalState(() {});
-                  },
-                  isMobile: isMobile),
-
-            //Filter for super admin
-
-            // State Dropdown
-            const SizedBox(height: 12),
-            if(isSuperAdmin == true)
-              FilterDropdown(
-                  value: filterState.selectedState,
-                  hint: 'Select State',
-                  items:['All', ... filterState.states],
-                  onChanged: (value) {
-                    context.read<FilterCubit>().updateSelectedState(value!);
-
-                    setState(() {
-                      stateName = value;
-                    });
-                    //  context.read<FilterCubit>().fetchBlocks(value);
-
-                    setModalState(() {});
-                  },
-                  isMobile: isMobile),
-            const SizedBox(height: 12),
-            if (filterState.districts.isNotEmpty && isSuperAdmin == true)
-              FilterDropdown(
-                  value: filterState.selectedDistrict,
-                  hint: 'Select District',
-                  items: ['All', ...filterState.districts],
-                  onChanged: (value) {
-                    context.read<FilterCubit>().updateSelectedDistrict(value!);
-
-                    setState(() {
-                      districtName = value;
-                    });
-                    //  context.read<FilterCubit>().fetchBlocks(value);
-
-                    setModalState(() {});
-                  },
-                  isMobile: isMobile),
-
-            const SizedBox(height: 12),
-            // Block Dropdown
-            if (filterState.blocks.isNotEmpty && isSuperAdmin == true)
-              FilterDropdown(
-                  value: filterState.selectedBlock,
-                  hint: 'Select Block',
-                  items: ['All', ...filterState.blocks],
-                  onChanged: (value) {
-                    context.read<FilterCubit>().updateSelectedBlock(value!);
-                    setState(() {
-                      block = value;
-
-                    });
-
-                    setModalState(() {});
-                  },
-                  isMobile: isMobile),
-            if (filterState.blocks.isNotEmpty) const SizedBox(height: 12),
-
-            // School Dropdown
-            if (filterState.schools.isNotEmpty && isSuperAdmin == true)
-              FilterDropdown(
-                  value: filterState.selectedSchool,
-                  hint: 'Select School',
-                  items: ['All', ...filterState.schools],
-                  onChanged: (value) {
-                    context.read<FilterCubit>().updateSelectedSchool(value!);
-                    context.read<FilterCubit>().selectSchool(value);
-                    setState(() {
-                      school = value;
-                    });
-                    setModalState(() {});
-                  },
-                  isMobile: isMobile),
-
-            if (filterState.schools.isNotEmpty) const SizedBox(height: 12),
-
-            // Date Range
-            _buildDateFilterButton(isMobile, setModalState),
-
-            // Clear Filters
-            if (filterState.selectedState != null || _selectedDateRange != null)
-              TextButton(
-                onPressed: () {
-                  context.read<FilterCubit>().clearFilters();
-                  setState(() {
-                    _selectedDateRange = null;
-                  });
-                  setModalState(() {});
-                },
-                child: const Text("Clear All Filters"),
-              )
-          ],
-        );
-      },
-    );
-  }
 
   Future<void> _pickDateRange(
       void Function(VoidCallback fn) setModalState) async {
@@ -822,302 +775,126 @@ class _PromoteStudentListState extends State<PromoteStudentList> {
     }
   }
 
-  Widget _buildDateFilterButton(
-      bool isMobile, void Function(VoidCallback fn) setModalState) {
-    return GestureDetector(
-      onTap: () {
-        _pickDateRange(setModalState);
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.grey.shade300),
+
+
+  Widget _buildStudentCard(StudentModel student, BuildContext context, String studentJsonData) {
+    final isPortrait =
+        MediaQuery.of(context).orientation == Orientation.portrait;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isSelected = _selectedStudentIds.contains(student.id);
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(
+          color: isSelected ? AppColors.primary : Colors.grey.shade300,
+          width: isSelected ? 2 : 1,
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.calendar_today, size: 18, color: Colors.grey.shade600),
-            const SizedBox(width: 8),
-            Text(
-              _selectedDateRange == null
-                  ? 'Select Date Range'
-                  : '${DateFormat('MMM d').format(_selectedDateRange!.start)} - ${DateFormat('MMM d').format(_selectedDateRange!.end)}',
-              style: TextStyle(
-                fontSize: isMobile ? 14 : 15,
-                color: _selectedDateRange == null
-                    ? Colors.grey.shade600
-                    : Colors.black87,
-              ),
+      ),
+      child: CheckboxListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        controlAffinity: ListTileControlAffinity.leading, // Checkbox on the left
+        value: isSelected,
+        activeColor: AppColors.primary,
+        onChanged: (bool? value) {
+          setState(() {
+            if (value == true) {
+              _selectedStudentIds.add(student.id!);
+            } else {
+              _selectedStudentIds.remove(student.id);
+              _isSelectAll = false; // Uncheck 'Select All' if one is manually removed
+            }
+          });
+        },
+        title: Text(
+          student.name ?? 'Unknown',
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        // subtitle: Column(
+        //   crossAxisAlignment: CrossAxisAlignment.start,
+        //   children: [
+        //     const SizedBox(height: 4),
+        //     Text('Roll No: ${student.rollNo} | Class: ${student.classs}',style: theme.textTheme.bodyMedium?.copyWith(
+        //       color: Colors.grey[600],
+        //     ),),
+        //     if(student.apaarId != null && student.apaarId != "NA" && student.penId == "NA")
+        //       Text(
+        //         'APAAR ID: ${student.apaarId}',
+        //         style: theme.textTheme.bodyMedium?.copyWith(
+        //           color: Colors.grey[600],
+        //         ),
+        //       ),
+        //     if(student.penId != "NA" && student.penId != null && student.apaarId == "NA")
+        //       Text(
+        //         'PEN ID: ${student.penId}',
+        //         style: theme.textTheme.bodyMedium?.copyWith(
+        //           color: Colors.grey[600],
+        //         ),
+        //       ),
+        //     if(student.apaarId == "NA" && student.penId == "NA")
+        //       Text(
+        //         'No APAAR ID/ PEN ID',
+        //         style: theme.textTheme.bodyMedium?.copyWith(
+        //           color: Colors.grey[600],
+        //         ),
+        //       ),
+        //   ],
+        // ),
+        // subtitle: Text(
+        //   'Lib Code - lib/${student.id ?? ''}',
+        //
+        //   style: Theme.of(context).textTheme.bodySmall,
+        // ),
+        secondary: Container(
+          width: isPortrait ? 56 : 64,
+          height: isPortrait ? 56 : 64,
+          decoration: BoxDecoration(
+            color: colorScheme.primary.withOpacity(0.1),
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: colorScheme.primary.withOpacity(0.3),
+              width: 1.5,
             ),
-          ],
+          ),
+          child: Center(
+            child: TextButton(
+              child: Text(
+                _getInitials(student.name),
+                style: TextStyle(
+                  fontSize: isPortrait ? 18 : 20,
+                  fontWeight: FontWeight.bold,
+                  color: colorScheme.primary,
+                ),
+              ),
+              onPressed: () {
+                showStudentDetailsBottomSheet(context, student);
+              },
+            ),
+          ),
         ),
+        // IconButton(
+        //   icon: const Icon(Icons.info_outline, color: AppColors.primary),
+        //   onPressed: () {
+        //     // Reusing your existing details sheet logic
+        //     showStudentDetailsBottomSheet(context, student);
+        //   },
+        // ),
       ),
     );
   }
 
-  Widget _buildStudentCard(
-      StudentModel student, BuildContext context, String studentData) {
-    final theme = Theme.of(context);
-    final isPortrait =
-        MediaQuery.of(context).orientation == Orientation.portrait;
-    final colorScheme = theme.colorScheme;
+  Future<bool> uniqueID(StudentModel student) async {
+    // Returns TRUE only if any IDs is present
+    // If both are "NA", it returns FALSE (triggering the redirect to edit)
+    bool uniqueIdAvailable = student.penId != "NA" || student.apaarId != "NA";
 
-    return Card(
-      elevation: 2,
-      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        // onTap: () => Navigator.push(
-        //   context,
-        //   MaterialPageRoute(
-        //     builder: (context) => StudentIdCard(studentData: studentData),
-        //   ),
-        // ),
-        //onTap: () =>  _showStudentDetailsBottomSheet(context,student),
-        //onTap: () => showStudentDetailsBottomSheet(context, student),
-      child: Padding(
-          padding: EdgeInsets.all(isPortrait ? 12 : 16),
-          child: Row(
-            children: [
-              // Profile initials
-              Container(
-                width: isPortrait ? 56 : 64,
-                height: isPortrait ? 56 : 64,
-                decoration: BoxDecoration(
-                  color: colorScheme.primary.withOpacity(0.1),
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: colorScheme.primary.withOpacity(0.3),
-                    width: 1.5,
-                  ),
-                ),
-                child: Center(
-                  child: TextButton(
-                    child: Text(
-                      _getInitials(student.name),
-                      style: TextStyle(
-                        fontSize: isPortrait ? 18 : 20,
-                        fontWeight: FontWeight.bold,
-                        color: colorScheme.primary,
-                      ),
-                    ),
-                    onPressed: () {
-                      showStudentDetailsBottomSheet(context, student);
-                    },
-                  ),
-                ),
-              ),
-              const SizedBox(width: 16),
 
-              // Name and ID
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      student.name,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Student ID: ${student.rollNo}',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                    Text(
-                      'APAAR ID: ${student.apaarId ?? "XXXXXXXXXX"}',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // View button
-              OutlinedButton(
-                onPressed: () async {
-                  final prefs = await SharedPreferences.getInstance();
-                  // Unique key for each student to store promotion time
-                  final storageKey = 'promoted_${student.id}';
-                  final lastPromoted = prefs.getString(storageKey);
-
-                  if (lastPromoted != null) {
-                    // If student was promoted before, show the info dialog
-                    if (context.mounted) {
-                      // showDialog(
-                      //   context: context,
-                      //   builder: (context) => AlertDialog(
-                      //     title: const Text('Already Promoted'),
-                      //     content: Text('This student was previously promoted on:\n$lastPromoted'),
-                      //     actions: [
-                      //       TextButton(
-                      //         onPressed: () => Navigator.pop(context),
-                      //         child: const Text('OK'),
-                      //       ),
-                      //     ],
-                      //   ),
-                      // );
-                      showDialog(
-                        context: context,
-                        builder: (context) => Dialog(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          elevation: 0,
-                          backgroundColor: Theme.of(context).colorScheme.surface,
-                          child: Padding(
-                            padding: const EdgeInsets.fromLTRB(24, 28, 24, 20),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Container(
-                                  width: 52,
-                                  height: 52,
-                                  decoration: const BoxDecoration(
-                                    color: AppColors.errorContainer,
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Icon(
-                                    Icons.warning_amber_rounded,
-                                    color: AppColors.onErrorContainer,
-                                    size: 26,
-                                  ),
-                                ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  'Already Promoted',
-                                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                                const SizedBox(height: 6),
-                                Text(
-                                  'This student was previously promoted on',
-                                  textAlign: TextAlign.center,
-                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                                    height: 1.5,
-                                  ),
-                                ),
-                                const SizedBox(height: 14),
-                                Container(
-                                  width: double.infinity,
-                                  padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-                                  decoration: BoxDecoration(
-                                    color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
-                                    borderRadius: BorderRadius.circular(10),
-                                    border: Border.all(
-                                      color: Theme.of(context).colorScheme.outlineVariant,
-                                      width: 0.5,
-                                    ),
-                                  ),
-                                  child: Column(
-                                    children: [
-                                      Text(
-                                        'DATE',
-                                        style: TextStyle(
-                                          fontSize: 10,
-                                          letterSpacing: 0.8,
-                                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        lastPromoted,
-                                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(height: 20),
-                                SizedBox(
-                                  width: double.infinity,
-                                  child: FilledButton(
-                                    onPressed: () => Navigator.pop(context),
-                                    style: FilledButton.styleFrom(
-                                      backgroundColor: AppColors.primary,
-                                      padding: const EdgeInsets.symmetric(vertical: 13),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                    ),
-                                    child: const Text(
-                                      'Got it',
-                                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      );
-                    }
-                    return; // Stop here
-                  }
-
-                  // If not promoted yet, show confirmation dialog
-                  if (context.mounted) {
-                    bool shouldPromote = await showConfirmationDialog(
-                      context: context,
-                      title: 'Confirm',
-                      content: 'Do you want to promote this student?',
-                      cancelText: 'No',
-                      confirmText: 'Yes',
-                      onCancel: () => Navigator.of(context).pop(false),
-                      onConfirm: () async {
-                        dynamic data = {
-                          "id": student.id,
-                          "class": student.classs,
-                        };
-
-                        // Store the current date and time
-                        final now = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
-                        await prefs.setString(storageKey, now);
-
-                        if (context.mounted) {
-                          context.read<StudentCubit>().promoteStudent(data);
-                        }
-                      },
-                    );
-                  }
-                },
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: colorScheme.primary,
-                  side: BorderSide(color: colorScheme.primary),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  padding: EdgeInsets.symmetric(
-                    horizontal: isPortrait ? 12 : 16,
-                    vertical: 8,
-                  ),
-                ),
-                child: Text(
-                  'Promote',
-                  style: theme.textTheme.labelMedium?.copyWith(
-                    color: colorScheme.primary,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+    return uniqueIdAvailable ;
   }
 
   String _getInitials(String name) {

@@ -43,6 +43,7 @@ class _AllBookIssueListState extends State<AllBookIssueList> {
   String? rights;
   String? userRole;
   bool? isSuperAdmin;
+  bool _isDescending = true;
   String? stateName;
   String? userSchool;
   String? block;
@@ -50,6 +51,8 @@ class _AllBookIssueListState extends State<AllBookIssueList> {
   String? language;
   String? school;
   String? districtName;
+
+  int _visibleCount = 10;
 
   @override
   void initState() {
@@ -83,13 +86,13 @@ class _AllBookIssueListState extends State<AllBookIssueList> {
       if (userId != null) {
         context.read<BookIssueCubit>().fetchBookIssued(
               adminId: userId,
-              stateName:widget.state,
-            district:widget.district,
-            block:  widget.block,
+              stateName:widget.state ?? '',
+            district:widget.district ?? '',
+            block:  widget.block ?? '',
             //role: widget.role,
-            school: widget.school,
-            from: widget.from,
-            to:widget.to
+            school: widget.school ?? '',
+            from: widget.from ?? '',
+            to:widget.to ?? '',
             );
       }
 
@@ -171,9 +174,33 @@ class _AllBookIssueListState extends State<AllBookIssueList> {
               final filteredIssuedBooks =
                   _filterBookIssued(state.bookIssuedList, _searchQuery);
 
+              final Map<String, List<BookIssueModel>> groupedByTitle = {};
+              for (var book in filteredIssuedBooks) {
+                final title = book.title ?? 'Unknown Title';
+                if (!groupedByTitle.containsKey(title)) {
+                  groupedByTitle[title] = [];
+                }
+                groupedByTitle[title]!.add(book);
+              }
+              final sortedTitles = groupedByTitle.keys.toList();
+
+              sortedTitles.sort((a, b) {
+                int countA = groupedByTitle[a]!.length;
+                int countB = groupedByTitle[b]!.length;
+
+                if (_isDescending) {
+                  return countB.compareTo(countA); // Higher count first
+                } else {
+                  return countA.compareTo(countB); // Lower count first
+                }
+              });
+
+              final displayedTitles = sortedTitles.take(_visibleCount).toList();
+              final bool hasMore = _visibleCount < sortedTitles.length;
+
               return Column(
                 children: [
-                  // 🔍 Search bar always visible
+                  //  Search bar always visible
                   Padding(
                     padding: EdgeInsets.symmetric(
                       horizontal: isPortrait ? 16 : 32,
@@ -182,7 +209,7 @@ class _AllBookIssueListState extends State<AllBookIssueList> {
                     child: Row(children: [
                       Expanded(
                         child: SearchBar(
-                          hintText: 'Search book by student ID or book ID',
+                          hintText: 'Search by book ID, Book title or ISBN',
                           hintStyle: WidgetStateProperty.all(
                               const TextStyle(color: Colors.grey)
                           ),
@@ -234,21 +261,49 @@ class _AllBookIssueListState extends State<AllBookIssueList> {
                     ]),
                   ),
 
-                  // 🧮 Result count
+                  //  Result count
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
                     child: Align(
                       alignment: Alignment.centerLeft,
-                      child: Text(
-                        '${filteredIssuedBooks.length} ${filteredIssuedBooks.length == 1 ? 'issued book' : 'issued books'} found',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: Colors.grey[600],
-                        ),
+                      child: Row(
+                        children: [
+                          Text(
+                            '${filteredIssuedBooks.length} ${filteredIssuedBooks.length == 1 ? 'issued book' : 'issued books'} found',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                          const Spacer(),
+                          SizedBox(
+                            height: 48,
+                            width: 48,
+                            child: IconButton(
+                              onPressed: () {
+                                setState(() {
+                                  _isDescending = !_isDescending;
+                                });
+                              },
+                              icon: Icon(
+                                _isDescending ? Icons.arrow_upward : Icons.arrow_downward,
+                                size: 20,
+                                color: AppColors.tertiary,
+                              ),
+                              tooltip: 'Sort by Frequency',
+                              style: IconButton.styleFrom(
+                                backgroundColor: AppColors.primary.withOpacity(0.1),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
 
-                  // 📚 List or Empty State
+                  //  List or Empty State
                   Expanded(
                     child: filteredIssuedBooks.isEmpty
                         ? Center(
@@ -286,32 +341,110 @@ class _AllBookIssueListState extends State<AllBookIssueList> {
                                   .fetchBookIssued(adminId: userId);
                             },
                             child: SafeArea(
+                              // child: ListView.builder(
+                              //   controller: _scrollController,
+                              //   padding: EdgeInsets.symmetric(
+                              //     horizontal: isPortrait
+                              //         ? screenWidth * 0.03
+                              //         : screenWidth * 0.1,
+                              //     vertical: 8,
+                              //   ),
+                              //   itemCount: filteredIssuedBooks.length +
+                              //       (_isLoadingMore ? 1 : 0),
+                              //   itemBuilder: (context, index) {
+                              //     if (index >= filteredIssuedBooks.length) {
+                              //       return const Padding(
+                              //         padding: EdgeInsets.all(16.0),
+                              //         child: Center(
+                              //           child: CircularProgressIndicator(),
+                              //         ),
+                              //       );
+                              //     }
+                              //
+                              //     final student = filteredIssuedBooks[index];
+                              //     final studentJsonData =
+                              //     jsonEncode(student.toJson());
+                              //
+                              //     return _buildStudentCard(
+                              //         student, context, studentJsonData);
+                              //   },
+                              // ),
                               child: ListView.builder(
-                                controller: _scrollController,
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: isPortrait
-                                      ? screenWidth * 0.03
-                                      : screenWidth * 0.1,
-                                  vertical: 8,
-                                ),
-                                itemCount: filteredIssuedBooks.length +
-                                    (_isLoadingMore ? 1 : 0),
+                                controller: _scrollController,  padding: EdgeInsets.symmetric(
+                                horizontal: isPortrait ? screenWidth * 0.03 : screenWidth * 0.1,
+                                vertical: 8,
+                              ),
+                                // --- UPDATE THESE LINES ---
+                                // itemCount: sortedTitles.length,
+                                itemCount: displayedTitles.length + (hasMore ? 1 : 0),
                                 itemBuilder: (context, index) {
-                                  if (index >= filteredIssuedBooks.length) {
-                                    return const Padding(
-                                      padding: EdgeInsets.all(16.0),
+                                  if (index == displayedTitles.length) {
+                                    return Padding(
+                                      padding: const EdgeInsets.symmetric(vertical: 20.0),
                                       child: Center(
-                                        child: CircularProgressIndicator(),
+                                        child: ElevatedButton.icon(
+                                          onPressed: () {
+                                            setState(() {
+                                              _visibleCount += 10; // Increase count by 10
+                                            });
+                                          },
+                                          //icon: const Icon(Icons.add, color: Colors.white),
+                                          label: const Text(
+                                            "Show More",
+                                            style: TextStyle(color: Colors.white),
+                                          ),
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: AppColors.primary,
+                                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(30),
+                                            ),
+                                          ),
+                                        ),
                                       ),
                                     );
                                   }
 
-                                  final student = filteredIssuedBooks[index];
-                                  final studentJsonData =
-                                  jsonEncode(student.toJson());
+                                  final title = sortedTitles[index];
+                                  final booksWithThisTitle = groupedByTitle[title]!;
 
-                                  return _buildStudentCard(
-                                      student, context, studentJsonData);
+                                  return Padding(
+                                    padding: const EdgeInsets.only(bottom: 12.0),
+                                    child: Theme(
+                                      data: theme.copyWith(dividerColor: Colors.transparent),
+                                      child: ExpansionTile(
+                                        maintainState: true,
+                                        tilePadding: const EdgeInsets.symmetric(horizontal: 12),
+                                        collapsedBackgroundColor: AppColors.primary.withOpacity(0.05),
+                                        backgroundColor: AppColors.primary.withOpacity(0.05),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                        collapsedShape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                        title: Text(
+                                          '$title (${booksWithThisTitle.length} issued)',
+                                          style: theme.textTheme.titleMedium?.copyWith(
+                                            fontWeight: FontWeight.bold,
+                                            color: AppColors.tertiary,
+                                          ),
+                                        ),
+                                        children: [
+                                          ListView.builder(
+                                            shrinkWrap: true,
+                                            physics: const NeverScrollableScrollPhysics(),
+                                            itemCount: booksWithThisTitle.length,
+                                            itemBuilder: (context, bookIndex) {
+                                              final student = booksWithThisTitle[bookIndex];
+                                              final studentJsonData = jsonEncode(student.toJson());
+
+                                              // This calls your existing card builder
+                                              return _buildStudentCard(
+                                                  student, context, studentJsonData);
+                                            },
+                                          ),
+                                          const SizedBox(height: 8),
+                                        ],
+                                      ),
+                                    ),
+                                  );
                                 },
                               ),
                             ),
@@ -573,8 +706,6 @@ class _AllBookIssueListState extends State<AllBookIssueList> {
               adminId: userId!,
               from: fromDate,
               to: toDate,
-             
-
             );
       }
     }
@@ -608,100 +739,6 @@ class _AllBookIssueListState extends State<AllBookIssueList> {
                     : Colors.black87,
               ),
             ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStudentIDCard(
-      BookIssueModel student, BuildContext context, String studentData) {
-    final theme = Theme.of(context);
-    final isPortrait =
-        MediaQuery.of(context).orientation == Orientation.portrait;
-    final colorScheme = theme.colorScheme;
-
-    return Card(
-      elevation: 2,
-      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Padding(
-        padding: EdgeInsets.all(isPortrait ? 12 : 16),
-        child: Row(
-          children: [
-            // Profile initials
-            Container(
-              width: isPortrait ? 56 : 64,
-              height: isPortrait ? 56 : 64,
-              decoration: BoxDecoration(
-                color: colorScheme.primary.withOpacity(0.1),
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: colorScheme.primary.withOpacity(0.3),
-                  width: 1.5,
-                ),
-              ),
-              child: Center(
-                child: Text(
-                  _getInitials(student.name.toString()),
-                  style: TextStyle(
-                    fontSize: isPortrait ? 18 : 20,
-                    fontWeight: FontWeight.bold,
-                    color: colorScheme.primary,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 16),
-
-            // Name and ID
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    student.uniqid.toString(),
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'UniqueId: ${student.uniqid}',
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // View button
-            // OutlinedButton(
-            //   onPressed: (){},
-
-            //   style: OutlinedButton.styleFrom(
-            //     foregroundColor: colorScheme.primary,
-            //     side: BorderSide(color: colorScheme.primary),
-            //     shape: RoundedRectangleBorder(
-            //       borderRadius: BorderRadius.circular(8),
-            //     ),
-            //     padding: EdgeInsets.symmetric(
-            //       horizontal: isPortrait ? 12 : 16,
-            //       vertical: 8,
-            //     ),
-            //   ),
-            //   child: Text(
-            //     student.issuedCount.toString(),
-            //     style: theme.textTheme.labelMedium?.copyWith(
-            //       color: colorScheme.primary,
-            //     ),
-            //   ),
-            // ),
           ],
         ),
       ),
@@ -764,13 +801,15 @@ class _AllBookIssueListState extends State<AllBookIssueList> {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          Text(
-                            bookReturn.uniqid!,
-                            style: theme.textTheme.bodySmall
-                                ?.copyWith(color: Colors.grey[600]),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
+                          // Text(
+                          //   bookReturn.uniqid!.length > 4
+                          //       ? '${bookReturn.uniqid!.substring(0, 4)}******'
+                          //       : bookReturn.uniqid!,
+                          //   style: theme.textTheme.bodySmall
+                          //       ?.copyWith(color: Colors.grey[600]),
+                          //   maxLines: 1,
+                          //   overflow: TextOverflow.ellipsis,
+                          // ),
                         ],
                       ),
                     ),
@@ -866,18 +905,18 @@ class _AllBookIssueListState extends State<AllBookIssueList> {
                         maxLines: 1,
                       ),
                       const SizedBox(height: 2),
-                      Text(
-                        'STUDENT ID:${bookReturn.uniqid?? ''}',
-                        style: Theme.of(context).textTheme.bodyMedium,
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                      ),
-                      Text(
-                        'APAAR ID:${bookReturn.apparId ?? ''}',
-                        style: Theme.of(context).textTheme.bodyMedium,
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                      ),
+                      // Text(
+                      //   'Book Issue ID:${bookReturn.uniqid?? ''}',
+                      //   style: Theme.of(context).textTheme.bodyMedium,
+                      //   overflow: TextOverflow.ellipsis,
+                      //   maxLines: 1,
+                      // ),
+                      // Text(
+                      //   'APAAR ID:${bookReturn.apparId ?? ''}',
+                      //   style: Theme.of(context).textTheme.bodyMedium,
+                      //   overflow: TextOverflow.ellipsis,
+                      //   maxLines: 1,
+                      // ),
                     ],
                   ),
                 ),

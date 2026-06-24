@@ -12,8 +12,9 @@ class LoginRepository {
 
   //login method
   Future<UserModel?> loginApi(dynamic data) async {
-    final response = await _api.postApi(AppUrls.loginapi, data);
-    //  print('Response from login API: $response $data');
+    //final response = await _api.postApi(AppUrls.loginapi, data);
+    final response = await _api.postApi(AppUrls.loginApi, data);
+    //print('Response from login API: $response $data');
 
     try {
       if (response['status'] == 0 || response['user'] == null) {
@@ -21,7 +22,62 @@ class LoginRepository {
         return UserModel(
             message: response['message'],
             status: response['status'],
-            user: response['user']);
+            user: response['user']
+        );
+      }
+
+      // Deserialize JSON to UserModel
+      if (response['user'] != null) {
+        UserModel userModel = UserModel.fromJson(response);
+
+        // Store the user ID in SharedPreferences
+
+        PackageInfo packageInfo = await PackageInfo.fromPlatform();
+        String version = packageInfo.version; // e.g. 1.0.0
+        String buildNumber = packageInfo.buildNumber; // e.g. 1
+
+        final currentVersion = "$version+$buildNumber";
+
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+
+        await prefs.setString('currentVersion', currentVersion);
+        await prefs.setString('userId', userModel.user!.id.toString());
+        await prefs.setString('location', userModel.user!.location.toString());
+        await prefs.setString('school', userModel.user!.school.toString());
+        await prefs.setString('username', userModel.user!.username.toString());
+        await prefs.setString('role', userModel.user!.role.toString());
+        await prefs.setString('rights', userModel.user!.rights.toString());
+        return userModel;
+      }
+    } catch (e) {
+      print('Error parsing UserModel: $e');
+      rethrow; // rethrow the error after logging it
+    }
+    return null;
+  }
+
+  Future<UserModel?> passResetApi(dynamic data) async {
+    //final response = await _api.postApi(AppUrls.loginapi, data);
+    final response = await _api.postApi(AppUrls.passResetApi, data);
+    //print('Response from login API: $response $data');
+
+    try{
+    if (response['status'] == false){
+      
+    }
+    } catch(e) {
+      print('Error parsing UserModel: $e');
+      rethrow; // rethrow the error after logging it
+    }
+
+    try {
+      if (response['status'] == 0 || response['user'] == null) {
+        // Handle the case where credentials are invalid or user is not found
+        return UserModel(
+            message: response['message'],
+            status: response['status'],
+            user: response['user']
+        );
       }
 
       // Deserialize JSON to UserModel
@@ -56,9 +112,17 @@ class LoginRepository {
 
 
   Future<dynamic> setToken(String? id, String? token) async {
-   String url = "${AppUrls.fcmTokenApi}?id=$id&token=$token";
 
-    final response = await _api.getApi(url);
+    final tokenPayload = {
+      "id": id,
+      "token": token,
+    };
+
+   // String url = "${AppUrls.fcmTokenApi}?id=$id&token=$token";
+   String url = AppUrls.fcmTokenApi;
+
+    // final response = await _api.getApi(url);
+   final response = await _api.postApi(url, tokenPayload);
    print('this is get by setToken api $response');
 
     try {

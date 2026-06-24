@@ -14,7 +14,11 @@ class StudentModel with _$StudentModel {
     @JsonKey(name: 'class') required String classs,
    @JsonKey(name: 'id', fromJson: _intOrStringToString, toJson: _stringToDynamic) String? id,
     @JsonKey(name: 'apaarId')  String? apaarId,
+    @JsonKey(name: 'pen_id')  String? penId,
+    @JsonKey(name: 'unique_id')  String? uniqueId,
     @JsonKey(name: 'school')  String? school,
+    @JsonKey(name: 'status', fromJson: _intOrStringToString, toJson: _stringToDynamic)  String? status,
+    @JsonKey(name: 'reason')  String? reason,
     
     
   }) = _StudentModel;

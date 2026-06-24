@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../components/custom_checkbox.dart';
 import '../../components/custom_labeltext.dart';
+import '../../configs/color/color.dart';
 
 class GradesSelection extends StatelessWidget {
   final bool isLoading;
@@ -28,12 +29,17 @@ class GradesSelection extends StatelessWidget {
         if (isLoading)
           const Center(child: CircularProgressIndicator())
         else if (availableGrades.isEmpty)
-          const Text('No grades available or failed to load.')
+          Text(
+            'No grades available or failed to load.',
+            style: AppStyles.bodyText(context, AppColors.onSurface), // Apply style here
+          )
         else
         // Using your actual CustomCheckbox component
           CustomCheckbox(
             options: availableGrades,
             selectedOptions: selectedGrades,
+            layout: CheckboxLayout.grid,
+            gridCount: 2,
             onChanged: (selection) {
               if (selection != null) {
                 onGradesChanged(selection);

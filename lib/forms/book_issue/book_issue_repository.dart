@@ -9,11 +9,13 @@ class BookIssueRepository {
   final _api = NetworkServicesApi();
 
   //login method
-  Future<dynamic> bookIssue(dynamic data) async {
-    final response = await _api.postApi(AppUrls.bookIssueapi, data);
+  Future<dynamic> bookIssueReturn(dynamic data) async {
+    //final response = await _api.postApi(AppUrls.bookIssueapi, data);
 
-    //Testing purpose only
+    // Testing purpose only
     //final response = await _api.postApi(AppUrls.testBookIssueapi, data);
+
+    final response = await _api.postMultipartApi(AppUrls.bookIssueReturnApi, data);
 
 
     try {
@@ -49,27 +51,61 @@ class BookIssueRepository {
       String? language,
       {required int page}
       ) async {
-   String url = "${AppUrls.getReturnedBookapi}?id=$id&state=$stateName&district=$district&block=$block&school=$school&from=$from&to=$to&level=$level&language=$language";
+      final Map<String, dynamic> data = {
+        "id": id,
+        "state": stateName ?? '',
+        "district": district ?? '',
+        "block": block ?? '',
+        "school": school ?? '',
+        "from": from ?? '',
+        "to": to ?? '',
+        "level": level ?? '',
+        "language": language ?? '',
+      };
 
-    final response = await _api.getApi(url);
-   
+    // String url = "${AppUrls.getReturnedBookapi}?id=$id&state=$stateName&district=$district&block=$block&school=$school&from=$from&to=$to&level=$level&language=$language";
+    //
+    // final response = await _api.getApi(url);
 
-    try {
-      if (!response['error']) {
-        // Handle the case where credentials are invalid or user is not found
-        return {
-          "error": 0,
-          "data":response['data'],
-        };
-      }else{
-        print(response['error']);
+
+      try {
+        final response = await _api.postApi(AppUrls.getReturnedBookApi, data);
+        print("this is the response $response");
+        //final response = await _api.getApi(url);
+        // The API returns "error": false for success
+        if (response['error'] == false) {
+          print(response);
+          return {
+            "error": 0, // Success code for Cubit logic
+            "data": response['data'] ?? [],
+            "message": response['message']?.toString() ?? "Success",
+          };
+        } else {
+          return {
+            "error": 1, // Failure code for Cubit logic
+            "message": response['message']?.toString() ?? "No Record Found",
+          };
+        }
+      } catch (e) {
+        print('Error parsing getIssuedBook: $e');
+        rethrow;
       }
-
-      return jsonDecode(response);
-    } catch (e) {
-      print('Error parsing UserModel: $e');
-      rethrow; // rethrow the error after logging it
-    }
+    // try {
+    //   if (!response['error']) {
+    //     // Handle the case where credentials are invalid or user is not found
+    //     return {
+    //       "error": 0,
+    //       "data":response['data'],
+    //     };
+    //   }else{
+    //     print(response['error']);
+    //   }
+    //
+    //   return jsonDecode(response);
+    // } catch (e) {
+    //   print('Error parsing UserModel: $e');
+    //   rethrow; // rethrow the error after logging it
+    // }
    
   }
 
@@ -86,26 +122,43 @@ class BookIssueRepository {
       String? level,
       String? language
       ,{required int page}) async {
-   String url = "${AppUrls.getIssuedBookapi}?id=$id&state=$stateName&district=$district&block=$block&school=$school&from=$from&to=$to&level=$level&language=$language";
+    final Map<String, dynamic> data = {
+      "id": id,
+      "state": stateName ?? '',
+      "district": district ?? '',
+      "block": block ?? '',
+      "school": school ?? '',
+      "from": from ?? '',
+      "to": to ?? '',
+      "level": level ?? '',
+      "language": language ?? '',
+    };
 
-    final response = await _api.getApi(url);
-   
+    //String url = "${AppUrls.getIssuedBookapi}?id=$id&state=$stateName&district=$district&block=$block&school=$school&from=$from&to=$to&level=$level&language=$language";
 
+    //final response = await _api.postApi(AppUrls.getIssuedBookApi, data);
+    //print("this is the response $response");
     try {
-      if (!response['error']) {
-        // Handle the case where credentials are invalid or user is not found
+      final response = await _api.postApi(AppUrls.getIssuedBookApi, data);
+      print("this is the response $response");
+      //final response = await _api.getApi(url);
+      // The API returns "error": false for success
+      if (response['error'] == false) {
+        print(response);
         return {
-          "error": 0,
-          "data":response['data'],
+          "error": 0, // Success code for Cubit logic
+          "data": response['data'] ?? [],
+          "message": response['message']?.toString() ?? "Success",
         };
-      }else{
-        print(response['error']);
+      } else {
+        return {
+          "error": 1, // Failure code for Cubit logic
+          "message": response['message']?.toString() ?? "No Record Found",
+        };
       }
-
-      return jsonDecode(response);
     } catch (e) {
-      print('Error parsing UserModel: $e');
-      rethrow; // rethrow the error after logging it
+      print('Error parsing getIssuedBook: $e');
+      rethrow;
     }
    
   }

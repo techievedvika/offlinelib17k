@@ -1,93 +1,166 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+// class AppColors {
+// // Main color of the application
+// static const primary = Color(0xff981B1E);
+// static const surfaceTint = Color(0xffa13d3a);
+// static const onPrimary = Color.fromARGB(255, 223, 197, 142);
+// static const primaryContainer = Color(0xff862928);
+// static const onPrimaryContainer = Color(0xffffdedb);
+// //Secondary color of the application
+// static const secondary = Color(0xff85504d);
+// static const onSecondary = Color.fromARGB(255, 232, 116, 116);
+// static const secondaryContainer = Color(0xffffc4bf);
+// static const onSecondaryContainer = Color(0xff5f312e);
+//
+// //teritory color of the application
+// static const tertiary = Color(0xff745b00);
+// static const onTertiary = Color(0xffffffff);
+// static const tertiaryContainer = Color(0xffffdc77);
+// static const onTertiaryContainer = Color(0xff564400);
+// //Error colors
+// static const error = Color(0xffba1a1a);
+// static const onError = Color(0xffffffff);
+// static const errorContainer = Color(0xffffdad6);
+// static const onErrorContainer = Color(0xff410002);
+// //Background color of the application
+// static const background = Color(0xfffff8f7);
+// static const onBackground = Color(0xff231918);
+// //Surface color of the application
+// static const surface = Color(0xfffff8f7);
+// static const onSurface = Color(0xff231918);
+// static const surfaceVariant = Color(0xfffadcd9);
+// static const onSurfaceVariant = Color(0xff564240);
+// static const yellow = Color.fromARGB(255, 248, 194, 30);
+//
+// //outline color of the application
+// static const outline = Color(0xff89716f);
+// static const outlineVariant = Color(0xffddc0bd);
+//
+// //shadow color of the application
+// static const shadow = Color(0xff000000);
+//
+//  // Scrim color (used for modal barriers, dialogs)
+// static const scrim = Color(0xff000000);
+//
+//  // Inverse colors
+// static const inverseSurface = Color(0xff392e2d);
+// static const inverseOnSurface = Color(0xffffedeb);
+// static const inversePrimary = Color(0xffffb3ae);
+//
+//  // Fixed primary colors
+// static const primaryFixed = Color(0xffffdad7);
+// static const onPrimaryFixed = Color(0xff410004);
+// static const primaryFixedDim = Color(0xffffb3ae);
+// static const onPrimaryFixedVariant = Color(0xff822625);
+//
+// // Fixed secondary colors
+// static const secondaryFixed = Color(0xffffdad7);
+// static const onSecondaryFixed = Color(0xff350f0e);
+// static const secondaryFixedDim = Color(0xfffab6b1);
+// static const onSecondaryFixedVariant = Color(0xff693936);
+//
+// // Fixed Teritory colors
+// static const tertiaryFixed = Color(0xffffe089);
+// static const onTertiaryFixed = Color(0xff241a00);
+// static const tertiaryFixedDim = Color(0xffeac247);
+// static const onTertiaryFixedVariant = Color(0xff574400);
+//
+// // Surface dim and bright colors
+// static const surfaceDim = Color(0xffe9d6d4);
+// static const surfaceBright = Color(0xfffff8f7);
+//
+//   // Surface container colors
+// static const surfaceContainerLowest = Color(0xffffffff);
+// static const surfaceContainerLow = Color(0xfffff0ef);
+// static const surfaceContainer = Color(0xfffee9e7);
+// static const surfaceContainerHigh = Color(0xfff8e4e2);
+// static const surfaceContainerHighest = Color(0xfff2dedc);
+//
+//
+// // Highest-level container background color.
+//   // static const String apiUrl = 'https://disha.vedvika.com/api/';
+//
+//   // static TextStyle largeHeading = const TextStyle(
+//   //     color: AppColors.onPrimary,
+//   //     fontSize: 30,
+//   //     fontWeight: FontWeight.bold,
+//   //     letterSpacing: 2,
+//   //     height: 0);
+// }
+
 class AppColors {
-// Main color of the application
-static const primary = Color(0xff981B1E);
-static const surfaceTint = Color(0xffa13d3a);
-static const onPrimary = Color.fromARGB(255, 223, 197, 142);
-static const primaryContainer = Color(0xff862928);
-static const onPrimaryContainer = Color(0xffffdedb);
-//Secondary color of the application
-static const secondary = Color(0xff85504d);
-static const onSecondary = Color.fromARGB(255, 232, 116, 116);
-static const secondaryContainer = Color(0xffffc4bf);
-static const onSecondaryContainer = Color(0xff5f312e);
+  // Primary Brand Colors
+  static const primary = Color(0xFFFFC000); // Golden Yellow
+  static const surfaceTint = Color(0xFFFFC933);
+  static const onPrimary = Color(0xFF1A1A1A);
 
-//teritory color of the application
-static const tertiary = Color(0xff745b00);
-static const onTertiary = Color(0xffffffff);
-static const tertiaryContainer = Color(0xffffdc77);
-static const onTertiaryContainer = Color(0xff564400);
-//Error colors
-static const error = Color(0xffba1a1a);
-static const onError = Color(0xffffffff);
-static const errorContainer = Color(0xffffdad6);
-static const onErrorContainer = Color(0xff410002);
-//Background color of the application
-static const background = Color(0xfffff8f7);
-static const onBackground = Color(0xff231918);
-//Surface color of the application
-static const surface = Color(0xfffff8f7);
-static const onSurface = Color(0xff231918);
-static const surfaceVariant = Color(0xfffadcd9);
-static const onSurfaceVariant = Color(0xff564240);
-static const yellow = Color.fromARGB(255, 248, 194, 30);
+  static const primaryContainer = Color(0xFFFFD966);
+  static const onPrimaryContainer = Color(0xFF3D2E00);
 
-//outline color of the application
-static const outline = Color(0xff89716f);
-static const outlineVariant = Color(0xffddc0bd);
+  // Secondary (Dark Navy from website)
+  static const secondary = Color(0xFF0F1E3A);
+  static const onSecondary = Color(0xFFFFFFFF);
 
-//shadow color of the application
-static const shadow = Color(0xff000000);
+  static const secondaryContainer = Color(0xFF24385F);
+  static const onSecondaryContainer = Color(0xFFEAF0FF);
 
- // Scrim color (used for modal barriers, dialogs)
-static const scrim = Color(0xff000000);
+  // Tertiary (Mountain Blue-Grey)
+  static const tertiary = Color(0xFF5F6B7A);
+  static const onTertiary = Color(0xFFFFFFFF);
 
- // Inverse colors
-static const inverseSurface = Color(0xff392e2d);
-static const inverseOnSurface = Color(0xffffedeb);
-static const inversePrimary = Color(0xffffb3ae);
+  static const tertiaryContainer = Color(0xFFDCE4EC);
+  static const onTertiaryContainer = Color(0xFF2F3B46);
 
- // Fixed primary colors
-static const primaryFixed = Color(0xffffdad7);
-static const onPrimaryFixed = Color(0xff410004);
-static const primaryFixedDim = Color(0xffffb3ae);
-static const onPrimaryFixedVariant = Color(0xff822625);
+  // Error Colors
+  static const error = Color(0xFFD32F2F);
+  static const onError = Color(0xFFFFFFFF);
 
-// Fixed secondary colors
-static const secondaryFixed = Color(0xffffdad7);
-static const onSecondaryFixed = Color(0xff350f0e);
-static const secondaryFixedDim = Color(0xfffab6b1);
-static const onSecondaryFixedVariant = Color(0xff693936);
+  static const errorContainer = Color(0xFFFFDAD6);
+  static const onErrorContainer = Color(0xFF410002);
 
-// Fixed Teritory colors
-static const tertiaryFixed = Color(0xffffe089);
-static const onTertiaryFixed = Color(0xff241a00);
-static const tertiaryFixedDim = Color(0xffeac247);
-static const onTertiaryFixedVariant = Color(0xff574400);
+  // Background
+  static const background = Color(0xFFF8F8F8);
+  static const onBackground = Color(0xFF1A1A1A);
 
-// Surface dim and bright colors
-static const surfaceDim = Color(0xffe9d6d4);
-static const surfaceBright = Color(0xfffff8f7);
+  // Surface
+  static const surface = Color(0xFFFFFFFF);
+  static const onSurface = Color(0xFF1A1A1A);
 
-  // Surface container colors
-static const surfaceContainerLowest = Color(0xffffffff);
-static const surfaceContainerLow = Color(0xfffff0ef);
-static const surfaceContainer = Color(0xfffee9e7);
-static const surfaceContainerHigh = Color(0xfff8e4e2);
-static const surfaceContainerHighest = Color(0xfff2dedc);
+  static const surfaceVariant = Color(0xFFF1F3F5);
+  static const onSurfaceVariant = Color(0xFF495057);
 
+  // Custom Brand Colors
+  static const yellow = Color(0xFFFFC000);
+  static const navyBlue = Color(0xFF0F1E3A);
+  static const darkBlue = Color(0xFF24385F);
+  static const charcoal = Color(0xFF1A1A1A);
 
-// Highest-level container background color.
-  // static const String apiUrl = 'https://disha.vedvika.com/api/';
+  // Outline
+  static const outline = Color(0xFF768291);
+  static const outlineVariant = Color(0xFFD9DEE4);
 
-  // static TextStyle largeHeading = const TextStyle(
-  //     color: AppColors.onPrimary,
-  //     fontSize: 30,
-  //     fontWeight: FontWeight.bold,
-  //     letterSpacing: 2,
-  //     height: 0);
+  // Shadow
+  static const shadow = Color(0x26000000);
+
+  // Scrim
+  static const scrim = Color(0x99000000);
+
+  // Inverse
+  static const inverseSurface = Color(0xFF1F2937);
+  static const inverseOnSurface = Color(0xFFFFFFFF);
+  static const inversePrimary = Color(0xFFFFC000);
+
+  // Surface Containers
+  static const surfaceDim = Color(0xFFE9ECEF);
+  static const surfaceBright = Color(0xFFFFFFFF);
+
+  static const surfaceContainerLowest = Color(0xFFFFFFFF);
+  static const surfaceContainerLow = Color(0xFFF8F9FA);
+  static const surfaceContainer = Color(0xFFF1F3F5);
+  static const surfaceContainerHigh = Color(0xFFE9ECEF);
+  static const surfaceContainerHighest = Color(0xFFDEE2E6);
 }
 
 class AppStyles {
@@ -137,7 +210,7 @@ class AppStyles {
     return GoogleFonts.openSans(
    textStyle: TextStyle(
       fontSize: responsiveFontSize(context, 16),
-      color: Colors.black87,
+      color: textColor,
     ));
   }
 
@@ -264,7 +337,7 @@ textStyle:    TextStyle(
   static TextStyle navBarItem(BuildContext context,Color textColor) {
     return TextStyle(
       fontSize: responsiveFontSize(context, 16),
-      color: Colors.black,
+      color: textColor,
     );
   }
 }

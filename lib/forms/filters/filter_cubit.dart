@@ -67,7 +67,8 @@ class FilterCubit extends Cubit<FilterState> {
 
   Future<void> fetchStates() async {
     emit(state.copyWith(isLoading: true));
-    final response = await http.get(Uri.parse(AppUrls.getStateapi));
+    //final response = await http.get(Uri.parse(AppUrls.getStateapi));
+    final response = await http.post(Uri.parse(AppUrls.getStateApi));
     final List<String> states = List<String>.from(jsonDecode(response.body));
     emit(state.copyWith(states: states, isLoading: false));
   }
@@ -78,9 +79,11 @@ class FilterCubit extends Cubit<FilterState> {
         selectedDistrict: selectedDistrict,
         selectedBlock: null,
         selectedSchool: null));
-    String url = "${AppUrls.getBlockapi}&district=$selectedDistrict";
-    final response = await http.get(
-      Uri.parse("${AppUrls.getBlockapi}&district=$selectedDistrict"),
+    //String url = "${AppUrls.getBlockapi}&district=$selectedDistrict";
+    String url = "${AppUrls.getBlockApi}&district=$selectedDistrict";
+    final response = await http.post(
+      //Uri.parse("${AppUrls.getBlockapi}&district=$selectedDistrict"),
+      Uri.parse("${AppUrls.getBlockApi}&district=$selectedDistrict"),
     );
     print(
         'this response we got for fetching block on the basis of district $response $url');
@@ -96,9 +99,11 @@ class FilterCubit extends Cubit<FilterState> {
         selectedDistrict: null,
         selectedBlock: null,
         selectedSchool: null));
-    String url = "${AppUrls.getDistrictapi}&state=$selectedState";
-    final response = await http.get(
-      Uri.parse("${AppUrls.getDistrictapi}&state=$selectedState"),
+    // String url = "${AppUrls.getDistrictapi}&state=$selectedState";
+    String url = "${AppUrls.getDistrictApi}&state=$selectedState";
+    final response = await http.post(
+      Uri.parse("${AppUrls.getDistrictApi}&state=$selectedState"),
+    // Uri.parse("${AppUrls.getDistrictapi}&state=$selectedState"),
     );
     print('this response we got district on the basis of state $response $url');
 
@@ -110,7 +115,8 @@ class FilterCubit extends Cubit<FilterState> {
     emit(state.copyWith(
         isLoading: true, selectedBlock: selectedBlock, selectedSchool: null));
     final response = await http.get(
-      Uri.parse("${AppUrls.getSchoolapi}&block=$selectedBlock"),
+      // Uri.parse("${AppUrls.getSchoolapi}&block=$selectedBlock"),
+    Uri.parse("${AppUrls.getAllSchoolApi}&block=$selectedBlock"),
     );
     final List<String> schools = List<String>.from(jsonDecode(response.body));
     emit(state.copyWith(schools: schools, isLoading: false));

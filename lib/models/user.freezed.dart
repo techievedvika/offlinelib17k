@@ -21,9 +21,8 @@ User _$UserFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$User {
   @JsonKey(name: 'username')
-  String get username => throw _privateConstructorUsedError;
-  @JsonKey(name: 'password')
-  String get password => throw _privateConstructorUsedError;
+  String get username =>
+      throw _privateConstructorUsedError; //@JsonKey(name: 'password') required String password,
   @JsonKey(name: 'state')
   String get state => throw _privateConstructorUsedError;
   @JsonKey(name: 'district')
@@ -59,7 +58,6 @@ abstract class $UserCopyWith<$Res> {
   @useResult
   $Res call(
       {@JsonKey(name: 'username') String username,
-      @JsonKey(name: 'password') String password,
       @JsonKey(name: 'state') String state,
       @JsonKey(name: 'district') String district,
       @JsonKey(name: 'location') String location,
@@ -87,7 +85,6 @@ class _$UserCopyWithImpl<$Res, $Val extends User>
   @override
   $Res call({
     Object? username = null,
-    Object? password = null,
     Object? state = null,
     Object? district = null,
     Object? location = null,
@@ -102,10 +99,6 @@ class _$UserCopyWithImpl<$Res, $Val extends User>
       username: null == username
           ? _value.username
           : username // ignore: cast_nullable_to_non_nullable
-              as String,
-      password: null == password
-          ? _value.password
-          : password // ignore: cast_nullable_to_non_nullable
               as String,
       state: null == state
           ? _value.state
@@ -156,7 +149,6 @@ abstract class _$$UserImplCopyWith<$Res> implements $UserCopyWith<$Res> {
   @useResult
   $Res call(
       {@JsonKey(name: 'username') String username,
-      @JsonKey(name: 'password') String password,
       @JsonKey(name: 'state') String state,
       @JsonKey(name: 'district') String district,
       @JsonKey(name: 'location') String location,
@@ -181,7 +173,6 @@ class __$$UserImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? username = null,
-    Object? password = null,
     Object? state = null,
     Object? district = null,
     Object? location = null,
@@ -196,10 +187,6 @@ class __$$UserImplCopyWithImpl<$Res>
       username: null == username
           ? _value.username
           : username // ignore: cast_nullable_to_non_nullable
-              as String,
-      password: null == password
-          ? _value.password
-          : password // ignore: cast_nullable_to_non_nullable
               as String,
       state: null == state
           ? _value.state
@@ -246,7 +233,6 @@ class __$$UserImplCopyWithImpl<$Res>
 class _$UserImpl implements _User {
   _$UserImpl(
       {@JsonKey(name: 'username') required this.username,
-      @JsonKey(name: 'password') required this.password,
       @JsonKey(name: 'state') required this.state,
       @JsonKey(name: 'district') required this.district,
       @JsonKey(name: 'location') required this.location,
@@ -263,9 +249,7 @@ class _$UserImpl implements _User {
   @override
   @JsonKey(name: 'username')
   final String username;
-  @override
-  @JsonKey(name: 'password')
-  final String password;
+//@JsonKey(name: 'password') required String password,
   @override
   @JsonKey(name: 'state')
   final String state;
@@ -296,7 +280,7 @@ class _$UserImpl implements _User {
 
   @override
   String toString() {
-    return 'User(username: $username, password: $password, state: $state, district: $district, location: $location, id: $id, block: $block, school: $school, fullName: $fullName, role: $role, rights: $rights)';
+    return 'User(username: $username, state: $state, district: $district, location: $location, id: $id, block: $block, school: $school, fullName: $fullName, role: $role, rights: $rights)';
   }
 
   @override
@@ -306,8 +290,6 @@ class _$UserImpl implements _User {
             other is _$UserImpl &&
             (identical(other.username, username) ||
                 other.username == username) &&
-            (identical(other.password, password) ||
-                other.password == password) &&
             (identical(other.state, state) || other.state == state) &&
             (identical(other.district, district) ||
                 other.district == district) &&
@@ -324,8 +306,8 @@ class _$UserImpl implements _User {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, username, password, state,
-      district, location, id, block, school, fullName, role, rights);
+  int get hashCode => Object.hash(runtimeType, username, state, district,
+      location, id, block, school, fullName, role, rights);
 
   /// Create a copy of User
   /// with the given fields replaced by the non-null parameter values.
@@ -346,7 +328,6 @@ class _$UserImpl implements _User {
 abstract class _User implements User {
   factory _User(
       {@JsonKey(name: 'username') required final String username,
-      @JsonKey(name: 'password') required final String password,
       @JsonKey(name: 'state') required final String state,
       @JsonKey(name: 'district') required final String district,
       @JsonKey(name: 'location') required final String location,
@@ -361,10 +342,7 @@ abstract class _User implements User {
 
   @override
   @JsonKey(name: 'username')
-  String get username;
-  @override
-  @JsonKey(name: 'password')
-  String get password;
+  String get username; //@JsonKey(name: 'password') required String password,
   @override
   @JsonKey(name: 'state')
   String get state;

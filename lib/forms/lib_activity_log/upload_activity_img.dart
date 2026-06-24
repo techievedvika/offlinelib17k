@@ -1,6 +1,7 @@
 
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:lib17000ft/forms/lib_activity_log/widget/custom_picker_option_card.dart';
 import '../../components/custom_labeltext.dart';
@@ -22,17 +23,48 @@ class UploadActivityImg extends StatefulWidget {
 
 class _UploadActivityImgState extends State<UploadActivityImg> {
   final ImagePicker _picker = ImagePicker();
+  final int maxImages = 6;
 
+  // Future<void> _pickImagesFromGallery() async {
+  //   try {
+  //     final List<XFile> pickedFiles =
+  //     await _picker.pickMultiImage(imageQuality: 80);
+  //
+  //     if (pickedFiles.isNotEmpty) {
+  //       List<File> files = pickedFiles.map((e) => File(e.path)).toList();
+  //
+  //       widget.onImagesSelected([...widget.selectedImages, ...files]);
+  //
+  //       setState(() {});
+  //     }
+  //   } catch (e) {
+  //     debugPrint("Error picking images: $e");
+  //   }
+  // }
   Future<void> _pickImagesFromGallery() async {
     try {
-      final List<XFile> pickedFiles =
-      await _picker.pickMultiImage(imageQuality: 80);
+      final int currentCount = widget.selectedImages.length;
+      final int remainingSlots = maxImages - currentCount;
+
+      if (remainingSlots <= 0) {
+        _showLimitReachedToast();
+        return;
+      }
+
+      final List<XFile> pickedFiles = await _picker.pickMultiImage(imageQuality: 80);
 
       if (pickedFiles.isNotEmpty) {
-        List<File> files = pickedFiles.map((e) => File(e.path)).toList();
+        // Take only up to the remaining allowed slots
+        List<File> newFiles = pickedFiles
+            .take(remainingSlots)
+            .map((e) => File(e.path))
+            .toList();
 
-        widget.onImagesSelected([...widget.selectedImages, ...files]);
+        widget.onImagesSelected([...widget.selectedImages, ...newFiles]);
 
+        if (pickedFiles.length > remainingSlots) {
+          _showLimitReachedToast();
+        }
         setState(() {});
       }
     } catch (e) {
@@ -40,7 +72,28 @@ class _UploadActivityImgState extends State<UploadActivityImg> {
     }
   }
 
+  // Future<void> _pickImageFromCamera() async {
+  //   try {
+  //     final XFile? pickedFile = await _picker.pickImage(
+  //       source: ImageSource.camera,
+  //       imageQuality: 80,
+  //     );
+  //
+  //     if (pickedFile != null) {
+  //       widget.onImagesSelected(
+  //           [...widget.selectedImages, File(pickedFile.path)],
+  //       );
+  //       setState(() {});
+  //     }
+  //   } catch (e) {
+  //     debugPrint("Error picking image: $e");
+  //   }
+  // }
   Future<void> _pickImageFromCamera() async {
+    if (widget.selectedImages.length >= maxImages) {
+      _showLimitReachedToast();
+      return;
+    }
     try {
       final XFile? pickedFile = await _picker.pickImage(
         source: ImageSource.camera,
@@ -48,14 +101,20 @@ class _UploadActivityImgState extends State<UploadActivityImg> {
       );
 
       if (pickedFile != null) {
-        widget.onImagesSelected(
-            [...widget.selectedImages, File(pickedFile.path)],
-        );
+        widget.onImagesSelected([...widget.selectedImages, File(pickedFile.path)]);
         setState(() {});
       }
     } catch (e) {
       debugPrint("Error picking image: $e");
     }
+  }
+
+  void _showLimitReachedToast() {
+    Fluttertoast.showToast(
+      msg: "Maximum $maxImages images allowed",
+      backgroundColor: AppColors.error,
+      textColor: Colors.white,
+    );
   }
 
   /// SAFER REMOVE METHOD
@@ -173,7 +232,10 @@ class _UploadActivityImgState extends State<UploadActivityImg> {
           ),
           child: widget.selectedImages.isNotEmpty
               ? GridView.builder(
-            itemCount: widget.selectedImages.length + 1,
+            // itemCount: widget.selectedImages.length + 1,
+            itemCount: widget.selectedImages.length < maxImages
+                ? widget.selectedImages.length + 1
+                : widget.selectedImages.length,
             gridDelegate:
             const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 3,
@@ -181,7 +243,8 @@ class _UploadActivityImgState extends State<UploadActivityImg> {
               mainAxisSpacing: 8,
             ),
             itemBuilder: (context, index) {
-              if (index == widget.selectedImages.length) {
+              // if (index == widget.selectedImages.length) {
+              if (index == widget.selectedImages.length && widget.selectedImages.length < maxImages) {
                 return GestureDetector(
                   onTap: _showPickerOptions,
                   child: Container(

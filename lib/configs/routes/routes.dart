@@ -10,6 +10,7 @@ import 'package:lib17000ft/splash/splash.dart';
 import '../../forms/book_issue/book_issue.dart';
 import '../../forms/book_return/book_return.dart';
 import '../../forms/lib_activity_log/screen/lib_activity_form_screen.dart';
+import '../../forms/lib_activity_log/screen/lib_activity_list.dart';
 import '../../forms/student/student_edit.dart';
 import '../../forms/student/student_registration.dart';
 import '../../login/login.dart';
@@ -32,14 +33,33 @@ class Routes {
         return MaterialPageRoute(
             builder: (context) => const StudentRegistration());
       case '/student_edit':
-        final student = settings.arguments as StudentModel?;
+        final args = settings.arguments as Map<String, dynamic>;
+
+        final student = args['student'] as StudentModel?;
+        final skipOption = args['skipOption'] as bool?;
+
         return MaterialPageRoute(
-          builder: (context) => EditStudentScreen(student: student),
+          builder: (context) => EditStudentScreen(
+            student: student,
+            skipOption: skipOption,
+          ),
         );
       case '/book_issue':
-        return MaterialPageRoute(builder: (context) => const BookIssue());
+        final args = settings.arguments as Map<String, dynamic>;
+
+        final student = args['student'] as String?;
+        return MaterialPageRoute(builder: (context) => BookIssue(
+          student: student,
+        ));
+
       case '/book_return':
-        return MaterialPageRoute(builder: (context) => const BookReturn());
+        final args = settings.arguments as Map<String, dynamic>;
+
+        final student = args['student'] as String?;
+        return MaterialPageRoute(builder: (context) =>  BookReturn(
+          student: student,
+        ));
+
       case '/all_bookIssue':
         return MaterialPageRoute(builder: (context) =>  AllBookIssueList());
       case '/all_bookReturn':
@@ -50,6 +70,8 @@ class Routes {
         return MaterialPageRoute(builder: (context) => const SplashScreen());
       case '/lib_activity_log':
         return MaterialPageRoute(builder: (context) => const LibActivityFormScreen());
+      case '/lib_activity_list':
+        return MaterialPageRoute(builder: (context) => const LibActivityList());
       default:
         return MaterialPageRoute(
           builder: (context) => const Scaffold(

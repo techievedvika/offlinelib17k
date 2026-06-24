@@ -13,10 +13,14 @@ import 'package:lib17000ft/forms/book_issue/book_issue_state.dart';
 import 'package:lib17000ft/forms/dashboard/dash_cubit.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../components/info_dialog.dart';
 import '../../configs/app_urls.dart';
+import '../../models/student_registration/student_model.dart';
+import '../lib_activity_log/widget/ocr_reader_button.dart';
 
 class BookReturn extends StatefulWidget {
-  const BookReturn({super.key});
+  final String? student;
+  const BookReturn({super.key, this.student});
 
   @override
   State<BookReturn> createState() => _BookReturnState();
@@ -27,10 +31,12 @@ class _BookReturnState extends State<BookReturn> {
   final TextEditingController studentIdController = TextEditingController();
   final TextEditingController studentNameController = TextEditingController();
   final TextEditingController studentClassController = TextEditingController();
+  final TextEditingController idController = TextEditingController();
 
   // Controllers for Book Info
   final TextEditingController isbnController = TextEditingController();
   final TextEditingController bookTitleController = TextEditingController();
+  final TextEditingController bookLevelController = TextEditingController();
   final TextEditingController authorController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
@@ -41,52 +47,79 @@ class _BookReturnState extends State<BookReturn> {
   void initState() {
     super.initState();
     _loadUserId();
+    print("Student Details: ${widget.student}");
+    populateStudentFields(widget.student);
   }
 
-  Future<void> scanStudentQR() async {
+  // Future<void> scanStudentQR() async {
+  //   try {
+  //     setState(() => isScanning = true);
+  //
+  //     String scannedData = await FlutterBarcodeScanner.scanBarcode(
+  //         '#ff6666', 'Cancel', true, ScanMode.QR);
+  //
+  //     if (scannedData == '-1' || !mounted) {
+  //       // User canceled scan or widget is no longer in the tree
+  //       return;
+  //     }
+  //
+  //     try {
+  //       Map<String, dynamic> studentDetails = jsonDecode(scannedData);
+  //
+  //       if (!studentDetails.containsKey('rollno') ||
+  //           !studentDetails.containsKey('name')) {
+  //         throw const FormatException("Invalid student QR code");
+  //       }
+  //
+  //       setState(() {
+  //         studentIdController.text = studentDetails['rollno'] ?? 'ID Not Found';
+  //         studentNameController.text = studentDetails['name'] ?? 'No Name';
+  //         studentClassController.text = studentDetails['class'] ?? 'Unknown';
+  //       });
+  //     } catch (e) {
+  //       if (!mounted) return;
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         const SnackBar(
+  //           content: Text(
+  //               "Invalid QR Code scanned. Please scan a valid student QR."),
+  //           backgroundColor: AppColors.error,
+  //         ),
+  //       );
+  //     }
+  //   } catch (e) {
+  //     if (!mounted) return;
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(content: Text("Error fetching student details: $e")),
+  //     );
+  //   } finally {
+  //     if (mounted) {
+  //       setState(() => isScanning = false);
+  //     }
+  //   }
+  // }
+
+  void populateStudentFields(String? studentData) {
+    if (studentData == null || studentData.isEmpty) return;
+
     try {
-      setState(() => isScanning = true);
+      // Decode the JSON string into a Map
+      final Map<String, dynamic> studentDetails = jsonDecode(studentData);
 
-      String scannedData = await FlutterBarcodeScanner.scanBarcode(
-          '#ff6666', 'Cancel', true, ScanMode.QR);
+      setState(() {
 
-      if (scannedData == '-1' || !mounted) {
-        // User canceled scan or widget is no longer in the tree
-        return;
-      }
+        studentIdController.text = studentDetails['rollno']?.toString() ?? '';
 
-      try {
-        Map<String, dynamic> studentDetails = jsonDecode(scannedData);
+        studentNameController.text = studentDetails['name']?.toString() ?? '';
 
-        if (!studentDetails.containsKey('rollno') ||
-            !studentDetails.containsKey('name')) {
-          throw const FormatException("Invalid student QR code");
-        }
+        studentClassController.text = studentDetails['class']?.toString() ?? '';
 
-        setState(() {
-          studentIdController.text = studentDetails['rollno'] ?? 'ID Not Found';
-          studentNameController.text = studentDetails['name'] ?? 'No Name';
-          studentClassController.text = studentDetails['class'] ?? 'Unknown';
-        });
-      } catch (e) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-                "Invalid QR Code scanned. Please scan a valid student QR."),
-            backgroundColor: AppColors.error,
-          ),
-        );
-      }
+        idController.text = studentDetails['id']?.toString() ?? '';
+      });
     } catch (e) {
-      if (!mounted) return;
+      debugPrint("Error parsing student data: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error fetching student details: $e")),
+        const SnackBar(content: Text("Failed to parse student information")),
       );
-    } finally {
-      if (mounted) {
-        setState(() => isScanning = false);
-      }
     }
   }
 
@@ -137,6 +170,7 @@ class _BookReturnState extends State<BookReturn> {
       if (bookDetails.isNotEmpty) {
         setState(() {
           bookTitleController.text = bookDetails['title'] ?? 'No Title';
+          bookLevelController.text = bookDetails['level'] ?? 'Unknown';
           authorController.text = bookDetails['publisher'] ?? 'No Publisher';
         });
       } else {
@@ -165,7 +199,8 @@ class _BookReturnState extends State<BookReturn> {
 
 
     //final url = Uri.parse(AppUrls.getBooksApi);
-    final url = Uri.parse(AppUrls.testGetBooksApi);
+    //final url = Uri.parse(AppUrls.testGetBooksApi);
+    final url = Uri.parse(AppUrls.getBookApi);
 
     try {
       final response = await http.post(
@@ -180,6 +215,7 @@ class _BookReturnState extends State<BookReturn> {
         if (data['book'] != null && data['book'].isNotEmpty) {
           return {
             'title': data['book'][0]['title'] ?? 'Unknown',
+            'level': data['book'][0]['level'] ?? 'Unknown',
             'author': data['book'][0]['author'] ?? 'Unknown',
             'isbn': data['book'][0]['isbn']
                 .toString(), // Convert ISBN to String (if needed)
@@ -204,6 +240,7 @@ class _BookReturnState extends State<BookReturn> {
     studentClassController.clear();
     isbnController.clear();
     bookTitleController.clear();
+    bookLevelController.clear();
     authorController.clear();
   }
 
@@ -227,20 +264,20 @@ class _BookReturnState extends State<BookReturn> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    LabelText(label: 'Scan Student QR'),
-                    // Student QR Code Scan Section
-                    // ElevatedButton.icon(
-                    //   onPressed: isScanning ? null : scanStudentQR,
-                    //   icon: const Icon(Icons.qr_code_scanner),
-                    //   label: const Text('Scan Student QR Code'),
+                    // LabelText(label: 'Scan Student QR'),
+                    // // Student QR Code Scan Section
+                    // // ElevatedButton.icon(
+                    // //   onPressed: isScanning ? null : scanStudentQR,
+                    // //   icon: const Icon(Icons.qr_code_scanner),
+                    // //   label: const Text('Scan Student QR Code'),
+                    // // ),
+                    // ///This is to match UI design
+                    // CustomButton(
+                    //   onPressedButton: isScanning ? null : scanStudentQR,
+                    //   icon: Icons.qr_code_scanner,
+                    //   title: 'Scan QR',
                     // ),
-                    ///This is to match UI design
-                    CustomButton(
-                      onPressedButton: isScanning ? null : scanStudentQR,
-                      icon: Icons.qr_code_scanner,
-                      title: 'Scan QR',
-                    ),
-                    const SizedBox(height: 10),
+                    // const SizedBox(height: 10),
                     LabelText(label: 'Student Id'),
                     const SizedBox(height: 10),
                     CustomTextFormField(
@@ -268,7 +305,7 @@ class _BookReturnState extends State<BookReturn> {
                       readOnly: true,
                     ),
                     const SizedBox(height: 20),
-                    LabelText(label: 'Scan Book Barcode'),
+                    //LabelText(label: 'Scan Book Barcode'),
 
                     // // Book ISBN Scan Section
                     // ElevatedButton.icon(
@@ -277,23 +314,122 @@ class _BookReturnState extends State<BookReturn> {
                     //   label: const Text('Scan Book ISBN'),
                     // ),
                     ///This is to match UI design
-                    CustomButton(
-                      onPressedButton: isScanning ? null : scanISBN,
-                      icon: Icons.qr_code_scanner,
-                      title: 'Scan ISBN',
+                    Row(
+                      children: [
+                        CustomButton(
+                          onPressedButton: isScanning ? null : scanISBN,
+                          //icon: Icons.qr_code_scanner,
+                          title: 'Scan ISBN Barcode',
+                          width: 230,
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.info_outline, color: AppColors.tertiary),
+                          onPressed: (){
+                            ImageDialog.show(
+                              context,
+                              imagePath: 'assets/barcode.png',
+                            );
+                          },
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 10),
-                    LabelText(label: 'Book ISBN'),
+                    SizedBox(height: 22,child:  LabelText(label: 'OR')),
+                    const SizedBox(width: 10),
+                    Row(
+                      children: [
+                        OcrReaderButton(
+                          onLoading: (loading) {
+                            setState(() => isScanning = loading);
+                          },
+                          onIsbnDetected: (detectedIsbn) async {
+                            isbnController.text = detectedIsbn;
+
+                            // Automatically fetch details after OCR detection
+                            setState(() => isScanning = true);
+                            try {
+                              final bookDetails = await fetchBookDetails(detectedIsbn);
+                              if (mounted && bookDetails.isNotEmpty) {
+                                setState(() {
+                                  bookTitleController.text = bookDetails['title'] ?? 'No Title';
+                                  bookLevelController.text = bookDetails['level'] ?? 'Unknown';
+                                  authorController.text = bookDetails['publisher'] ?? bookDetails['author'] ?? 'No Publisher';
+                                });
+                              }
+                            } catch (e) {
+                              debugPrint("OCR post-fetch error: $e");
+                            } finally {
+                              if (mounted) setState(() => isScanning = false);
+                            }
+                          },
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.info_outline, color: AppColors.tertiary),
+                          onPressed: (){
+                            ImageDialog.show(
+                              context,
+                              imagePath: 'assets/digit.png',
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                    //SizedBox(height: 22,child:  LabelText(label: 'OR')),
+                    const SizedBox(width: 10),
+                    LabelText(label: 'ISBN '),
                     const SizedBox(height: 10),
                     CustomTextFormField(
                       textController: isbnController,
-                      readOnly: true,
+                      hintText: "Enter ISBN Manually",
+                      readOnly: false,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Please scan a book ISBN.';
                         }
                         return null;
                       },
+                      suffixIcon: IconButton(
+                        onPressed: isScanning ? null : () async {
+                          if (isbnController.text.isEmpty) return;
+
+                          setState(() => isScanning = true); // Visual feedback
+                          try {
+                            final bookDetails = await fetchBookDetails(isbnController.text);
+                            if (mounted) {
+                              if (bookDetails.isNotEmpty && bookDetails['title'] != 'NA') {
+                                setState(() {
+                                  bookTitleController.text = bookDetails['title'] ?? 'No Title';
+                                  bookLevelController.text = bookDetails['level'] ?? 'Unknown';
+                                  // Use 'author' if 'publisher' is empty
+                                  authorController.text = bookDetails['publisher'] ?? bookDetails['author'] ?? 'No Publisher';
+                                  //growValue = bookDetails['level'];
+                                });
+                                print('Book Details: $bookDetails');
+                                //print('Book level: $growValue');
+                              } else {
+                                setState(() {
+                                  bookTitleController.text = bookDetails['title'] ?? 'No Title';
+                                  bookLevelController.text = bookDetails['level'] ?? 'Unknown';
+                                  // Use 'author' if 'publisher' is empty
+                                  authorController.text = bookDetails['publisher'] ?? bookDetails['author'] ?? 'No Publisher';
+                                  //growValue = bookDetails['level'];
+                                });
+                                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                                    content: Text('Book details not found.'),
+                                    backgroundColor: AppColors.primary));
+                              }
+                            }
+                          } catch (e) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text("Search failed: $e")),
+                            );
+                          } finally {
+                            if (mounted) setState(() => isScanning = false);
+                          }
+                        },
+                        icon: isScanning
+                            ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                            : const Icon(Icons.search, color: AppColors.primary),
+                      ),
                     ),
                     const SizedBox(height: 10),
                     LabelText(label: 'Book Title'),
@@ -303,7 +439,7 @@ class _BookReturnState extends State<BookReturn> {
                       readOnly: true,
                     ),
                     const SizedBox(height: 10),
-                    LabelText(label: 'Book Author'),
+                    LabelText(label: 'Book Publisher'),
                     const SizedBox(height: 10),
                     CustomTextFormField(
                       textController: authorController,
@@ -347,17 +483,18 @@ class _BookReturnState extends State<BookReturn> {
                           child: CustomButton(
                             onPressedButton: () {
                               if (_formKey.currentState!.validate()) {
-                                final dynamic bookIssue = {
+                                final dynamic bookReturnPayload = {
                                   'student_id': studentIdController.text,
                                   'isbn': isbnController.text,
                                   'created_by': userId,
                                   'title': bookTitleController.text,
+                                  'level': bookLevelController.text,
                                   'status': 'Returned'
                                 };
                                 //  CORRECTED LINE
                                 context
                                     .read<BookIssueCubit>()
-                                    .bookIssue(bookIssue, 'Returned');
+                                    .bookIssueReturn(bookReturnPayload, 'Returned');
                               }
                             },
                             title: "Return Book",

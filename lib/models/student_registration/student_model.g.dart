@@ -15,7 +15,11 @@ _$StudentModelImpl _$$StudentModelImplFromJson(Map<String, dynamic> json) =>
       classs: json['class'] as String,
       id: _intOrStringToString(json['id']),
       apaarId: json['apaarId'] as String?,
+      penId: json['pen_id'] as String?,
+      uniqueId: json['unique_id'] as String?,
       school: json['school'] as String?,
+      status: _intOrStringToString(json['status']),
+      reason: json['reason'] as String?,
     );
 
 Map<String, dynamic> _$$StudentModelImplToJson(_$StudentModelImpl instance) =>
@@ -27,5 +31,9 @@ Map<String, dynamic> _$$StudentModelImplToJson(_$StudentModelImpl instance) =>
       'class': instance.classs,
       'id': _stringToDynamic(instance.id),
       'apaarId': instance.apaarId,
+      'pen_id': instance.penId,
+      'unique_id': instance.uniqueId,
       'school': instance.school,
+      'status': _stringToDynamic(instance.status),
+      'reason': instance.reason,
     };

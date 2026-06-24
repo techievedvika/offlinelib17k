@@ -16,19 +16,28 @@ android {
     //ndkVersion = flutter.ndkVersion
     ndkVersion = "27.0.12077973"
 
+//    compileOptions {
+//        sourceCompatibility = JavaVersion.VERSION_1_8
+//        targetCompatibility = JavaVersion.VERSION_1_8
+//        coreLibraryDesugaringEnabled true //for flutter_local_notification to run
+//    }
+//
+//    kotlinOptions {
+//        jvmTarget = JavaVersion.VERSION_1_8
+//    }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-        coreLibraryDesugaringEnabled true //for flutter_local_notification to run
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+        coreLibraryDesugaringEnabled true
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8
+        jvmTarget = "17"
     }
 
     defaultConfig {
         applicationId = "org.ft17000.lib17000ft" // Change to your final package name
-        //minSdkVersion = flutter.minSdkVersion
+        //minSdkVersion flutter.minSdkVersion
         minSdkVersion 23
         targetSdk = 36
         versionCode = flutter.versionCode
@@ -49,13 +58,29 @@ android {
             signingConfig = signingConfigs.release
             minifyEnabled true
             shrinkResources true
-            //proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard_rules.pro'
         }
     }
+//    packagingOptions {
+//        exclude 'META-INF/DEPENDENCIES'
+//        exclude 'META-INF/LICENSE'
+//        exclude 'META-INF/LICENSE.txt'
+//        exclude 'META-INF/NOTICE'
+//        exclude 'META-INF/NOTICE.txt'
+//    }
 }
 dependencies {
   //  implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.5'
+    //implementation "com.google.android.play:feature-delivery:2.1.0"
+
+//    implementation 'com.google.mlkit:text-recognition:16.0.1'
+//
+//    // Optional language packages
+//    implementation 'com.google.mlkit:text-recognition-chinese:16.0.1'
+//    implementation 'com.google.mlkit:text-recognition-devanagari:16.0.1'
+//    implementation 'com.google.mlkit:text-recognition-japanese:16.0.1'
+//    implementation 'com.google.mlkit:text-recognition-korean:16.0.1'
 }
 
 flutter {

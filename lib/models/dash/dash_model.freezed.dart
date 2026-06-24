@@ -42,6 +42,8 @@ mixin _$DashModel {
   int get na => throw _privateConstructorUsedError;
   @JsonKey(name: 'barGraph')
   List<dynamic> get bargraph => throw _privateConstructorUsedError;
+  @JsonKey(name: 'gradeBarGraph')
+  List<dynamic> get gradebargraph => throw _privateConstructorUsedError;
 
   /// Serializes this DashModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -69,7 +71,8 @@ abstract class $DashModelCopyWith<$Res> {
       @JsonKey(name: 'orange') int orange,
       @JsonKey(name: 'white') int white,
       @JsonKey(name: 'na') int na,
-      @JsonKey(name: 'barGraph') List<dynamic> bargraph});
+      @JsonKey(name: 'barGraph') List<dynamic> bargraph,
+      @JsonKey(name: 'gradeBarGraph') List<dynamic> gradebargraph});
 }
 
 /// @nodoc
@@ -98,6 +101,7 @@ class _$DashModelCopyWithImpl<$Res, $Val extends DashModel>
     Object? white = null,
     Object? na = null,
     Object? bargraph = null,
+    Object? gradebargraph = null,
   }) {
     return _then(_value.copyWith(
       error: null == error
@@ -144,6 +148,10 @@ class _$DashModelCopyWithImpl<$Res, $Val extends DashModel>
           ? _value.bargraph
           : bargraph // ignore: cast_nullable_to_non_nullable
               as List<dynamic>,
+      gradebargraph: null == gradebargraph
+          ? _value.gradebargraph
+          : gradebargraph // ignore: cast_nullable_to_non_nullable
+              as List<dynamic>,
     ) as $Val);
   }
 }
@@ -167,7 +175,8 @@ abstract class _$$DashModelImplCopyWith<$Res>
       @JsonKey(name: 'orange') int orange,
       @JsonKey(name: 'white') int white,
       @JsonKey(name: 'na') int na,
-      @JsonKey(name: 'barGraph') List<dynamic> bargraph});
+      @JsonKey(name: 'barGraph') List<dynamic> bargraph,
+      @JsonKey(name: 'gradeBarGraph') List<dynamic> gradebargraph});
 }
 
 /// @nodoc
@@ -194,6 +203,7 @@ class __$$DashModelImplCopyWithImpl<$Res>
     Object? white = null,
     Object? na = null,
     Object? bargraph = null,
+    Object? gradebargraph = null,
   }) {
     return _then(_$DashModelImpl(
       error: null == error
@@ -240,6 +250,10 @@ class __$$DashModelImplCopyWithImpl<$Res>
           ? _value._bargraph
           : bargraph // ignore: cast_nullable_to_non_nullable
               as List<dynamic>,
+      gradebargraph: null == gradebargraph
+          ? _value._gradebargraph
+          : gradebargraph // ignore: cast_nullable_to_non_nullable
+              as List<dynamic>,
     ));
   }
 }
@@ -258,8 +272,11 @@ class _$DashModelImpl implements _DashModel {
       @JsonKey(name: 'orange') required this.orange,
       @JsonKey(name: 'white') required this.white,
       @JsonKey(name: 'na') required this.na,
-      @JsonKey(name: 'barGraph') required final List<dynamic> bargraph})
-      : _bargraph = bargraph;
+      @JsonKey(name: 'barGraph') required final List<dynamic> bargraph,
+      @JsonKey(name: 'gradeBarGraph')
+      required final List<dynamic> gradebargraph})
+      : _bargraph = bargraph,
+        _gradebargraph = gradebargraph;
 
   factory _$DashModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$DashModelImplFromJson(json);
@@ -303,9 +320,18 @@ class _$DashModelImpl implements _DashModel {
     return EqualUnmodifiableListView(_bargraph);
   }
 
+  final List<dynamic> _gradebargraph;
+  @override
+  @JsonKey(name: 'gradeBarGraph')
+  List<dynamic> get gradebargraph {
+    if (_gradebargraph is EqualUnmodifiableListView) return _gradebargraph;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_gradebargraph);
+  }
+
   @override
   String toString() {
-    return 'DashModel(error: $error, message: $message, students: $students, bookIssued: $bookIssued, pendingReturn: $pendingReturn, green: $green, red: $red, orange: $orange, white: $white, na: $na, bargraph: $bargraph)';
+    return 'DashModel(error: $error, message: $message, students: $students, bookIssued: $bookIssued, pendingReturn: $pendingReturn, green: $green, red: $red, orange: $orange, white: $white, na: $na, bargraph: $bargraph, gradebargraph: $gradebargraph)';
   }
 
   @override
@@ -326,7 +352,9 @@ class _$DashModelImpl implements _DashModel {
             (identical(other.orange, orange) || other.orange == orange) &&
             (identical(other.white, white) || other.white == white) &&
             (identical(other.na, na) || other.na == na) &&
-            const DeepCollectionEquality().equals(other._bargraph, _bargraph));
+            const DeepCollectionEquality().equals(other._bargraph, _bargraph) &&
+            const DeepCollectionEquality()
+                .equals(other._gradebargraph, _gradebargraph));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -343,7 +371,8 @@ class _$DashModelImpl implements _DashModel {
       orange,
       white,
       na,
-      const DeepCollectionEquality().hash(_bargraph));
+      const DeepCollectionEquality().hash(_bargraph),
+      const DeepCollectionEquality().hash(_gradebargraph));
 
   /// Create a copy of DashModel
   /// with the given fields replaced by the non-null parameter values.
@@ -363,18 +392,19 @@ class _$DashModelImpl implements _DashModel {
 
 abstract class _DashModel implements DashModel {
   factory _DashModel(
-          {@JsonKey(name: 'error') required final bool error,
-          @JsonKey(name: 'message') required final String message,
-          @JsonKey(name: 'students') required final int students,
-          @JsonKey(name: 'bookIssued') required final int bookIssued,
-          @JsonKey(name: 'pendingReturn') required final int pendingReturn,
-          @JsonKey(name: 'green') required final int green,
-          @JsonKey(name: 'red') required final int red,
-          @JsonKey(name: 'orange') required final int orange,
-          @JsonKey(name: 'white') required final int white,
-          @JsonKey(name: 'na') required final int na,
-          @JsonKey(name: 'barGraph') required final List<dynamic> bargraph}) =
-      _$DashModelImpl;
+      {@JsonKey(name: 'error') required final bool error,
+      @JsonKey(name: 'message') required final String message,
+      @JsonKey(name: 'students') required final int students,
+      @JsonKey(name: 'bookIssued') required final int bookIssued,
+      @JsonKey(name: 'pendingReturn') required final int pendingReturn,
+      @JsonKey(name: 'green') required final int green,
+      @JsonKey(name: 'red') required final int red,
+      @JsonKey(name: 'orange') required final int orange,
+      @JsonKey(name: 'white') required final int white,
+      @JsonKey(name: 'na') required final int na,
+      @JsonKey(name: 'barGraph') required final List<dynamic> bargraph,
+      @JsonKey(name: 'gradeBarGraph')
+      required final List<dynamic> gradebargraph}) = _$DashModelImpl;
 
   factory _DashModel.fromJson(Map<String, dynamic> json) =
       _$DashModelImpl.fromJson;
@@ -412,6 +442,9 @@ abstract class _DashModel implements DashModel {
   @override
   @JsonKey(name: 'barGraph')
   List<dynamic> get bargraph;
+  @override
+  @JsonKey(name: 'gradeBarGraph')
+  List<dynamic> get gradebargraph;
 
   /// Create a copy of DashModel
   /// with the given fields replaced by the non-null parameter values.

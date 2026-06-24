@@ -96,43 +96,80 @@ class _SplashScreenState extends State<SplashScreen>
             opacity: _fadeAnimation,
             child: ScaleTransition(
               scale: _scaleAnimation,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+              child: Stack(
+                //mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Image.asset('assets/logo.png',width: 200,height: 200,),
+                  Positioned(
+                    child: Image.asset('assets/logo_17k.png',width: 200,height: 200,),
+                    top: screenSize.height * 0.25,
+                    right: screenSize.width * 0.2,
+                    left: screenSize.width * 0.2,
+                  ),
                   // Icon(
                   //   Icons.landscape_outlined,
                   //   size: isSmallScreen ? 80 : 120,
                   //   color: AppColors.onPrimary,
                   // ),
-                  const SizedBox(height: 30),
-                  AnimatedBuilder(
-                    animation: _textSpacingAnimation,
-                    builder: (context, child) {
-                      return Column(
-                        children: [
-                          Text(
-                            '17000ft',
-                            style: GoogleFonts.poppins(
-                              fontSize: isSmallScreen ? 32 : 48,
-                              fontWeight: FontWeight.w800,
-                              color: AppColors.onPrimary,
-                              letterSpacing: _textSpacingAnimation.value,
-                            ),
-                          ),
-                          Text(
-                            'LIBRARY',
-                            style: GoogleFonts.poppins(
-                              fontSize: isSmallScreen ? 24 : 36,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.onPrimary.withOpacity(0.8),
-                              letterSpacing: _textSpacingAnimation.value,
-                            ),
-                          ),
-                        ],
-                      );
-                    },
+                  //const SizedBox(height: 30),
+                  Positioned(
+                    bottom: screenSize.height * 0.12,
+                    left: screenSize.width * 0.2,
+                    right: screenSize.width * 0.2,
+                    child: Image.asset(
+                      'assets/splash_final.png',
+                      width: 400,
+                      height: 400,
+                    ),
                   ),
+                  Positioned(
+                    bottom: screenSize.height * 0.25,
+                    left: screenSize.width * 0.30,
+                    right: screenSize.width *0.25,
+                    child: const Text(
+                      'The New Chapter',
+                      style: TextStyle(
+                        color: AppColors.tertiary,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      )
+                    ),
+                  ),
+                  // Positioned(
+                  //     top: screenSize.height * 0.1,
+                  //     child: AnimatedBuilder(
+                  //       animation: _textSpacingAnimation,
+                  //       builder: (context, child) {
+                  //
+                  //         return Column(
+                  //           children: [
+                  //             Image.asset(
+                  //               'assets/banner.png',
+                  //               // width: 500,
+                  //               // height: 400,
+                  //             ),
+                  //             // Text(
+                  //             //   '17000ft',
+                  //             //   style: GoogleFonts.poppins(
+                  //             //     fontSize: isSmallScreen ? 32 : 48,
+                  //             //     fontWeight: FontWeight.w800,
+                  //             //     color: AppColors.onPrimary,
+                  //             //     letterSpacing: _textSpacingAnimation.value,
+                  //             //   ),
+                  //             // ),
+                  //             Text(
+                  //               'LIBRARY',
+                  //               style: GoogleFonts.poppins(
+                  //                 fontSize: isSmallScreen ? 24 : 36,
+                  //                 fontWeight: FontWeight.w600,
+                  //                 color: AppColors.onPrimary.withOpacity(0.8),
+                  //                 letterSpacing: _textSpacingAnimation.value,
+                  //               ),
+                  //             ),
+                  //           ],
+                  //         );
+                  //       },
+                  //     ),
+                  // ),
                 ],
               ),
             ),

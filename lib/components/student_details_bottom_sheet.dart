@@ -10,124 +10,147 @@ void showStudentDetailsBottomSheet(BuildContext context, StudentModel student) {
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
     builder: (context) {
-      return Container(
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Drag handle
-            Container(
-              width: 40,
-              height: 4,
-              margin: const EdgeInsets.only(bottom: 12),
-              decoration: BoxDecoration(
-                color: Colors.grey[400],
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-
-            // Title Row
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Student Details',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+      return SafeArea(
+        child: Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Drag handle
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 12),
+                decoration: BoxDecoration(
+                  color: Colors.grey[400],
+                  borderRadius: BorderRadius.circular(2),
                 ),
-                IconButton(
-                  icon: const Icon(Icons.close),
-                  onPressed: () => Navigator.pop(context),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-
-            // Profile Card
-            Container(
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primaryContainer,
-                borderRadius: BorderRadius.circular(16),
               ),
-              padding: const EdgeInsets.all(16),
-              child: Row(
+
+              // Title Row
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // Avatar
-                  CircleAvatar(
-                    radius: 30,
-                    backgroundColor:
-                    Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                    child: Text(
-                      _getInitials(student.name),
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: Theme.of(context).colorScheme.primary,
-                        fontWeight: FontWeight.bold,
-                      ),
+                  Text(
+                    'Student Details',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const SizedBox(width: 16),
-
-                  // Name + ID
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          student.name,
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleMedium
-                              ?.copyWith(fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Student ID: ${student.rollNo}',
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                        Text(
-                          'APAAR ID: ${student.apaarId ?? 'N/A'}',
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                        const SizedBox(height: 8),
-                        CustomButton(
-                          onPressedButton: (){
-                            Navigator.pushNamed(
-                              context,
-                              '/student_edit',
-                              arguments: student,
-                            );
-                          },
-                          title: 'Edit',
-                          icon: Icons.edit,
-                        ),
-                      ],
-                    ),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.pop(context),
                   ),
                 ],
               ),
-            ),
+              const SizedBox(height: 16),
 
-            const SizedBox(height: 16),
+              // Profile Card
+              Container(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primaryContainer,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    // Avatar
+                    CircleAvatar(
+                      radius: 30,
+                      backgroundColor:
+                      Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                      child: Text(
+                        _getInitials(student.name),
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: Theme.of(context).colorScheme.primary,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
 
-            // Info Grid
-            Wrap(
-              runSpacing: 12,
-              spacing: 12,
-              children: [
-                _infoCard(context, Icons.class_, "Class", student.classs),
-                _infoCard(context, Icons.wc, "Gender", student.gender),
-                _infoCard(context, Icons.school, "School", student.school ?? 'N/A'),
-              ],
-            ),
+                    // Name + ID
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            student.name,
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(fontWeight: FontWeight.bold),
+                          ),
+                          // const SizedBox(height: 4),
+                          // Text(
+                          //   'Lib Code - lib/${student.id ?? ''}',
+                          //
+                          //   style: Theme.of(context).textTheme.bodySmall,
+                          // ),
+                          // Text(
+                          //   'Student ID: ${student.rollNo}',
+                          //   style: Theme.of(context).textTheme.bodySmall,
+                          // ),
+                          // if(student.apaarId != null && student.apaarId != "NA" && student.penId == "NA")
+                          //   Text(
+                          //     'APAAR ID: ${student.apaarId}',
+                          //     style: Theme.of(context).textTheme.bodySmall,
+                          //   ),
+                          // if(student.penId != "NA" && student.penId != null && student.apaarId == "NA")
+                          //   Text(
+                          //     'PEN ID: ${student.penId}',
+                          //     style: Theme.of(context).textTheme.bodySmall,
+                          //   ),
+                          // if(student.apaarId == "NA" && student.penId == "NA")
+                          //   Text(
+                          //     'No APAAR ID/ PEN ID',
+                          //     style: Theme.of(context).textTheme.bodySmall,
+                          //   ),
 
-            const SizedBox(height: 20),
-          ],
+                          const SizedBox(height: 8),
+                          CustomButton(
+                            onPressedButton: (){
+                              Navigator.pushNamed(
+                                context,
+                                '/student_edit',
+                                arguments: {
+                                  'student': student,
+                                  'skipOption': false,
+                                },
+                              );
+                              print("Student Edit detail: $student");
+                            },
+                            title: 'Edit',
+                            icon: Icons.edit,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              // Info Grid
+              Wrap(
+                runSpacing: 12,
+                spacing: 12,
+                children: [
+                  _infoCard(context, Icons.class_, "Class", student.classs),
+                  _infoCard(context, Icons.wc, "Gender", student.gender),
+                  _infoCard(context, Icons.school, "School", student.school ?? 'N/A'),
+                ],
+              ),
+
+              const SizedBox(height: 20),
+            ],
+          ),
         ),
       );
     },

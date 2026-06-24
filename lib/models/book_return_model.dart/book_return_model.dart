@@ -14,6 +14,8 @@ class BookReturnModel with _$BookReturnModel {
     @JsonKey(name: 'gender') required String gender,
     @JsonKey(name: 'unique_id') required String uniqid,
     @JsonKey(name: 'apaarId') required String apparId,
+    @JsonKey(name: 'pen_id') String? penId,
+    @JsonKey(name: 'rollno') required String rollno,
     @JsonKey(name: 'created_at') required String returnedDate,
     //@JsonKey(name: 'issued_date') required String returnedDate,
     @JsonKey(name: 'created_by') required String createdBy,

@@ -18,9 +18,10 @@ class BookScannerSection extends StatelessWidget {
         LabelText(label: "Activity Scan Book"),
         const SizedBox(height: 10),
         CustomButton(
-          title: 'Scan Book',
+          title: 'Scan ISBN Barcode',
           onPressedButton: onScan,
-          icon: Icons.qr_code_scanner,
+          icon: Icons.document_scanner_outlined,
+          width: 230,
         ),
       ],
     );
