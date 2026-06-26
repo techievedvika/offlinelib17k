@@ -2,7 +2,7 @@ name: lib17000ft
 description: "A new Flutter project."
 publish_to: 'none'
 #Version Update
-version: 1.0.1+9
+version: 1.0.1+10
 
 environment:
   sdk: ^3.5.4

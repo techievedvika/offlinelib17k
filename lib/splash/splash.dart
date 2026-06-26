@@ -116,24 +116,24 @@ class _SplashScreenState extends State<SplashScreen>
                     left: screenSize.width * 0.2,
                     right: screenSize.width * 0.2,
                     child: Image.asset(
-                      'assets/splash_final.png',
+                      'assets/splash.png',
                       width: 400,
                       height: 400,
                     ),
                   ),
-                  Positioned(
-                    bottom: screenSize.height * 0.25,
-                    left: screenSize.width * 0.30,
-                    right: screenSize.width *0.25,
-                    child: const Text(
-                      'The New Chapter',
-                      style: TextStyle(
-                        color: AppColors.tertiary,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      )
-                    ),
-                  ),
+                  // Positioned(
+                  //   bottom: screenSize.height * 0.25,
+                  //   left: screenSize.width * 0.30,
+                  //   right: screenSize.width *0.25,
+                  //   child: const Text(
+                  //     'The New Chapter',
+                  //     style: TextStyle(
+                  //       color: AppColors.tertiary,
+                  //       fontSize: 20,
+                  //       fontWeight: FontWeight.bold,
+                  //     )
+                  //   ),
+                  // ),
                   // Positioned(
                   //     top: screenSize.height * 0.1,
                   //     child: AnimatedBuilder(
