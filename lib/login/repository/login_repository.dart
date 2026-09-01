@@ -6,6 +6,9 @@ import '../../configs/app_urls.dart';
 import '../../data/network/network_api_services.dart';
 import '../../models/user_model.dart';
 
+import '../../core/di/service_locator.dart';
+import '../../core/sync/sync_engine.dart';
+
 
 class LoginRepository {
   final _api = NetworkServicesApi();
@@ -47,6 +50,18 @@ class LoginRepository {
         await prefs.setString('username', userModel.user!.username.toString());
         await prefs.setString('role', userModel.user!.role.toString());
         await prefs.setString('rights', userModel.user!.rights.toString());
+
+
+        // NEW — kick off the scoped bulk pull for offline use.
+        // Fire-and-forget so login isn't blocked waiting on the full pull;
+        // SyncBannerWidget shows progress once home screen loads.
+        getIt<SyncEngine>().runInitialSync(
+          createdBy: userModel.user!.id.toString(),
+          school: userModel.user!.school.toString(),
+          role: userModel.user!.role.toString(),
+        );
+
+
         return userModel;
       }
     } catch (e) {

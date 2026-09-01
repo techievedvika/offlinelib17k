@@ -344,9 +344,10 @@ class _PromoteStudentListState extends State<PromoteStudentList> {
                             });
                           },
                         ),
-                        SizedBox(
-                          width: screenWidth * 0.2,
-                        ),
+                        const Spacer(),
+                        // SizedBox(
+                        //   width: screenWidth * 0.2,
+                        // ),
                         Expanded(
                           child:  Column(
                             children: [

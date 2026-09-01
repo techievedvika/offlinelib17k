@@ -218,27 +218,51 @@ class NetworkServicesApi implements BaseApiServices {
     
 
   //handle response status code
+  // dynamic returnResponse(http.Response response) {
+  //   dynamic jsonResponse1 = jsonDecode(response.body);
+  //   switch (response.statusCode) {
+  //     case 200:
+  //       dynamic jsonResponse = jsonDecode(response.body);
+  //
+  //       return jsonResponse;
+  //     case 400:
+  //       dynamic jsonResponse = jsonDecode(response.body);
+  //
+  //       return jsonResponse;
+  //
+  //     case 404:
+  //       throw NotFoundException(jsonResponse1['message']);
+  //     case 500:
+  //       throw PlatformException(jsonResponse1['message']);
+  //     case 401:
+  //       throw UnauthorizedException(jsonResponse1['message']);
+  //     default:
+  //      throw CustomException('Invalid response');
+  // }
   dynamic returnResponse(http.Response response) {
-    dynamic jsonResponse1 = jsonDecode(response.body);
+    // Decode body once at the top to avoid multiple decodes
+    final dynamic jsonResponse = jsonDecode(response.body);
+
     switch (response.statusCode) {
       case 200:
-        dynamic jsonResponse = jsonDecode(response.body);
-
+      case 201:
         return jsonResponse;
+
       case 400:
-        dynamic jsonResponse = jsonDecode(response.body);
-
+      case 404:
+      case 409:
         return jsonResponse;
 
-      case 404:
-        throw NotFoundException(jsonResponse1['message']);
-      case 500:
-        throw PlatformException(jsonResponse1['message']);
       case 401:
-        throw UnauthorizedException(jsonResponse1['message']);
+        throw UnauthorizedException(jsonResponse['message'] ?? "Unauthorized");
+
+      case 500:
+        throw PlatformException(jsonResponse['message'] ?? "Internal Server Error");
+
       default:
-       throw CustomException('Invalid response');
+      // Include the status code to help with debugging
+        throw CustomException('Error ${response.statusCode}: Invalid response');
+    }
   }
-}
 
 }

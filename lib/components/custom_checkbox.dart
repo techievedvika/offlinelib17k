@@ -112,7 +112,7 @@ class CustomCheckbox extends FormField<List<String>> {
                 if (labelText != null)
                   Text(
                     labelText,
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                   ),
                 Focus(
                   child: layout == CheckboxLayout.grid

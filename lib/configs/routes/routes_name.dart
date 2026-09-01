@@ -16,4 +16,6 @@ class RoutesName {
   static const String exportPendingBook = '/export_pendingBook';
   static const String libActivityLog = '/lib_activity_log'; //This is for Library Activity Log Form
   static const String libActivityList = '/lib_activity_list';
+  static const String bookAdd = '/bookAdd';
+  static const String offlineTest = '/offlineTest';
 }

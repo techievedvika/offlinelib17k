@@ -625,7 +625,7 @@ class _StudentRegistrationState extends State<StudentRegistration> {
   List<String> _gradesOptions = [];
   bool _isLoadingGrades = true;
 
-  final List<String> idOptions = ["Apaar ID", "PEN ID", "Student ID"];
+  final List<String> idOptions = ["APAAR ID", "PEN ID", "Student ID"];
   String? selectedValue;
   int selectedIndex = 0;
 
@@ -796,7 +796,7 @@ class _StudentRegistrationState extends State<StudentRegistration> {
                         // Align labels to the left
                         children: [
                           LabelText(
-                            label: 'Does student have Apaar ID/PEN ID/Student ID?',
+                            label: 'Does student have APAAR ID/PEN ID/Student ID?',
                             astrick: true,
                           ),
                           const SizedBox(height: 10),
@@ -831,7 +831,7 @@ class _StudentRegistrationState extends State<StudentRegistration> {
                             ),
                           ],
                           if (idValue == 'Yes') ...[
-                            LabelText(label: 'Apaar ID/PEN ID/Student ID', astrick: true),
+                            LabelText(label: 'APAAR ID/PEN ID/Student ID', astrick: true),
                             const SizedBox(height: 12),
 
                             CustomDropdownFormField(

@@ -38,7 +38,7 @@ android {
     defaultConfig {
         applicationId = "org.ft17000.lib17000ft" // Change to your final package name
         //minSdkVersion flutter.minSdkVersion
-        minSdkVersion 23
+        minSdkVersion flutter.minSdkVersion
         targetSdk = 36
         versionCode = flutter.versionCode
         versionName = flutter.versionName

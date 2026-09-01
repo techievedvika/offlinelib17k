@@ -1,10 +1,12 @@
 import 'dart:convert';
 
 import 'package:bloc/bloc.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
 import 'package:lib17000ft/forms/book_issue/book_issue_state.dart';
 import 'package:lib17000ft/models/book_issue/book_issue_model.dart';
 import 'package:lib17000ft/models/book_return_model.dart/book_return_model.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 
 import '../../configs/app_urls.dart';
 import '../../models/student_registration/student_model.dart';
@@ -19,31 +21,105 @@ class BookIssueCubit extends Cubit<BookIssueState> {
   int _page = 1; // For pagination, assuming 1 as the starting page
   bool _hasMoreData = true; // Flag to check if there's more data
 
+  Future<bool> _isOnline() async {
+    final result = await Connectivity().checkConnectivity();
+    return result.isNotEmpty && !result.contains(ConnectivityResult.none);
+  }
+
 
   // MODIFICATION 1: Update the method signature to accept 'status'
+  // void bookIssueReturn(dynamic bookIssueReturn, String status) async {
+  //   emit(BookIssueLoading());
+  //   // The Future.delayed is for simulation and can be removed if not needed.
+  //   await Future.delayed(const Duration(seconds: 1));
+  //   try {
+  //     final value = await _bookIssueRepository.bookIssueReturn(bookIssueReturn);
+  //
+  //     // 1. Check if the response itself is null
+  //     if (value == null) {
+  //       emit(BookIssueFailure(message: "Invalid response from server"));
+  //       return;
+  //     }
+  //
+  //     // 2. Handle Error cases (Check for true or 1)
+  //     if (value['error'] == true || value['error'] == 1 || value['error'] == "true") {
+  //       print('API Error: ${value['message']}');
+  //       emit(BookIssueFailure(message: value['message']?.toString() ?? "Unknown error occurred"));
+  //     }
+  //     // 3. Handle Success cases (Check for false or 0)
+  //     else if (value['error'] == false || value['error'] == 0 || value['error'] == "false") {
+  //       print('API Success');
+  //       emit(BookIssueSuccess(
+  //           message: value['message']?.toString() ?? "Operation successful",
+  //           status: status
+  //       ));
+  //     } else {
+  //       emit(BookIssueFailure(message: "Unexpected response status"));
+  //     }
+  //   } catch (error) {
+  //     print("Cubit Catch Error: $error");
+  //
+  //     // Clean up the error message (remove "Exception: " or "Custom Error: ")
+  //     String errorMessage = error.toString()
+  //         .replaceAll("Exception:", "")
+  //         .replaceAll("Custom Error:", "")
+  //         .trim();
+  //
+  //     emit(BookIssueFailure(message: errorMessage));
+  //   }
+  //   // try {
+  //   //   final value = await _bookIssueRepository.bookIssueReturn(bookIssueReturn);
+  //   //
+  //   //   if (value!['error'] == true || value['error'] == 1) {
+  //   //     print('this is value message ${value['message']}');
+  //   //
+  //   //     emit(BookIssueFailure(message: value['message'].toString()));
+  //   //   } else if(value['error'] == false || value['error'] == 0  ) {
+  //   //     print('sucess for ${value!['error']}' );
+  //   //     // MODIFICATION 2: Pass the 'status' to the success state
+  //   //     emit(BookIssueSuccess(message: value['message'].toString(), status: status));
+  //   //   }
+  //   // } catch (error) {
+  //   //   emit(BookIssueFailure(message: error.toString()));
+  //   //   print(error);
+  //   // }
+  //   // This emit seems redundant and might cause issues in the UI.
+  //   // Consider removing it if it's not handled specifically in your BlocConsumer.
+  //   // emit(BookIssueRegistered());
+  // }
+
   void bookIssueReturn(dynamic bookIssueReturn, String status) async {
     emit(BookIssueLoading());
-    // The Future.delayed is for simulation and can be removed if not needed.
-    await Future.delayed(const Duration(seconds: 1));
     try {
-      final value = await _bookIssueRepository.bookIssueReturn(bookIssueReturn);
+      final online = await _isOnline();
 
-      if (value!['error'] == true || value['error'] == 1) {
-        print('this is value message ${value['message']}');
+      final Map<String, dynamic> value;
+      if (online) {
+        final apiResult = await _bookIssueRepository.bookIssueReturn(bookIssueReturn);
+        value = {"error": apiResult['error'], "message": apiResult['message']};
+      } else {
+        // NEW — offline path expects a Map, not multipart form data
+        final data = bookIssueReturn as Map<String, dynamic>;
+        value = await _bookIssueRepository.bookIssueReturnOffline(
+          isbn: data['isbn'].toString(),
+          title: data['title'].toString(),
+          rollno: data['student_id'].toString(),
+          status: status,
+          createdBy: int.tryParse(data['created_by']?.toString() ?? '') ?? 0,
+          level: data['level']?.toString(),
+          language: data['language']?.toString(),
+          localCoverPagePath: data['cover_page']?.toString(),
+        );
+      }
 
+      if (value['error'] == true || value['error'] == 1) {
         emit(BookIssueFailure(message: value['message'].toString()));
-      } else if(value['error'] == false || value['error'] == 0  ) {
-        print('sucess for ${value!['error']}' );
-        // MODIFICATION 2: Pass the 'status' to the success state
+      } else {
         emit(BookIssueSuccess(message: value['message'].toString(), status: status));
       }
     } catch (error) {
       emit(BookIssueFailure(message: error.toString()));
-      print(error);
     }
-    // This emit seems redundant and might cause issues in the UI.
-    // Consider removing it if it's not handled specifically in your BlocConsumer.
-    // emit(BookIssueRegistered());
   }
 
   Future<void> fetchBookReturned({
@@ -290,5 +366,149 @@ class BookIssueCubit extends Cubit<BookIssueState> {
   //     throw Exception(e.toString());
   //   }
   // }
+
+  // Future<http.Response> insertBook(
+  //     Map<String, dynamic> payload,
+  //     ) async {
+  //   try {
+  //
+  //     final url = Uri.parse(AppUrls.bookAdd);
+  //
+  //     final response = await http.post(
+  //       url,
+  //       body: payload,
+  //     );
+  //
+  //     return response;
+  //   } catch (e) {
+  //     rethrow;
+  //   }
+  // }
+
+  // Future<void> insertBook(
+  //     Map<String, dynamic> bookData,
+  //     ) async {
+  //   emit(BookIssueLoading());
+  //
+  //   try {
+  //     // final url = Uri.parse(
+  //     //   'https://demo.library.17000ft.org/api/library/insert_book',
+  //     // );
+  //     final url = Uri.parse(AppUrls.bookAdd);
+  //
+  //     debugPrint('================================');
+  //     debugPrint('INSERT BOOK URL: $url');
+  //     debugPrint('INSERT BOOK DATA: $bookData');
+  //     debugPrint('================================');
+  //
+  //     final response = await http.post(
+  //       url,
+  //       body: bookData.map(
+  //             (key, value) => MapEntry(key, value.toString()),
+  //       ),
+  //     );
+  //
+  //     debugPrint('STATUS CODE: ${response.statusCode}');
+  //     debugPrint('RESPONSE: ${response.body}');
+  //
+  //     // Your existing success/failure handling...
+  //   } catch (e, stackTrace) {
+  //     debugPrint('INSERT BOOK ERROR: $e');
+  //     debugPrint('$stackTrace');
+  //
+  //     emit(
+  //       BookIssueFailure(
+  //         message: e.toString(),
+  //       ),
+  //     );
+  //   }
+  // }
+
+
+  Future<void> insertBook(
+      Map<String, dynamic> bookData,
+      ) async {
+    emit(BookIssueLoading());
+
+    try {
+      final url = Uri.parse(AppUrls.bookAdd);
+
+      debugPrint('================================');
+      debugPrint('INSERT BOOK URL: $url');
+      debugPrint('INSERT BOOK DATA: $bookData');
+      debugPrint('================================');
+
+      final response = await http.post(
+        url,
+        body: bookData.map(
+              (key, value) => MapEntry(
+            key,
+            value.toString(),
+          ),
+        ),
+      );
+
+      debugPrint('STATUS CODE: ${response.statusCode}');
+      debugPrint('RESPONSE: ${response.body}');
+
+      // HTTP error
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        emit(
+          BookIssueFailure(
+            message: 'Server error: ${response.statusCode}',
+          ),
+        );
+        return;
+      }
+
+      // Decode API response
+      final responseData = jsonDecode(response.body);
+
+      debugPrint('DECODED RESPONSE: $responseData');
+
+      // API error
+      if (responseData['error'] == true ||
+          responseData['error'] == 1 ||
+          responseData['error'] == 'true') {
+        emit(
+          BookIssueFailure(
+            message: responseData['message']?.toString() ??
+                'Failed to insert book',
+          ),
+        );
+        return;
+      }
+
+      // API success
+      if (responseData['error'] == false ||
+          responseData['error'] == 0 ||
+          responseData['error'] == 'false') {
+        emit(
+          BookIssueSuccess(
+            message: responseData['message']?.toString() ??
+                'Book inserted successfully',
+            status: 'Inserted',
+          ),
+        );
+        return;
+      }
+
+      // Unexpected response
+      emit(
+        BookIssueFailure(
+          message: 'Unexpected response from server',
+        ),
+      );
+    } catch (e, stackTrace) {
+      debugPrint('INSERT BOOK ERROR: $e');
+      debugPrint('$stackTrace');
+
+      emit(
+        BookIssueFailure(
+          message: e.toString(),
+        ),
+      );
+    }
+  }
 
 }

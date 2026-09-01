@@ -32,8 +32,8 @@ class AppUrls {
 
 
 
-  // static String baseUrl = "https://demo.library.17000ft.org/api/library/";
-  static String baseUrl = "https://library.17000ft.org/api/library/";
+  static String baseUrl = "https://demo.library.17000ft.org/api/library/";
+  // static String baseUrl = "https://library.17000ft.org/api/library/";
   static String loginApi = "${AppUrls.baseUrl}login";
   //This is for demo only for now
   static String passResetApi = "${AppUrls.baseUrl}reset_password";
@@ -43,6 +43,7 @@ class AppUrls {
   static String allStudentsApi = "${AppUrls.baseUrl}get_students";
   static String getReturnedBookApi = "${AppUrls.baseUrl}get_return_book";
   static String getIssuedBookApi = "${AppUrls.baseUrl}get_issued_book";
+  static String bookAdd = "${AppUrls.baseUrl}insert_book";
 
   static String getBlockApi = "${AppUrls.baseUrl}filters?getBlock";
   static String getDistrictApi = "${AppUrls.baseUrl}filters?getDistrict";

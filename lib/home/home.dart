@@ -6,6 +6,7 @@ import 'package:lib17000ft/configs/helper/responsive_helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../components/custom_appbar.dart';
+import '../components/sync_banner_widget.dart';
 import '../configs/color/color.dart';
 import '../configs/routes/routes_name.dart';
 import '../login/bloc/network_cubit.dart';
@@ -42,33 +43,86 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final responsive = Responsive(context);
 
+    // return Scaffold(
+    //   drawer: const CustomDrawer(),
+    //   backgroundColor: const Color.fromARGB(255, 245, 199, 201),
+    //   appBar: const CustomAppbar(title: 'All Forms'),
+    //   body: BlocConsumer<NetworkCubit, NetworkState>(
+    //     listener: (context, networkState) {
+    //       if (networkState is NetworkDisconnected) {
+    //         ScaffoldMessenger.of(context).showSnackBar(
+    //           const SnackBar(
+    //             content: Text('No Internet Connection'),
+    //             backgroundColor: AppColors.error,
+    //           ),
+    //         );
+    //       }
+    //     },
+    //     builder: (context, networkState) {
+    //       if (networkState is NetworkConnected) {
+    //         return Padding(
+    //           padding: responsive.responsivePadding(8, 16, 24),
+    //           child: GridView.count(
+    //             shrinkWrap: true,
+    //             crossAxisCount:
+    //                 responsive.responsiveValue(small: 2, medium: 3, large: 4),
+    //             crossAxisSpacing:
+    //                 responsive.responsiveValue(small: 8, medium: 12, large: 16),
+    //             mainAxisSpacing:
+    //                 responsive.responsiveValue(small: 8, medium: 12, large: 16),
+    //             childAspectRatio: responsive.responsiveValue(
+    //                 small: 1.1, medium: 1.2, large: 1.3),
+    //             children: [
+    //               _buildGridItem(
+    //                   context,
+    //                   'Student Registration',
+    //                   RoutesName.studentRegistration,
+    //                   'assets/registration.png',
+    //                   responsive),
+    //               _buildGridItem(context, 'Book Issue', RoutesName.bookIssue,
+    //                   'assets/bookissue.png', responsive),
+    //               _buildGridItem(context, 'Book Return', RoutesName.bookReturn,
+    //                   'assets/bookreturn.png', responsive),
+    //             ],
+    //           ),
+    //         );
+    //       }
+    //
+    //       if (networkState is NetworkDisconnected) {
+    //         return NoInternetWidget(
+    //           onRetry: () {
+    //             context.read<NetworkCubit>();
+    //           },
+    //         );
+    //       }
+    //
+    //       return const Center(child: CircularProgressIndicator());
+    //     },
+    //   ),
+    //   floatingActionButton: FloatingActionButton(
+    //     onPressed: _logout,
+    //     child: const Icon(Icons.logout),
+    //   ),
+    // );
     return Scaffold(
       drawer: const CustomDrawer(),
       backgroundColor: const Color.fromARGB(255, 245, 199, 201),
       appBar: const CustomAppbar(title: 'All Forms'),
-      body: BlocConsumer<NetworkCubit, NetworkState>(
-        listener: (context, networkState) {
-          if (networkState is NetworkDisconnected) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('No Internet Connection'),
-                backgroundColor: AppColors.error,
-              ),
-            );
-          }
-        },
-        builder: (context, networkState) {
-          if (networkState is NetworkConnected) {
-            return Padding(
+      body: Column(
+        children: [
+          // NEW — small non-blocking banner instead of full-screen block
+          const SyncBannerWidget(),
+          Expanded(
+            child: Padding(
               padding: responsive.responsivePadding(8, 16, 24),
               child: GridView.count(
                 shrinkWrap: true,
                 crossAxisCount:
-                    responsive.responsiveValue(small: 2, medium: 3, large: 4),
+                responsive.responsiveValue(small: 2, medium: 3, large: 4),
                 crossAxisSpacing:
-                    responsive.responsiveValue(small: 8, medium: 12, large: 16),
+                responsive.responsiveValue(small: 8, medium: 12, large: 16),
                 mainAxisSpacing:
-                    responsive.responsiveValue(small: 8, medium: 12, large: 16),
+                responsive.responsiveValue(small: 8, medium: 12, large: 16),
                 childAspectRatio: responsive.responsiveValue(
                     small: 1.1, medium: 1.2, large: 1.3),
                 children: [
@@ -84,19 +138,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       'assets/bookreturn.png', responsive),
                 ],
               ),
-            );
-          }
-
-          if (networkState is NetworkDisconnected) {
-            return NoInternetWidget(
-              onRetry: () {
-                context.read<NetworkCubit>();
-              },
-            );
-          }
-
-          return const Center(child: CircularProgressIndicator());
-        },
+            ),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _logout,

@@ -11,6 +11,7 @@ import 'package:lib17000ft/services/push_notification_service.dart';
 import 'configs/color/color.dart';
 import 'configs/routes/routes.dart';
 import 'configs/routes/routes_name.dart';
+import 'core/di/service_locator.dart';
 import 'forms/student/student_cubit.dart';
 import 'login/bloc/login_cubit.dart';
 import 'login/bloc/network_cubit.dart';
@@ -30,6 +31,9 @@ void main() async {
   await PushNotificationService.initialize(); // 👈 Setup notification handler
   //await PushNotificationService.initializeService();
   // await _initNotifications();
+
+  await setupLocator();
+
   runApp(const MyApp());
 }
 

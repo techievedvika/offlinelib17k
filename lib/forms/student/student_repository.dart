@@ -1,13 +1,19 @@
 import 'dart:convert';
 
+import 'package:drift/drift.dart';
 import 'package:http/http.dart' as http;
 import 'package:lib17000ft/configs/app_urls.dart';
+import 'package:uuid/uuid.dart';
 
+import '../../core/database/tables/database.dart';
+import '../../core/di/service_locator.dart';
 import '../../data/network/network_api_services.dart';
 import '../../models/response_model.dart';
+import '../../models/student_registration/student_model.dart';
 
 class StudentRepository {
   final _api = NetworkServicesApi();
+  final AppDatabase _db = getIt<AppDatabase>();
 
   //login method
   // Future<dynamic> registerStudent(dynamic data) async {
@@ -268,4 +274,93 @@ Future<String> getUniqueId(String? location) async {
     }
   }
 
+  Future<Map<String, dynamic>> registerStudentOffline(Map<String, dynamic> data) async {
+    final apaarId = (data['apaarId']?.toString().trim().isNotEmpty ?? false) ? data['apaarId'].toString() : null;
+    final penId = (data['pen_id']?.toString().trim().isNotEmpty ?? false) ? data['pen_id'].toString() : null;
+    final rollnoInput = (data['rollno']?.toString().trim().isNotEmpty ?? false) ? data['rollno'].toString() : null;
+
+    // Mirror server's priority formula exactly
+    final rollno = rollnoInput ?? apaarId ?? penId;
+    if (rollno == null || rollno.isEmpty) {
+      return {"error": 1, "message": "Please provide at least one ID (rollno, apaarId, pen_id)"};
+    }
+
+    // Duplicate check against LOCAL cache — natural key
+    final existing = await (_db.select(_db.students)..where((t) => t.rollno.equals(rollno))).getSingleOrNull();
+    if (existing != null) {
+      return {"error": 1, "message": "Student already exists with ID $rollno"};
+    }
+
+    final school = data['school']?.toString() ?? '';
+    final schoolCodeNew = data['schoolCodeNew']?.toString() ?? '';
+    final uniqueId = await _generateUniqueId(schoolCodeNew, school);
+    final now = DateTime.now();
+    final uuid = const Uuid().v4();
+    final createdBy = int.tryParse(data['created_by']?.toString() ?? '') ?? 0;
+
+    await _db.transaction(() async {
+      await _db.into(_db.students).insert(StudentsCompanion.insert(
+        uuid: uuid,
+        apaarId: Value(apaarId),
+        penId: Value(penId),
+        uniqueId: Value(uniqueId),
+        school: school,
+        name: data['name'].toString(),
+        studentClass: data['class'].toString(),
+        rollno: rollno,
+        gender: data['gender'].toString(),
+        createdAt: now,
+        updatedAt: now,
+        createdBy: createdBy,
+        syncStatus: const Value('pending'),
+      ));
+
+      await _db.into(_db.syncOutbox).insert(SyncOutboxCompanion.insert(
+        entityType: 'student',
+        entityKey: rollno,
+        operation: 'create',
+        payloadJson: jsonEncode({
+          'apaarId': apaarId, 'pen_id': penId, 'unique_id': uniqueId,
+          'school': school, 'name': data['name'], 'class': data['class'],
+          'rollno': rollno, 'gender': data['gender'], 'created_by': createdBy,
+          'created_at': now.toIso8601String(), 'updated_at': now.toIso8601String(),
+          'uuid': uuid,
+        }),
+        createdAt: now,
+      ));
+    });
+
+    return {"error": 0, "message": "Student saved offline, will sync when online"};
+  }
+
+  Future<String> _generateUniqueId(String schoolCodeNew, String school) async {
+    final students = await (_db.select(_db.students)..where((t) => t.school.equals(school))).get();
+    int maxSerial = 0;
+    for (final s in students) {
+      final id = s.uniqueId;
+      if (id != null && id.startsWith('$schoolCodeNew-')) {
+        final serial = int.tryParse(id.split('-').last) ?? 0;
+        if (serial > maxSerial) maxSerial = serial;
+      }
+    }
+    return '$schoolCodeNew-${(maxSerial + 1).toString().padLeft(5, '0')}';
+  }
+
+  // NEW — offline student list
+  Future<List<StudentModel>> getStudentsOffline(String school) async {
+    final rows = await (_db.select(_db.students)..where((t) => t.school.equals(school))).get();
+    return rows.map((r) => StudentModel(
+      createdBy: r.createdBy.toString(),
+      name: r.name,
+      rollNo: r.rollno,
+      gender: r.gender,
+      classs: r.studentClass,
+      apaarId: r.apaarId,
+      penId: r.penId,
+      uniqueId: r.uniqueId,
+      school: r.school,
+      status: r.status,
+      reason: r.reason,
+    )).toList();
+  }
 }

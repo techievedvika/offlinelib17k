@@ -75,6 +75,21 @@ class _CustomDrawerState extends State<CustomDrawer> {
 
                     ]),
 
+                  _buildDrawerSection('Book Management', [
+                  rights!.contains("5") ?       _buildDrawerItem(
+                    icon: FontAwesomeIcons.book,
+                    title: 'Add Book',
+                    route: RoutesName.bookAdd,
+                  ) : const SizedBox(),
+                    ElevatedButton(
+                      onPressed: (){
+                        Navigator.pushNamed(context, '/offlineTest');
+                      },
+                      child: Text('Offline Test'),
+                    )
+                  ]),
+
+
                     // _buildDrawerSection('Book Management', [
                     //   rights!.contains("5") ?       _buildDrawerItem(
                     //     icon: FontAwesomeIcons.book,
@@ -270,7 +285,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
   }
 
   Widget _buildDrawerItem({
-    required IconData icon,
+    required FaIconData icon,
     required String title,
     required String route,
   }) {

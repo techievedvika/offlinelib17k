@@ -382,7 +382,6 @@ class _DashBoardState extends State<DashBoard>
                     // ),
                     const SizedBox(height:14),
                     _buildFormLogsSection(isMobile),
-
                   ],
                 ),
               ),

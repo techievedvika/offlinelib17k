@@ -37,6 +37,7 @@ class _BookReturnState extends State<BookReturn> {
   final TextEditingController isbnController = TextEditingController();
   final TextEditingController bookTitleController = TextEditingController();
   final TextEditingController bookLevelController = TextEditingController();
+  final TextEditingController bookLanguageController = TextEditingController();
   final TextEditingController authorController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
@@ -171,6 +172,7 @@ class _BookReturnState extends State<BookReturn> {
         setState(() {
           bookTitleController.text = bookDetails['title'] ?? 'No Title';
           bookLevelController.text = bookDetails['level'] ?? 'Unknown';
+          bookLanguageController.text = bookDetails['language'] ?? 'Unknown';
           authorController.text = bookDetails['publisher'] ?? 'No Publisher';
         });
       } else {
@@ -241,11 +243,13 @@ class _BookReturnState extends State<BookReturn> {
     isbnController.clear();
     bookTitleController.clear();
     bookLevelController.clear();
+    bookLanguageController.clear();
     authorController.clear();
   }
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.sizeOf(context);
     return WillPopScope(
       onWillPop: () {
         return _showExitConfirmationDialog(context);
@@ -320,7 +324,7 @@ class _BookReturnState extends State<BookReturn> {
                           onPressedButton: isScanning ? null : scanISBN,
                           //icon: Icons.qr_code_scanner,
                           title: 'Scan ISBN Barcode',
-                          width: 230,
+                          width: size.width * 0.6,
                         ),
                         IconButton(
                           icon: const Icon(Icons.info_outline, color: AppColors.tertiary),
@@ -352,6 +356,7 @@ class _BookReturnState extends State<BookReturn> {
                                 setState(() {
                                   bookTitleController.text = bookDetails['title'] ?? 'No Title';
                                   bookLevelController.text = bookDetails['level'] ?? 'Unknown';
+                                  bookLanguageController.text = bookDetails['language'] ?? 'Unknown';
                                   authorController.text = bookDetails['publisher'] ?? bookDetails['author'] ?? 'No Publisher';
                                 });
                               }
@@ -399,6 +404,7 @@ class _BookReturnState extends State<BookReturn> {
                                 setState(() {
                                   bookTitleController.text = bookDetails['title'] ?? 'No Title';
                                   bookLevelController.text = bookDetails['level'] ?? 'Unknown';
+                                  bookLanguageController.text = bookDetails['language'] ?? 'Unknown';
                                   // Use 'author' if 'publisher' is empty
                                   authorController.text = bookDetails['publisher'] ?? bookDetails['author'] ?? 'No Publisher';
                                   //growValue = bookDetails['level'];
@@ -409,6 +415,7 @@ class _BookReturnState extends State<BookReturn> {
                                 setState(() {
                                   bookTitleController.text = bookDetails['title'] ?? 'No Title';
                                   bookLevelController.text = bookDetails['level'] ?? 'Unknown';
+                                  bookLanguageController.text = bookDetails['language'] ?? 'Unknown';
                                   // Use 'author' if 'publisher' is empty
                                   authorController.text = bookDetails['publisher'] ?? bookDetails['author'] ?? 'No Publisher';
                                   //growValue = bookDetails['level'];
@@ -489,6 +496,7 @@ class _BookReturnState extends State<BookReturn> {
                                   'created_by': userId,
                                   'title': bookTitleController.text,
                                   'level': bookLevelController.text,
+                                  'language': bookLanguageController.text,
                                   'status': 'Returned'
                                 };
                                 //  CORRECTED LINE

@@ -12,6 +12,7 @@ class BookScannerSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.sizeOf(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -20,8 +21,8 @@ class BookScannerSection extends StatelessWidget {
         CustomButton(
           title: 'Scan ISBN Barcode',
           onPressedButton: onScan,
-          icon: Icons.document_scanner_outlined,
-          width: 230,
+          //icon: Icons.document_scanner_outlined,
+          width: size.width * 0.6,
         ),
       ],
     );

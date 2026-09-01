@@ -21,44 +21,6 @@ class OcrReaderButton extends StatefulWidget {
 class _OcrReaderButtonState extends State<OcrReaderButton> {
   final ImagePicker _picker = ImagePicker();
 
-  // Future<void> _processOcr() async {
-  //   try {
-  //     final XFile? image = await _picker.pickImage(source: ImageSource.camera);
-  //     if (image == null) return;
-  //
-  //     widget.onLoading(true);
-  //
-  //     final inputImage = InputImage.fromFilePath(image.path);
-  //     // final textRecognizer = TextRecognizer();
-  //     final textRecognizer = TextRecognizer(
-  //       script: TextRecognitionScript.latin,
-  //     );
-  //     final RecognizedText recognizedText = await textRecognizer.processImage(inputImage);
-  //
-  //     String? isbn = _findISBN(recognizedText.text);
-  //
-  //     if (isbn != null) {
-  //       widget.onIsbnDetected(isbn);
-  //     } else {
-  //       if (mounted) {
-  //         ScaffoldMessenger.of(context).showSnackBar(
-  //           const SnackBar(
-  //             content: Text("No valid ISBN detected. Please try again."),
-  //             backgroundColor: AppColors.error,
-  //           ),
-  //         );
-  //       }
-  //     }
-  //   } catch (e) {
-  //     if (mounted) {
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         SnackBar(content: Text("OCR Error: $e"), backgroundColor: AppColors.error),
-  //       );
-  //     }
-  //   } finally {
-  //     widget.onLoading(false);
-  //   }
-  // }
   Future<void> _processOcr() async {
     try {
       final XFile? image =
@@ -151,11 +113,12 @@ class _OcrReaderButtonState extends State<OcrReaderButton> {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.sizeOf(context);
     return CustomButton(
       onPressedButton: _processOcr,
       //icon: Icons.camera_alt,
       title: 'Scan ISBN Digit',
-      width: 230,
+      width: size.width * 0.6,
     );
   }
 }

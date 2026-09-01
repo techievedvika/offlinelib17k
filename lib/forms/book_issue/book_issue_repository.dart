@@ -1,40 +1,71 @@
 import 'dart:convert';
 
+import 'package:drift/drift.dart';
 import 'package:http/http.dart' as http;
 import 'package:lib17000ft/configs/app_urls.dart';
+import 'package:uuid/uuid.dart';
 
+import '../../core/database/tables/database.dart';
+import '../../core/di/service_locator.dart';
 import '../../data/network/network_api_services.dart';
 
 class BookIssueRepository {
   final _api = NetworkServicesApi();
+  final AppDatabase _db = getIt<AppDatabase>();
 
   //login method
+  // Future<dynamic> bookIssueReturn(dynamic data) async {
+  //   //final response = await _api.postApi(AppUrls.bookIssueapi, data);
+  //
+  //   // Testing purpose only
+  //   //final response = await _api.postApi(AppUrls.testBookIssueapi, data);
+  //
+  //   final response = await _api.postMultipartApi(AppUrls.bookIssueReturnApi, data);
+  //
+  //
+  //   try {
+  //     if (!response['error']) {
+  //       // Handle the case where credentials are invalid or user is not found
+  //       return {
+  //         "error": 0,
+  //         "message": response['message'],
+  //       };
+  //     } else {
+  //       return {
+  //         "error": 1,
+  //         "message": response['message'],
+  //
+  //       };
+  //     }
+  //   } catch (e) {
+  //     print('Error parsing Book Issue model: $e');
+  //     rethrow; // rethrow the error after logging it
+  //   }
+  // }
   Future<dynamic> bookIssueReturn(dynamic data) async {
-    //final response = await _api.postApi(AppUrls.bookIssueapi, data);
-
-    // Testing purpose only
-    //final response = await _api.postApi(AppUrls.testBookIssueapi, data);
-
-    final response = await _api.postMultipartApi(AppUrls.bookIssueReturnApi, data);
-
-
     try {
-      if (!response['error']) {
-        // Handle the case where credentials are invalid or user is not found
-        return {
-          "error": 0,
-          "message": response['message'],
-        };
-      } else {
-        return {
-          "error": 1,
-          "message": response['message'],
+      final response = await _api.postMultipartApi(AppUrls.bookIssueReturnApi, data);
 
-        };
+      if (response == null) {
+        return {"error": true, "message": "No response from server"};
       }
+
+      // Convert "error" field to boolean safely
+      bool isError = response['error'] == true ||
+          response['error'].toString().toLowerCase() == 'true' ||
+          response['error'] == 1;
+
+      return {
+        "error": isError,
+        "message": response['message']?.toString() ?? (isError ? "Operation failed" : "Success"),
+      };
     } catch (e) {
-      print('Error parsing Book Issue model: $e');
-      rethrow; // rethrow the error after logging it
+      print('Repository Error: $e');
+      // If the network service throws a CustomException, extract the message
+      return {
+        "error": true,
+        "message": e.toString().replaceAll("Custom Error:", "").trim(),
+      };
     }
   }
 
@@ -161,5 +192,132 @@ class BookIssueRepository {
       rethrow;
     }
    
+  }
+
+  Future<Map<String, dynamic>> bookIssueReturnOffline({
+    required String isbn,
+    required String title,
+    required String rollno,
+    required String status,
+    required int createdBy,
+    String? level,
+    String? language,
+    String? localCoverPagePath,
+  }) async {
+    final now = DateTime.now();
+
+    final existingBook = await (_db.select(_db.books)..where((t) => t.isbn.equals(isbn))).getSingleOrNull();
+    if (existingBook == null) {
+      await _db.into(_db.books).insertOnConflictUpdate(BooksCompanion.insert(
+        isbn: isbn,
+        title: title,
+        publisher: const Value('Unknown'),
+        author: const Value('Unknown'),
+        language: Value(language?.isNotEmpty == true ? language : 'Unknown'),
+        gener: const Value('Unknown'),
+        level: Value(level?.isNotEmpty == true ? level : 'Unknown'),
+        coverPage: Value(localCoverPagePath),
+        code: const Value('NA'),
+        updatedAt: now,
+        syncStatus: const Value('pending'),
+      ));
+      await _db.into(_db.syncOutbox).insert(SyncOutboxCompanion.insert(
+        entityType: 'book',
+        entityKey: isbn,
+        operation: 'create',
+        payloadJson: jsonEncode({
+          'isbn': isbn, 'title': title, 'level': level, 'language': language,
+          'updated_at': now.toIso8601String(),
+        }),
+        createdAt: now,
+      ));
+      if (localCoverPagePath != null) {
+        await _db.into(_db.pendingUploads).insert(PendingUploadsCompanion.insert(
+          entityType: 'book',
+          entityKey: isbn,
+          fieldName: 'cover_page',
+          localFilePath: localCoverPagePath,
+        ));
+      }
+    }
+
+    final openLoan = await (_db.select(_db.bookIssues)
+      ..where((t) => t.bookIsbn.equals(isbn) & t.studentRollno.equals(rollno) & t.status.equals('Issued')))
+        .getSingleOrNull();
+
+    if (status == 'Returned') {
+      if (openLoan == null) {
+        return {"error": 1, "message": "No Issued Book Found"};
+      }
+      await _insertIssueRow(
+        uniqid: openLoan.uniqid,
+        isbn: isbn,
+        title: title,
+        rollno: rollno,
+        grade: openLoan.studentGrade,
+        status: 'Returned',
+        createdBy: createdBy,
+        now: now,
+      );
+      return {"error": 0, "message": "Success"};
+    } else {
+      if (openLoan != null) {
+        return {"error": 1, "message": "Book Already Issued"};
+      }
+      final student = await (_db.select(_db.students)..where((t) => t.rollno.equals(rollno))).getSingleOrNull();
+      if (student == null) {
+        return {"error": 1, "message": "Student not found"};
+      }
+      final uniqid = const Uuid().v4();
+      await _insertIssueRow(
+        uniqid: uniqid,
+        isbn: isbn,
+        title: title,
+        rollno: rollno,
+        grade: student.studentClass,
+        status: 'Issued',
+        createdBy: createdBy,
+        now: now,
+      );
+      return {"error": 0, "message": "Success"};
+    }
+  }
+
+  Future<void> _insertIssueRow({
+    required String uniqid,
+    required String isbn,
+    required String title,
+    required String rollno,
+    required String grade,
+    required String status,
+    required int createdBy,
+    required DateTime now,
+  }) async {
+    await _db.into(_db.bookIssues).insert(BookIssuesCompanion.insert(
+      uniqid: uniqid,
+      uuid: uniqid,
+      bookIsbn: isbn,
+      bookName: title,
+      studentRollno: rollno,
+      studentGrade: grade,
+      status: status,
+      createdAt: now,
+      updatedAt: now,
+      submittedAt: status == 'Returned' ? Value(now) : const Value(null),
+      createdBy: createdBy,
+      syncStatus: const Value('pending'),
+    ));
+
+    await _db.into(_db.syncOutbox).insert(SyncOutboxCompanion.insert(
+      entityType: 'issue',
+      entityKey: '$uniqid-$status',
+      operation: 'create',
+      payloadJson: jsonEncode({
+        'uniqid': uniqid, 'isbn': isbn, 'title': title, 'student_id': rollno,
+        'student_grade': grade, 'status': status, 'created_by': createdBy,
+        'created_at': now.toIso8601String(), 'updated_at': now.toIso8601String(),
+      }),
+      createdAt: now,
+    ));
   }
 }

@@ -5,8 +5,10 @@ import 'package:lib17000ft/forms/student/all_student.dart';
 import 'package:lib17000ft/forms/student/promte_student.dart';
 import 'package:lib17000ft/home/home.dart';
 import 'package:lib17000ft/models/book_issue/all_bookIssue.dart';
+import 'package:lib17000ft/screens/debug_sync_screen.dart';
 import 'package:lib17000ft/splash/splash.dart';
 
+import '../../forms/book/book_add.dart';
 import '../../forms/book_issue/book_issue.dart';
 import '../../forms/book_return/book_return.dart';
 import '../../forms/lib_activity_log/screen/lib_activity_form_screen.dart';
@@ -68,10 +70,14 @@ class Routes {
         return MaterialPageRoute(builder: (context) => const PromoteStudentList());
       case '/testhome':
         return MaterialPageRoute(builder: (context) => const SplashScreen());
+      case '/offlineTest':
+        return MaterialPageRoute(builder: (context) => const DebugSyncScreen());
       case '/lib_activity_log':
         return MaterialPageRoute(builder: (context) => const LibActivityFormScreen());
       case '/lib_activity_list':
         return MaterialPageRoute(builder: (context) => const LibActivityList());
+      case '/bookAdd':
+        return MaterialPageRoute(builder: (context) => const AddBookScreen());
       default:
         return MaterialPageRoute(
           builder: (context) => const Scaffold(

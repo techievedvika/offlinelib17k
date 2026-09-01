@@ -2,6 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:lib17000ft/models/student_registration/student_model.dart';
 import 'student_repository.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 part 'student_state.dart';
 
 class StudentCubit extends Cubit<StudentState> {
@@ -11,53 +12,91 @@ class StudentCubit extends Cubit<StudentState> {
   int _page = 1; // For pagination, assuming 1 as the starting page
   bool _hasMoreData = true; // Flag to check if there's more data
 
-  void registerStudent(dynamic data) async {
+  Future<bool> _isOnline() async {
+    final result = await Connectivity().checkConnectivity();
+    return result.isNotEmpty && !result.contains(ConnectivityResult.none);
+  }
+
+
+  // void registerStudent(dynamic data) async {
+  // //   emit(StudentLoading());
+  // //   print('this is student data $student');
+  // //   await Future.delayed(const Duration(seconds: 1)); // Simulating API call
+  // //   try {
+  // //     final value = await _studentRepository.registerStudent(student);
+  // //     print('this is got');
+  // //     print('This is the Value : $value');
+  // //
+  // //     if (value!['error'] == 1) {
+  // //       emit(StudentFailure(message: value['message'].toString()));
+  // //     } else if (value['error'] == 0) {
+  // //       emit(StudentSuccess(message: value['message'].toString()));
+  // //     }
+  // //   } catch (error) {
+  // //     print('this error occured $error');
+  // //     emit(StudentFailure(message: error.toString()));
+  // //   }
+  // //   // emit(StudentRegistered());
+  // // }
   //   emit(StudentLoading());
-  //   print('this is student data $student');
-  //   await Future.delayed(const Duration(seconds: 1)); // Simulating API call
   //   try {
-  //     final value = await _studentRepository.registerStudent(student);
-  //     print('this is got');
-  //     print('This is the Value : $value');
+  //     // FIX: Ensure data['created_by'] is converted to String BEFORE parsing
+  //     // This handles cases where created_by is already an int OR a String.
+  //     // final String rawCreatedBy = data['created_by']?.toString() ?? '0';
+  //     // final int creatorId = int.parse(rawCreatedBy);
   //
-  //     if (value!['error'] == 1) {
+  //     // Construct payload ensuring all String fields are actually Strings
+  //     final payload = {
+  //       'name': data['name']?.toString() ?? '',
+  //       'class': data['class']?.toString() ?? '',
+  //       'gender': data['gender']?.toString() ?? '',
+  //       'created_by': data['created_by']?.toString() ?? '0',
+  //       'apaarId': (data['apaarId'] == null || data['apaarId'].toString().trim().isEmpty)
+  //           ? 'NA'
+  //           : data['apaarId'].toString(),
+  //       'pen_id': (data['pen_id'] == null || data['pen_id'].toString().trim().isEmpty)
+  //           ? 'NA'
+  //           : data['pen_id'].toString(),
+  //       'rollno': (data['rollno'] == null || data['rollno'].toString().trim().isEmpty)
+  //           ? 'NA'
+  //           : data['rollno'].toString(),
+  //     };
+  //
+  //     print("Sending Payload to API: $payload");
+  //
+  //     final value = await _studentRepository.registerStudent(payload);
+  //
+  //     if (value['error'] == 1) {
   //       emit(StudentFailure(message: value['message'].toString()));
-  //     } else if (value['error'] == 0) {
+  //     } else {
   //       emit(StudentSuccess(message: value['message'].toString()));
   //     }
   //   } catch (error) {
-  //     print('this error occured $error');
-  //     emit(StudentFailure(message: error.toString()));
+  //     print("Cubit Error Trace: $error");
+  //     emit(StudentFailure(message: "Registration Error: ${error.toString()}"));
   //   }
-  //   // emit(StudentRegistered());
   // }
+
+  void registerStudent(dynamic data) async {
     emit(StudentLoading());
     try {
-      // FIX: Ensure data['created_by'] is converted to String BEFORE parsing
-      // This handles cases where created_by is already an int OR a String.
-      // final String rawCreatedBy = data['created_by']?.toString() ?? '0';
-      // final int creatorId = int.parse(rawCreatedBy);
-
-      // Construct payload ensuring all String fields are actually Strings
       final payload = {
         'name': data['name']?.toString() ?? '',
         'class': data['class']?.toString() ?? '',
         'gender': data['gender']?.toString() ?? '',
         'created_by': data['created_by']?.toString() ?? '0',
-        'apaarId': (data['apaarId'] == null || data['apaarId'].toString().trim().isEmpty)
-            ? 'NA'
-            : data['apaarId'].toString(),
-        'pen_id': (data['pen_id'] == null || data['pen_id'].toString().trim().isEmpty)
-            ? 'NA'
-            : data['pen_id'].toString(),
-        'rollno': (data['rollno'] == null || data['rollno'].toString().trim().isEmpty)
-            ? 'NA'
-            : data['rollno'].toString(),
+        'apaarId': (data['apaarId'] == null || data['apaarId'].toString().trim().isEmpty) ? 'NA' : data['apaarId'].toString(),
+        'pen_id': (data['pen_id'] == null || data['pen_id'].toString().trim().isEmpty) ? 'NA' : data['pen_id'].toString(),
+        'rollno': (data['rollno'] == null || data['rollno'].toString().trim().isEmpty) ? 'NA' : data['rollno'].toString(),
+        'school': data['school']?.toString() ?? '',
+        'schoolCodeNew': data['schoolCodeNew']?.toString() ?? '',
       };
 
-      print("Sending Payload to API: $payload");
-
-      final value = await _studentRepository.registerStudent(payload);
+      // NEW — branch on connectivity
+      final online = await _isOnline();
+      final value = online
+          ? await _studentRepository.registerStudent(payload)
+          : await _studentRepository.registerStudentOffline(payload);
 
       if (value['error'] == 1) {
         emit(StudentFailure(message: value['message'].toString()));
@@ -65,8 +104,45 @@ class StudentCubit extends Cubit<StudentState> {
         emit(StudentSuccess(message: value['message'].toString()));
       }
     } catch (error) {
-      print("Cubit Error Trace: $error");
       emit(StudentFailure(message: "Registration Error: ${error.toString()}"));
+    }
+  }
+
+  Future<void> fetchStudents({
+    required dynamic adminId,
+    String? stateName, String? district, String? block, String? school, String? from, String? to,
+  }) async {
+    if (_isLoading || !_hasMoreData) return;
+    _isLoading = true;
+    emit(StudentLoading());
+
+    try {
+      final online = await _isOnline();
+      if (!online) {
+        // NEW — offline path, no pagination, just the local cached list
+        final students = await _studentRepository.getStudentsOffline(school ?? '');
+        emit(StudentListSuccess(studentList: students, message: 'Loaded from offline cache'));
+        _hasMoreData = false;
+        return;
+      }
+
+      final value = await _studentRepository.getStudents(
+          adminId, stateName, district, block, school, from, to, page: _page);
+
+      if (value is Map<String, dynamic>) {
+        if (value['error'] == 1) {
+          emit(StudentFailure(message: value['message'].toString()));
+        } else if (value['error'] == 0) {
+          List<StudentModel> students = (value['data'] as List).map((s) => StudentModel.fromJson(s)).toList();
+          _hasMoreData = value['data'].length > 0;
+          if (_hasMoreData) _page++;
+          emit(StudentListSuccess(studentList: students, message: value['message'].toString()));
+        }
+      }
+    } catch (error) {
+      emit(StudentFailure(message: error.toString()));
+    } finally {
+      _isLoading = false;
     }
   }
 
@@ -125,56 +201,56 @@ class StudentCubit extends Cubit<StudentState> {
 
 
 
-  Future<void> fetchStudents({
-    required dynamic adminId,
-    String? stateName,
-    String? district,
-    String? block,
-    String? school,
-    String? from,
-    String? to,
-  }) async {
-    if (_isLoading || !_hasMoreData)
-      return; // Prevent multiple simultaneous requests
-    _isLoading = true;
-    emit(StudentLoading()); // Show loading state
-
-    await Future.delayed(const Duration(seconds: 1)); // Simulating API call
-
-    try {
-      final value = await _studentRepository.getStudents(
-          adminId, stateName, district, block, school, from, to,
-          page: _page); // Pass page number to API
-
-      if (value is Map<String, dynamic>) {
-        if (value['error'] == 1) {
-          emit(StudentFailure(message: value['message'].toString()));
-        } else if (value['error'] == 0) {
-          List<StudentModel> students = (value['data'] as List)
-              .map((student) => StudentModel.fromJson(student))
-              .toList();
-
-          // Check if there are more students to load
-          _hasMoreData = value['data'].length >
-              0; // Assume if data length is 0, there's no more data
-
-          // If more data exists, increase the page number for the next request
-          if (_hasMoreData) {
-            _page++;
-          }
-
-          emit(StudentListSuccess(
-              studentList: students, message: value['message'].toString()));
-        }
-      } else {
-        emit(StudentFailure(message: 'Unexpected response format'));
-      }
-    } catch (error) {
-      emit(StudentFailure(message: error.toString()));
-    } finally {
-      _isLoading = false; // Reset loading flag
-    }
-  }
+  // Future<void> fetchStudents({
+  //   required dynamic adminId,
+  //   String? stateName,
+  //   String? district,
+  //   String? block,
+  //   String? school,
+  //   String? from,
+  //   String? to,
+  // }) async {
+  //   if (_isLoading || !_hasMoreData)
+  //     return; // Prevent multiple simultaneous requests
+  //   _isLoading = true;
+  //   emit(StudentLoading()); // Show loading state
+  //
+  //   await Future.delayed(const Duration(seconds: 1)); // Simulating API call
+  //
+  //   try {
+  //     final value = await _studentRepository.getStudents(
+  //         adminId, stateName, district, block, school, from, to,
+  //         page: _page); // Pass page number to API
+  //
+  //     if (value is Map<String, dynamic>) {
+  //       if (value['error'] == 1) {
+  //         emit(StudentFailure(message: value['message'].toString()));
+  //       } else if (value['error'] == 0) {
+  //         List<StudentModel> students = (value['data'] as List)
+  //             .map((student) => StudentModel.fromJson(student))
+  //             .toList();
+  //
+  //         // Check if there are more students to load
+  //         _hasMoreData = value['data'].length >
+  //             0; // Assume if data length is 0, there's no more data
+  //
+  //         // If more data exists, increase the page number for the next request
+  //         if (_hasMoreData) {
+  //           _page++;
+  //         }
+  //
+  //         emit(StudentListSuccess(
+  //             studentList: students, message: value['message'].toString()));
+  //       }
+  //     } else {
+  //       emit(StudentFailure(message: 'Unexpected response format'));
+  //     }
+  //   } catch (error) {
+  //     emit(StudentFailure(message: error.toString()));
+  //   } finally {
+  //     _isLoading = false; // Reset loading flag
+  //   }
+  // }
 
 
  void promoteStudent(dynamic data) async {
@@ -209,6 +285,8 @@ class StudentCubit extends Cubit<StudentState> {
       emit(GradesFailure('Failed to fetch grades: ${e.toString()}'));
     }
   }
+
+
 
 }
 

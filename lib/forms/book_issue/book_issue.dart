@@ -663,6 +663,7 @@ class _BookIssueState extends State<BookIssue> {
                     LabelText(label: 'Book Language', astrick: true),
                     const SizedBox(height: 10),
                     CustomTextFormField(
+                      //hintText: languageController.text,
                       textController: languageController,
                       readOnly: false,
                       validator: (value) => value == 'Unknown' || value!.isEmpty ? 'Please enter book language.' : null,
@@ -671,6 +672,7 @@ class _BookIssueState extends State<BookIssue> {
                     LabelText(label: 'Book Publisher'),
                     const SizedBox(height: 10),
                     CustomTextFormField(
+                      //hintText: authorController.text,
                       textController: authorController,
                       readOnly: authorController.text != 'Unknown' ? false : true,
                     ),
