@@ -69,4 +69,6 @@ class AppUrls {
   static String fcmTokenApi = "${AppUrls.baseUrl}update_fcm_token";
   static String getAppVersionApi = '${AppUrls.baseUrl}get_lib_version';
 
+
+
 }

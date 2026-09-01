@@ -289,9 +289,7 @@ class BookIssueRepository {
       }
     }
 
-    final openLoan = await (_db.select(_db.bookIssues)
-      ..where((t) => t.bookIsbn.equals(isbn) & t.studentRollno.equals(rollno) & t.status.equals('Issued')))
-        .getSingleOrNull();
+    final openLoan = await _findOpenLoan(isbn, rollno);
 
     if (status == 'Returned') {
       if (openLoan == null) {
@@ -329,6 +327,24 @@ class BookIssueRepository {
       );
       return {"error": 0, "message": "Success"};
     }
+  }
+
+  Future<BookIssue?> _findOpenLoan(String isbn, String rollno) async {
+    final returnedUniqids = await (_db.selectOnly(_db.bookIssues)
+      ..addColumns([_db.bookIssues.uniqid])
+      ..where(_db.bookIssues.status.equals('Returned')))
+        .map((row) => row.read(_db.bookIssues.uniqid)!)
+        .get();
+
+    final query = _db.select(_db.bookIssues)
+      ..where((t) =>
+      t.bookIsbn.equals(isbn) &
+      t.studentRollno.equals(rollno) &
+      t.status.equals('Issued') &
+      t.uniqid.isNotIn(returnedUniqids))
+      ..orderBy([(t) => OrderingTerm.asc(t.createdAt)]);
+
+    return query.getSingleOrNull();
   }
 
   Future<void> _insertIssueRow({

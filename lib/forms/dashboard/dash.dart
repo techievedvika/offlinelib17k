@@ -21,6 +21,8 @@ import 'package:lib17000ft/components/component.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../components/animated_pie_chart.dart';
+import '../../core/di/service_locator.dart';
+import '../../core/sync/sync_engine.dart';
 import 'gradebargraph.dart';
 
 class DashBoard extends StatefulWidget {
@@ -180,6 +182,14 @@ class _DashBoardState extends State<DashBoard>
     rights = prefs.getString('rights');
     role ??= 'Guest';
     libSchool = prefs.getString('school');
+
+    if (userId != null && libSchool != null) {
+      getIt<SyncEngine>().runInitialSync(
+        createdBy: userId!,
+        school: libSchool!,
+        role: role!,
+      ).catchError((e) => print('Initial sync failed: $e'));
+    }
 
     if (userId != null && mounted) {
       print('fetchdashdata is called');
