@@ -12,6 +12,7 @@ import 'configs/color/color.dart';
 import 'configs/routes/routes.dart';
 import 'configs/routes/routes_name.dart';
 import 'core/di/service_locator.dart';
+import 'core/sync/sync_status_cubit.dart';
 import 'forms/student/student_cubit.dart';
 import 'login/bloc/login_cubit.dart';
 import 'login/bloc/network_cubit.dart';
@@ -68,6 +69,9 @@ class MyApp extends StatelessWidget {
           ),
           BlocProvider<FilterCubit>(
             create: (context) => FilterCubit(),
+          ),
+          BlocProvider<SyncStatusCubit>(
+            create: (context) => SyncStatusCubit(getIt()),
           ),
           // Add other Blocs here if needed
         ],

@@ -194,6 +194,54 @@ class BookIssueRepository {
    
   }
 
+  Future<Map<String, dynamic>> insertBookOnline(Map<String, dynamic> bookData) async {
+    final response = await _api.postApi(AppUrls.bookAdd, bookData);
+    if (response['error'] == false || response['error'] == 0) {
+      return {"error": 0, "message": response['message'] ?? "Book inserted successfully"};
+    }
+    return {"error": 1, "message": response['message'] ?? "Failed to insert book"};
+  }
+
+  Future<Map<String, dynamic>> insertBookOffline(Map<String, dynamic> bookData) async {
+    final isbn = bookData['isbn'].toString();
+    final existing = await (_db.select(_db.books)..where((t) => t.isbn.equals(isbn))).getSingleOrNull();
+    if (existing != null) {
+      return {"error": 1, "message": "Book with this ISBN already exists"};
+    }
+
+    final now = DateTime.now();
+    await _db.into(_db.books).insert(BooksCompanion.insert(
+      isbn: isbn,
+      title: bookData['title'].toString(),
+      publisher: Value(bookData['publisher']?.toString()),
+      author: Value(bookData['author']?.toString()),
+      language: Value(bookData['language']?.toString()),
+      gener: Value(bookData['gener']?.toString()),
+      level: Value(bookData['level']?.toString()),
+      coverPage: Value(bookData['cover_page']?.toString()),
+      code: Value(bookData['code']?.toString() ?? 'NA'),
+      updatedAt: now,
+      syncStatus: const Value('pending'),
+    ));
+
+    await _db.into(_db.syncOutbox).insert(SyncOutboxCompanion.insert(
+      entityType: 'book',
+      entityKey: isbn,
+      operation: 'create',
+      payloadJson: jsonEncode(bookData),
+      createdAt: now,
+    ));
+
+    if (bookData['cover_page']?.toString().isNotEmpty ?? false) {
+      await _db.into(_db.pendingUploads).insert(PendingUploadsCompanion.insert(
+        entityType: 'book', entityKey: isbn, fieldName: 'cover_page',
+        localFilePath: bookData['cover_page'].toString(),
+      ));
+    }
+
+    return {"error": 0, "message": "Book saved offline, will sync when online"};
+  }
+
   Future<Map<String, dynamic>> bookIssueReturnOffline({
     required String isbn,
     required String title,

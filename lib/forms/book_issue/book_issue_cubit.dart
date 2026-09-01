@@ -425,89 +425,107 @@ class BookIssueCubit extends Cubit<BookIssueState> {
   // }
 
 
-  Future<void> insertBook(
-      Map<String, dynamic> bookData,
-      ) async {
+  // Future<void> insertBook(
+  //     Map<String, dynamic> bookData,
+  //     ) async {
+  //   emit(BookIssueLoading());
+  //
+  //   try {
+  //     final url = Uri.parse(AppUrls.bookAdd);
+  //
+  //     debugPrint('================================');
+  //     debugPrint('INSERT BOOK URL: $url');
+  //     debugPrint('INSERT BOOK DATA: $bookData');
+  //     debugPrint('================================');
+  //
+  //     final response = await http.post(
+  //       url,
+  //       body: bookData.map(
+  //             (key, value) => MapEntry(
+  //           key,
+  //           value.toString(),
+  //         ),
+  //       ),
+  //     );
+  //
+  //     debugPrint('STATUS CODE: ${response.statusCode}');
+  //     debugPrint('RESPONSE: ${response.body}');
+  //
+  //     // HTTP error
+  //     if (response.statusCode < 200 || response.statusCode >= 300) {
+  //       emit(
+  //         BookIssueFailure(
+  //           message: 'Server error: ${response.statusCode}',
+  //         ),
+  //       );
+  //       return;
+  //     }
+  //
+  //     // Decode API response
+  //     final responseData = jsonDecode(response.body);
+  //
+  //     debugPrint('DECODED RESPONSE: $responseData');
+  //
+  //     // API error
+  //     if (responseData['error'] == true ||
+  //         responseData['error'] == 1 ||
+  //         responseData['error'] == 'true') {
+  //       emit(
+  //         BookIssueFailure(
+  //           message: responseData['message']?.toString() ??
+  //               'Failed to insert book',
+  //         ),
+  //       );
+  //       return;
+  //     }
+  //
+  //     // API success
+  //     if (responseData['error'] == false ||
+  //         responseData['error'] == 0 ||
+  //         responseData['error'] == 'false') {
+  //       emit(
+  //         BookIssueSuccess(
+  //           message: responseData['message']?.toString() ??
+  //               'Book inserted successfully',
+  //           status: 'Inserted',
+  //         ),
+  //       );
+  //       return;
+  //     }
+  //
+  //     // Unexpected response
+  //     emit(
+  //       BookIssueFailure(
+  //         message: 'Unexpected response from server',
+  //       ),
+  //     );
+  //   } catch (e, stackTrace) {
+  //     debugPrint('INSERT BOOK ERROR: $e');
+  //     debugPrint('$stackTrace');
+  //
+  //     emit(
+  //       BookIssueFailure(
+  //         message: e.toString(),
+  //       ),
+  //     );
+  //   }
+  // }
+
+  Future<void> insertBook(Map<String, dynamic> bookData) async {
     emit(BookIssueLoading());
-
     try {
-      final url = Uri.parse(AppUrls.bookAdd);
+      final online = await _isOnline();
+      final value = online
+          ? await _bookIssueRepository.insertBookOnline(bookData)
+          : await _bookIssueRepository.insertBookOffline(bookData);
 
-      debugPrint('================================');
-      debugPrint('INSERT BOOK URL: $url');
-      debugPrint('INSERT BOOK DATA: $bookData');
-      debugPrint('================================');
-
-      final response = await http.post(
-        url,
-        body: bookData.map(
-              (key, value) => MapEntry(
-            key,
-            value.toString(),
-          ),
-        ),
-      );
-
-      debugPrint('STATUS CODE: ${response.statusCode}');
-      debugPrint('RESPONSE: ${response.body}');
-
-      // HTTP error
-      if (response.statusCode < 200 || response.statusCode >= 300) {
-        emit(
-          BookIssueFailure(
-            message: 'Server error: ${response.statusCode}',
-          ),
-        );
-        return;
+      if (value['error'] == 1) {
+        emit(BookIssueFailure(message: value['message'].toString()));
+      } else {
+        emit(BookIssueSuccess(message: value['message'].toString(), status: 'Inserted'));
       }
-
-      // Decode API response
-      final responseData = jsonDecode(response.body);
-
-      debugPrint('DECODED RESPONSE: $responseData');
-
-      // API error
-      if (responseData['error'] == true ||
-          responseData['error'] == 1 ||
-          responseData['error'] == 'true') {
-        emit(
-          BookIssueFailure(
-            message: responseData['message']?.toString() ??
-                'Failed to insert book',
-          ),
-        );
-        return;
-      }
-
-      // API success
-      if (responseData['error'] == false ||
-          responseData['error'] == 0 ||
-          responseData['error'] == 'false') {
-        emit(
-          BookIssueSuccess(
-            message: responseData['message']?.toString() ??
-                'Book inserted successfully',
-            status: 'Inserted',
-          ),
-        );
-        return;
-      }
-
-      // Unexpected response
-      emit(
-        BookIssueFailure(
-          message: 'Unexpected response from server',
-        ),
-      );
-    } catch (e, stackTrace) {
-      debugPrint('INSERT BOOK ERROR: $e');
-      debugPrint('$stackTrace');
-
-      emit(
-        BookIssueFailure(
-          message: e.toString(),
-        ),
-      );
+    } catch (e) {
+      emit(BookIssueFailure(message: e.toString()));
     }
   }
 

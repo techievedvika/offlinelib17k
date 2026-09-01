@@ -59,7 +59,7 @@ class LoginRepository {
           createdBy: userModel.user!.id.toString(),
           school: userModel.user!.school.toString(),
           role: userModel.user!.role.toString(),
-        );
+        ).catchError((e) => print('Initial sync failed (expected until backend endpoint exists): $e'));
 
 
         return userModel;
