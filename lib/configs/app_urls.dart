@@ -69,6 +69,10 @@ class AppUrls {
   static String fcmTokenApi = "${AppUrls.baseUrl}update_fcm_token";
   static String getAppVersionApi = '${AppUrls.baseUrl}get_lib_version';
 
+  static String syncInitial = '${AppUrls.baseUrl}initial_sync';
+  static String syncPush = '${AppUrls.baseUrl}sync/push';
+  static String syncPull = '${AppUrls.baseUrl}sync/pull';
+  static String syncMeta = '${AppUrls.baseUrl}sync/meta';
 
 
 }

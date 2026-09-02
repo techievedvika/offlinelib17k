@@ -1,12 +1,15 @@
 import 'dart:convert';
 import 'package:drift/drift.dart';
 import 'package:http/http.dart' as http;
+import '../../configs/app_urls.dart';
+import '../../data/network/network_api_services.dart';
 import '../database/tables/database.dart';
 
 class SyncEngine {
   final AppDatabase db;
   final String baseUrl;
   bool _isSyncing = false;
+  final _api = NetworkServicesApi();
 
   SyncEngine(this.db, {required this.baseUrl});
 
@@ -206,10 +209,15 @@ class SyncEngine {
   // ---------------- INITIAL SYNC (post-login bulk pull) ----------------
 
   Future<void> runInitialSync({required String createdBy, required String school, required String role}) async {
-    final resp = await http.get(Uri.parse(
-      '$baseUrl/initial_sync?created_by=$createdBy&school=${Uri.encodeComponent(school)}&role=$role',
-    ));
-    final decoded = jsonDecode(resp.body);
+
+    final Map<String, dynamic> data = {
+      "created_by": createdBy,
+      "school": school,
+      "role": role,
+    };
+
+    final resp = await _api.postApi(AppUrls.syncInitial, data);
+    final Map<String, dynamic> decoded = jsonDecode(resp.body);
 
     await _mergeIncoming('student', decoded['students'] ?? []);
     await _mergeIncoming('book', decoded['books'] ?? []);

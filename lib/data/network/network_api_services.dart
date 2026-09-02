@@ -51,10 +51,6 @@ class NetworkServicesApi implements BaseApiServices {
 
         jsonResponse = returnResponse(response);
 
-
-
-
-
       if (response.statusCode == 200) {
 
       }
