@@ -2,14 +2,12 @@ import 'dart:convert';
 import 'package:drift/drift.dart';
 import 'package:http/http.dart' as http;
 import '../../configs/app_urls.dart';
-import '../../data/network/network_api_services.dart';
 import '../database/tables/database.dart';
 
 class SyncEngine {
   final AppDatabase db;
   final String baseUrl;
   bool _isSyncing = false;
-  final _api = NetworkServicesApi();
 
   SyncEngine(this.db, {required this.baseUrl});
 
@@ -35,7 +33,7 @@ class SyncEngine {
       for (final row in rows) {
         try {
           final resp = await http.post(
-            Uri.parse('$baseUrl/sync/push'),
+            Uri.parse(AppUrls.syncPush),
             headers: {'Content-Type': 'application/json'},
             body: jsonEncode({
               'entity_type': type,
@@ -115,7 +113,7 @@ class SyncEngine {
   Future<void> _pull() async {
     for (final entity in ['book', 'student', 'issue', 'activity_log']) {
       final lastSynced = await _getLastSynced(entity);
-      final resp = await http.get(Uri.parse('$baseUrl/sync/pull?entity=$entity&updated_since=$lastSynced'));
+      final resp = await http.get(Uri.parse('${AppUrls.syncPull}?entity=$entity&updated_since=$lastSynced'));
       final decoded = jsonDecode(resp.body);
       final data = (decoded['data'] as List?) ?? [];
       await _mergeIncoming(entity, data);
@@ -208,29 +206,118 @@ class SyncEngine {
 
   // ---------------- INITIAL SYNC (post-login bulk pull) ----------------
 
-  Future<void> runInitialSync({required String createdBy, required String school, required String role}) async {
+  // Future<void> runInitialSync({required String createdBy, required String school, required String role}) async {
+  //
+  //   final Map<String, dynamic> data = {
+  //     "created_by": createdBy,
+  //     "school": school,
+  //     "role": role,
+  //   };
+  //
+  //   final resp = await _api.postApi(AppUrls.syncInitial, data);
+  //   final Map<String, dynamic> decoded = jsonDecode(resp.body);
+  //
+  //   await _mergeIncoming('student', decoded['students'] ?? []);
+  //   await _mergeIncoming('book', decoded['books'] ?? []);
+  //   await _mergeIncoming('issue', decoded['issues'] ?? []);
+  //   await _mergeIncoming('activity_log', decoded['activity_logs'] ?? []);
+  //
+  //   for (final g in (decoded['grades'] as List? ?? [])) {
+  //     await db.into(db.grades).insertOnConflictUpdate(GradesCompanion.insert(grade: g.toString()));
+  //   }
+  //
+  //   final now = DateTime.now();
+  //   for (final entity in ['student', 'book', 'issue', 'activity_log']) {
+  //     await _setLastSynced(entity, now);
+  //   }
+  // }
 
-    final Map<String, dynamic> data = {
-      "created_by": createdBy,
-      "school": school,
-      "role": role,
+  Future<void> runInitialSync({
+    required String createdBy,
+    required String school,
+    required String role,
+  }) async {
+    final url = Uri.parse(
+      AppUrls.syncInitial,
+    );
+
+    final body = {
+      'created_by': int.tryParse(createdBy) ?? 0,
+      'school': school,
+      'role': role,
     };
 
-    final resp = await _api.postApi(AppUrls.syncInitial, data);
-    final Map<String, dynamic> decoded = jsonDecode(resp.body);
+    try {
+      final response = await http
+          .post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode(body),
+      )
+          .timeout(const Duration(seconds: 120));
 
-    await _mergeIncoming('student', decoded['students'] ?? []);
-    await _mergeIncoming('book', decoded['books'] ?? []);
-    await _mergeIncoming('issue', decoded['issues'] ?? []);
-    await _mergeIncoming('activity_log', decoded['activity_logs'] ?? []);
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        throw Exception(
+          'Initial sync failed: ${response.statusCode} ${response.body}',
+        );
+      }
 
-    for (final g in (decoded['grades'] as List? ?? [])) {
-      await db.into(db.grades).insertOnConflictUpdate(GradesCompanion.insert(grade: g.toString()));
-    }
+      final decoded = jsonDecode(response.body);
 
-    final now = DateTime.now();
-    for (final entity in ['student', 'book', 'issue', 'activity_log']) {
-      await _setLastSynced(entity, now);
+      if (decoded is! Map<String, dynamic>) {
+        throw Exception('Invalid initial sync response');
+      }
+
+      if (decoded['error'] == true) {
+        throw Exception(
+          decoded['message'] ?? 'Initial sync failed',
+        );
+      }
+
+      await _mergeIncoming(
+        'student',
+        List<dynamic>.from(decoded['students'] ?? []),
+      );
+
+      await _mergeIncoming(
+        'book',
+        List<dynamic>.from(decoded['books'] ?? []),
+      );
+
+      await _mergeIncoming(
+        'issue',
+        List<dynamic>.from(decoded['issues'] ?? []),
+      );
+
+      await _mergeIncoming(
+        'activity_log',
+        List<dynamic>.from(decoded['activity_logs'] ?? []),
+      );
+
+      for (final grade in List<dynamic>.from(decoded['grades'] ?? [])) {
+        await db.into(db.grades).insertOnConflictUpdate(
+          GradesCompanion.insert(
+            grade: grade.toString(),
+          ),
+        );
+      }
+
+      final now = DateTime.now();
+
+      for (final entity in [
+        'student',
+        'book',
+        'issue',
+        'activity_log',
+      ]) {
+        await _setLastSynced(entity, now);
+      }
+    } catch (e) {
+      print('Initial sync error: $e');
+      rethrow;
     }
   }
 
