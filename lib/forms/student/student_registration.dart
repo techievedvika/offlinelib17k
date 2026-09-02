@@ -584,6 +584,7 @@
 // ignore_for_file: deprecated_member_use
 
 import 'dart:convert';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lib17000ft/components/component.dart';
@@ -630,6 +631,11 @@ class _StudentRegistrationState extends State<StudentRegistration> {
   int selectedIndex = 0;
 
   bool isVisible = false;
+
+  Future<bool> _isOnline() async {
+    final result = await Connectivity().checkConnectivity();
+    return result.isNotEmpty && !result.contains(ConnectivityResult.none);
+  }
 
   @override
   void initState() {
@@ -702,8 +708,12 @@ class _StudentRegistrationState extends State<StudentRegistration> {
 
   // Inside your _StudentRegistrationState where you submit the form:
 
-  void _register() {
+  void _register() async {
     if (_formKey.currentState!.validate()) {
+      final prefs = await SharedPreferences.getInstance();
+      final school = prefs.getString('school') ?? '';
+      final schoolCodeNew = prefs.getString('schoolCodeNew') ?? '';
+
       final Map<String, dynamic> data = {
         'name': _nameController.text.trim(),
         'class': gradeValue, // Dropdown value
@@ -712,6 +722,8 @@ class _StudentRegistrationState extends State<StudentRegistration> {
         'apaarId': _apparController.text.trim(),
         'pen_id': _penController.text.trim(), // Ensure you added this controller
         'rollno': idValue == 'No' ? _dynamicIdController.text : _rollNoController.text,
+        'school': school,
+        'schoolCodeNew': schoolCodeNew,
       };
 
       context.read<StudentCubit>().registerStudent(data);
@@ -803,9 +815,12 @@ class _StudentRegistrationState extends State<StudentRegistration> {
                           ResettableRadio(
                             key: _idRadioKey,
                             options: const ['Yes', 'No'],
-                            onChanged: (value) {
+                            onChanged: (value) async{
                               if (value == 'No') {
-                                context.read<StudentCubit>().getStudentId(location!);
+                                final online = await _isOnline();
+                                online ?
+                                context.read<StudentCubit>().getStudentId(location!)
+                                    : context.read<StudentCubit>().getOfflineStudentId();
 
                               }
                               setState(() {

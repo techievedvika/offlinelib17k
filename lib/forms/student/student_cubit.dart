@@ -1,6 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:lib17000ft/models/student_registration/student_model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'student_repository.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 part 'student_state.dart';
@@ -119,8 +120,7 @@ class StudentCubit extends Cubit<StudentState> {
     try {
       final online = await _isOnline();
       if (!online) {
-        // NEW — offline path, no pagination, just the local cached list
-        final students = await _studentRepository.getStudentsOffline(school ?? '');
+        final students = await _studentRepository.getStudentsOffline(school); // pass through as-is, null is fine now
         emit(StudentListSuccess(studentList: students, message: 'Loaded from offline cache'));
         _hasMoreData = false;
         return;
@@ -198,6 +198,25 @@ class StudentCubit extends Cubit<StudentState> {
     emit(StudentFailure(message: error.toString()));
   }
 }
+
+  Future<void> getOfflineStudentId() async {
+    emit(StudentLoading());
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final school = prefs.getString('school') ?? '';
+      final schoolCodeNew = prefs.getString('schoolCodeNew') ?? '';
+
+      if (schoolCodeNew.isEmpty) {
+        emit(StudentFailure(message: 'School code not available yet — please sync once while online'));
+        return;
+      }
+
+      final studentId = await _studentRepository.generateUniqueId(schoolCodeNew, school);
+      emit(StudentIdSuccess(studentId: studentId));
+    } catch (error) {
+      emit(StudentFailure(message: error.toString()));
+    }
+  }
 
 
 
@@ -279,7 +298,10 @@ class StudentCubit extends Cubit<StudentState> {
   Future<void> fetchGrades() async {
     emit(GradesLoading());
     try {
-      final grades = await _studentRepository.getGrades();
+      final online = await _isOnline();
+      final grades = online
+          ? await _studentRepository.getGrades()
+          : await _studentRepository.getGradesOffline(); // NEW
       emit(GradesSuccess(grades));
     } catch (e) {
       emit(GradesFailure('Failed to fetch grades: ${e.toString()}'));

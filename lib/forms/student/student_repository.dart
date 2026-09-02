@@ -247,6 +247,12 @@ Future<String> getUniqueId(String? location) async {
     }
   }
 
+  // NEW — offline grades, reads from local cache populated by initial_sync
+  Future<List<String>> getGradesOffline() async {
+    final rows = await _db.select(_db.grades).get();
+    return rows.map((r) => r.grade).toList();
+  }
+
   Future<dynamic> updateStudent(dynamic data) async {
     // Note: You should add 'updateStudentApi' to your AppUrls config file
     // If not present, you can use a string, but AppUrls.updateStudentApi is better.
@@ -293,7 +299,7 @@ Future<String> getUniqueId(String? location) async {
 
     final school = data['school']?.toString() ?? '';
     final schoolCodeNew = data['schoolCodeNew']?.toString() ?? '';
-    final uniqueId = await _generateUniqueId(schoolCodeNew, school);
+    final uniqueId = await generateUniqueId(schoolCodeNew, school);
     final now = DateTime.now();
     final uuid = const Uuid().v4();
     final createdBy = int.tryParse(data['created_by']?.toString() ?? '') ?? 0;
@@ -333,7 +339,7 @@ Future<String> getUniqueId(String? location) async {
     return {"error": 0, "message": "Student saved offline, will sync when online"};
   }
 
-  Future<String> _generateUniqueId(String schoolCodeNew, String school) async {
+  Future<String> generateUniqueId(String schoolCodeNew, String school) async {
     final students = await (_db.select(_db.students)..where((t) => t.school.equals(school))).get();
     int maxSerial = 0;
     for (final s in students) {
@@ -347,8 +353,13 @@ Future<String> getUniqueId(String? location) async {
   }
 
   // NEW — offline student list
-  Future<List<StudentModel>> getStudentsOffline(String school) async {
-    final rows = await (_db.select(_db.students)..where((t) => t.school.equals(school))).get();
+  // CHANGED signature — school now optional, ignored if blank/null
+  Future<List<StudentModel>> getStudentsOffline([String? school]) async {
+    final query = _db.select(_db.students);
+    if (school != null && school.trim().isNotEmpty) {
+      query.where((t) => t.school.equals(school));
+    }
+    final rows = await query.get();
     return rows.map((r) => StudentModel(
       createdBy: r.createdBy.toString(),
       name: r.name,

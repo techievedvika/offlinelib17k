@@ -3,8 +3,9 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:http/http.dart' show ClientException;
 
-import '../exceptions/app_exceptions.dart';
+import '../exceptions/app_exceptions.dart' hide ClientException;
 import 'base_api_services.dart';
 
 
@@ -29,6 +30,11 @@ class NetworkServicesApi implements BaseApiServices {
       }
     } on SocketException {
       throw NoInternetException();
+    } on ClientException catch (e) {
+      if (e.message.contains('SocketException') || e.message.contains('Failed host lookup')) {
+        throw NoInternetException();
+      }
+      throw CustomException(e.message);
     } on TimeoutException {
       throw TimeoutException();
     }
@@ -54,8 +60,18 @@ class NetworkServicesApi implements BaseApiServices {
       if (response.statusCode == 200) {
 
       }
+    // } on SocketException {
+    //   throw NoInternetException();
+    // } on TimeoutException {
+    //   throw TimeoutException();
+    // }
     } on SocketException {
       throw NoInternetException();
+    } on ClientException catch (e) {
+      if (e.message.contains('SocketException') || e.message.contains('Failed host lookup')) {
+        throw NoInternetException();
+      }
+      throw CustomException(e.message);
     } on TimeoutException {
       throw TimeoutException();
     }

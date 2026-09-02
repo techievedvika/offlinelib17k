@@ -72,7 +72,7 @@ class AppUrls {
   static String syncInitial = '${AppUrls.baseUrl}initial_sync';
   static String syncPush = '${AppUrls.baseUrl}sync/push';
   static String syncPull = '${AppUrls.baseUrl}sync/pull';
-  static String syncMeta = '${AppUrls.baseUrl}sync/meta';
+  static String syncMeta = '${AppUrls.baseUrl}upload_file';
 
 
 }

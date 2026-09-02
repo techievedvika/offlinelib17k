@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:bloc/bloc.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:http/http.dart' as http;
 import 'package:lib17000ft/forms/dashboard/dash_state.dart';
 import 'package:lib17000ft/login/repository/dash_repository.dart';
@@ -10,6 +11,10 @@ import '../../configs/app_urls.dart';
 class DashCubit extends Cubit<DashState> {
   DashCubit() : super(DashInitial());
 
+  Future<bool> _isOnline() async {
+    final result = await Connectivity().checkConnectivity();
+    return result.isNotEmpty && !result.contains(ConnectivityResult.none);
+  }
 
   Future<String?> fetchLibVersion() async {
     try {
@@ -54,9 +59,15 @@ class DashCubit extends Cubit<DashState> {
     emit(DashLoading());
 
     try {
+
+      final online = await _isOnline();
+
+      final value = online
+          ? await _dashRepository.fetchDashData(adminId, from, to, stateName, block, school)
+          : await _dashRepository.fetchDashDataOffline(); // NEW — offline branch
       
-      final value = await _dashRepository.fetchDashData(
-          adminId, from, to, stateName, block, school);
+      // final value = await _dashRepository.fetchDashData(
+      //     adminId, from, to, stateName, block, school);
 
       if (value == null) {
         emit(DashFailure("No data received from server"));
@@ -73,7 +84,11 @@ class DashCubit extends Cubit<DashState> {
   //To fetch form logs
   Future<List<dynamic>?> fetchFormLogs({required String adminId}) async {
     try {
-      final logs = await _dashRepository.fetchFormLogs(adminId);
+      final online = await _isOnline();
+      final logs = online
+          ? await _dashRepository.fetchFormLogs(adminId)
+          : await _dashRepository.fetchFormLogsOffline(adminId); // NEW
+      // final logs = await _dashRepository.fetchFormLogs(adminId);
       return logs;
     } catch (e) {
       print('Cubit Error: $e');

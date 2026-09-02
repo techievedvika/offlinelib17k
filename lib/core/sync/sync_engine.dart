@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:drift/drift.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../configs/app_urls.dart';
 import '../database/tables/database.dart';
 
@@ -148,7 +149,7 @@ class SyncEngine {
             gender: item['gender'] ?? '',
             createdAt: DateTime.tryParse(item['created_at'] ?? '') ?? DateTime.now(),
             updatedAt: DateTime.tryParse(item['updated_at'] ?? '') ?? DateTime.now(),
-            createdBy: item['created_by'] ?? 0,
+            createdBy: _asInt(item['created_by']),
             syncStatus: const Value('synced'),
           ));
           break;
@@ -179,7 +180,7 @@ class SyncEngine {
             createdAt: DateTime.tryParse(item['created_at'] ?? '') ?? DateTime.now(),
             updatedAt: DateTime.tryParse(item['updated_at'] ?? item['created_at'] ?? '') ?? DateTime.now(),
             submittedAt: Value(DateTime.tryParse(item['submitted_at'] ?? '')),
-            createdBy: item['created_by'] ?? 0,
+            createdBy: _asInt(item['created_by']),
             syncStatus: const Value('synced'),
           ));
           break;
@@ -192,10 +193,10 @@ class SyncEngine {
             photo: Value(item['photo']),
             bookDetails: item['book_details'] ?? '',
             participantsGrades: item['participants_grades'] ?? '',
-            participantsNumber: item['participants_number'] ?? 0,
+            participantsNumber: _asInt(item['participants_number']),
             conductedBy: item['conducted_by'] ?? '',
             school: item['school'] ?? '',
-            createdBy: item['created_by'] ?? 0,
+            createdBy: _asInt(item['created_by']),
             createdAt: DateTime.tryParse(item['created_at'] ?? '') ?? DateTime.now(),
             syncStatus: const Value('synced'),
           ));
@@ -203,34 +204,6 @@ class SyncEngine {
       }
     }
   }
-
-  // ---------------- INITIAL SYNC (post-login bulk pull) ----------------
-
-  // Future<void> runInitialSync({required String createdBy, required String school, required String role}) async {
-  //
-  //   final Map<String, dynamic> data = {
-  //     "created_by": createdBy,
-  //     "school": school,
-  //     "role": role,
-  //   };
-  //
-  //   final resp = await _api.postApi(AppUrls.syncInitial, data);
-  //   final Map<String, dynamic> decoded = jsonDecode(resp.body);
-  //
-  //   await _mergeIncoming('student', decoded['students'] ?? []);
-  //   await _mergeIncoming('book', decoded['books'] ?? []);
-  //   await _mergeIncoming('issue', decoded['issues'] ?? []);
-  //   await _mergeIncoming('activity_log', decoded['activity_logs'] ?? []);
-  //
-  //   for (final g in (decoded['grades'] as List? ?? [])) {
-  //     await db.into(db.grades).insertOnConflictUpdate(GradesCompanion.insert(grade: g.toString()));
-  //   }
-  //
-  //   final now = DateTime.now();
-  //   for (final entity in ['student', 'book', 'issue', 'activity_log']) {
-  //     await _setLastSynced(entity, now);
-  //   }
-  // }
 
   Future<void> runInitialSync({
     required String createdBy,
@@ -305,6 +278,12 @@ class SyncEngine {
         );
       }
 
+      final schoolCodeNew = decoded['school_code_new']?.toString();
+      if (schoolCodeNew != null && schoolCodeNew.isNotEmpty) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('schoolCodeNew', schoolCodeNew);
+      }
+
       final now = DateTime.now();
 
       for (final entity in [
@@ -358,5 +337,13 @@ class SyncEngine {
       await (db.update(db.activityLogs)..where((t) => t.localId.equals(entityKey)))
           .write(ActivityLogsCompanion(photo: Value(url)));
     }
+  }
+
+  int _asInt(dynamic value, [int fallback = 0]) {
+    if (value == null) return fallback;
+    if (value is int) return value;
+    if (value is String) return int.tryParse(value) ?? fallback;
+    if (value is double) return value.toInt();
+    return fallback;
   }
 }
