@@ -20,4 +20,8 @@ class BookIssues extends Table {
   // Use an auto-increment local rowid instead.
   IntColumn get localRowId => integer().autoIncrement()();
 
+  @override
+  List<Set<Column>> get uniqueKeys => [
+    {uniqid, status}, // NEW — the real server-side identity of a row
+  ];
 }

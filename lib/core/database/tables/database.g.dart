@@ -1536,6 +1536,10 @@ class $BookIssuesTable extends BookIssues
   @override
   Set<GeneratedColumn> get $primaryKey => {localRowId};
   @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+        {uniqid, status},
+      ];
+  @override
   BookIssue map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return BookIssue(

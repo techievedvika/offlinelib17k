@@ -64,7 +64,7 @@ class DashCubit extends Cubit<DashState> {
 
       final value = online
           ? await _dashRepository.fetchDashData(adminId, from, to, stateName, block, school)
-          : await _dashRepository.fetchDashDataOffline(); // NEW — offline branch
+          : await _dashRepository.fetchDashDataOffline(from: from, to: to); // NEW — offline branch
       
       // final value = await _dashRepository.fetchDashData(
       //     adminId, from, to, stateName, block, school);

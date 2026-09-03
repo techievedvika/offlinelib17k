@@ -358,6 +358,7 @@ Future<String> getUniqueId(String? location) async {
     final query = _db.select(_db.students);
     if (school != null && school.trim().isNotEmpty) {
       query.where((t) => t.school.equals(school));
+      // query.where((t) => t.status.equals(1));
     }
     final rows = await query.get();
     return rows.map((r) => StudentModel(

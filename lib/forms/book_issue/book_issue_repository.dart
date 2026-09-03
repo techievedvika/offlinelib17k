@@ -194,6 +194,106 @@ class BookIssueRepository {
    
   }
 
+  // NEW — "All Issued Books": every issue event ever (open or already returned)
+  Future<List<Map<String, dynamic>>> getIssuedBookOffline({String? from, String? to}) async {
+
+    final now = DateTime.now();
+    final rangeStart = DateTime.tryParse(from ?? '') ?? DateTime(now.year, 1, 1);
+    final rangeEnd = DateTime.tryParse(to ?? '') ?? now;
+
+    // final allIssues = await _db.select(_db.bookIssues).get();
+    final allIssues = await (_db.select(_db.bookIssues)
+      ..where((t) => t.createdAt.isBiggerOrEqualValue(rangeStart) & t.createdAt.isSmallerOrEqualValue(rangeEnd)))
+        .get();
+    final students = await _db.select(_db.students).get();
+    final books = await _db.select(_db.books).get();
+
+    final studentByRollno = {for (final s in students) s.rollno: s};
+    final bookByIsbn = {for (final b in books) b.isbn: b};
+    final returnedByUniqid = {
+      for (final r in allIssues.where((i) => i.status == 'Returned')) r.uniqid: r
+    };
+
+    final issuedRows = allIssues.where((i) => i.status == 'Issued');
+
+    return issuedRows.map((issue) {
+      final student = studentByRollno[issue.studentRollno];
+      final book = bookByIsbn[issue.bookIsbn];
+      final returnRow = returnedByUniqid[issue.uniqid]; // null if still open
+
+      return {
+        'name': student?.name ?? 'Unknown',
+        'apaarId': student?.apaarId ?? 'XXXXXXXXXX',
+        'class': student?.studentClass ?? issue.studentGrade,
+        'gender': student?.gender ?? '',
+        'unique_id': student?.uniqueId ?? '',
+        'school': student?.school ?? '',
+        'student_created_at': student?.createdAt.toIso8601String() ?? '',
+        'isbn': issue.bookIsbn,
+        'title': book?.title ?? issue.bookName,
+        'publisher': book?.publisher ?? 'Unknown',
+        'author': book?.author ?? 'Unknown',
+        'language': book?.language ?? 'Unknown',
+        'gener': book?.gener ?? 'Unknown',
+        'level': book?.level ?? 'Unknown',
+        'code': book?.code ?? 'Unknown',
+        'created_by': issue.createdBy.toString(), // see note below
+        'issued_date': issue.createdAt.toIso8601String(),
+        'returned_date': returnRow?.createdAt.toIso8601String(),
+      };
+    }).toList();
+  }
+
+// NEW — "All Pending Returns": only currently OPEN loans (uniqid-aware, matches the fix from before)
+  Future<List<Map<String, dynamic>>> getBookReturnOffline({String? from, String? to}) async {
+
+    final now = DateTime.now();
+    final rangeStart = DateTime.tryParse(from ?? '') ?? DateTime(now.year, 1, 1);
+    final rangeEnd = DateTime.tryParse(to ?? '') ?? now;
+
+    // final allIssues = await _db.select(_db.bookIssues).get();
+    final allIssues = await (_db.select(_db.bookIssues)
+      ..where((t) => t.createdAt.isBiggerOrEqualValue(rangeStart) & t.createdAt.isSmallerOrEqualValue(rangeEnd)))
+        .get();
+    final students = await _db.select(_db.students).get();
+    final books = await _db.select(_db.books).get();
+
+    final studentByRollno = {for (final s in students) s.rollno: s};
+    final bookByIsbn = {for (final b in books) b.isbn: b};
+    final returnedUniqids =
+    allIssues.where((i) => i.status == 'Returned').map((i) => i.uniqid).toSet();
+
+    final openLoans =
+    allIssues.where((i) => i.status == 'Issued' && !returnedUniqids.contains(i.uniqid));
+
+    return openLoans.map((issue) {
+      final student = studentByRollno[issue.studentRollno];
+      final book = bookByIsbn[issue.bookIsbn];
+
+      return {
+        'name': student?.name ?? '',
+        'class': student?.studentClass ?? issue.studentGrade,
+        'apaarId': student?.apaarId ?? 'XXXXXXXXXX',
+        'gender': student?.gender ?? '',
+        'unique_id': student?.uniqueId ?? '',
+        'school': student?.school ?? '',
+        'rollno': issue.studentRollno,
+        'pen_id': student?.penId ?? '',
+        'created_at': issue.createdAt.toIso8601String(), // issue date — this list is only open loans
+        'isbn': issue.bookIsbn,
+        'title': book?.title ?? issue.bookName,
+        'publisher': book?.publisher ?? 'unknown',
+        'author': book?.author ?? 'Unknown',
+        'language': book?.language ?? 'Unknown',
+        'gener': book?.gener ?? 'Unknown',
+        'level': book?.level ?? 'Unknown',
+        'code': book?.code ?? 'Unknown',
+        'created_by': issue.createdBy.toString(),
+      };
+    }).toList();
+  }
+
+
   Future<Map<String, dynamic>> insertBookOnline(Map<String, dynamic> bookData) async {
     final response = await _api.postApi(AppUrls.bookAdd, bookData);
     if (response['error'] == false || response['error'] == 0) {

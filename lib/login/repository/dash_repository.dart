@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart';
 import 'package:lib17000ft/models/dash/dash_model.dart';
 import '../../configs/app_urls.dart';
 import '../../core/database/tables/database.dart';
@@ -85,9 +86,17 @@ Future<DashModel?> fetchDashData(
     }
   }
 
-  Future<DashModel> fetchDashDataOffline() async {
+  Future<DashModel> fetchDashDataOffline({String? from, String? to}) async {
+
+    final now = DateTime.now();
+    final rangeStart = from != null ? DateTime.tryParse(from) ?? DateTime(now.year, 1, 1) : DateTime(now.year, 1, 1);
+    final rangeEnd = to != null ? DateTime.tryParse(to) ?? now : now;
+
     final students = await _db.select(_db.students).get();
-    final allIssues = await _db.select(_db.bookIssues).get();
+    // final allIssues = await _db.select(_db.bookIssues).get();
+    final allIssues = await (_db.select(_db.bookIssues)
+      ..where((t) => t.createdAt.isBiggerOrEqualValue(rangeStart) & t.createdAt.isSmallerOrEqualValue(rangeEnd)))
+        .get();
     final books = await _db.select(_db.books).get();
 
     // Same uniqid-based "open loan" logic we fixed in book_issue_repository
