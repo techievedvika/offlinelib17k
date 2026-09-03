@@ -21,6 +21,7 @@ import 'package:lib17000ft/components/component.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../components/animated_pie_chart.dart';
+import '../../components/sync_banner_widget.dart';
 import '../../core/di/service_locator.dart';
 import '../../core/sync/sync_engine.dart';
 import 'gradebargraph.dart';
@@ -338,6 +339,7 @@ class _DashBoardState extends State<DashBoard>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    const SyncBannerWidget(),
                     _buildHeader(isMobile),
                     //const SizedBox(height: 14),
                     // New Filter Section

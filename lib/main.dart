@@ -71,6 +71,7 @@ class MyApp extends StatelessWidget {
             create: (context) => FilterCubit(),
           ),
           BlocProvider<SyncStatusCubit>(
+            lazy: false,
             create: (context) => SyncStatusCubit(getIt()),
           ),
           // Add other Blocs here if needed

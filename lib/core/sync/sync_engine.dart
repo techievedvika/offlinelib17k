@@ -33,6 +33,7 @@ class SyncEngine {
 
       for (final row in rows) {
         try {
+          print("Push to Live server started.\nThis is the payload : ${jsonDecode(row.payloadJson)}");
           final resp = await http.post(
             Uri.parse(AppUrls.syncPush),
             headers: {'Content-Type': 'application/json'},
@@ -44,6 +45,7 @@ class SyncEngine {
           );
           final result = jsonDecode(resp.body);
 
+          print('SYNC RESPONSE for $type/${row.entityKey}: ${resp.statusCode} - ${resp.body}');
           switch (result['status']) {
             case 'created':
             case 'updated':
