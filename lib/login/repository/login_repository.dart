@@ -51,6 +51,11 @@ class LoginRepository {
         await prefs.setString('role', userModel.user!.role.toString());
         await prefs.setString('rights', userModel.user!.rights.toString());
 
+        final schoolCodeNew = response['user']['school_code_new']?.toString();
+        if (schoolCodeNew != null && schoolCodeNew.isNotEmpty && schoolCodeNew != 'null') {
+          await prefs.setString('schoolCodeNew', schoolCodeNew);
+        }
+
 
         // NEW — kick off the scoped bulk pull for offline use.
         // Fire-and-forget so login isn't blocked waiting on the full pull;

@@ -247,14 +247,14 @@ class BookIssueRepository {
 // NEW — "All Pending Returns": only currently OPEN loans (uniqid-aware, matches the fix from before)
   Future<List<Map<String, dynamic>>> getBookReturnOffline({String? from, String? to}) async {
 
-    final now = DateTime.now();
-    final rangeStart = DateTime.tryParse(from ?? '') ?? DateTime(now.year, 1, 1);
-    final rangeEnd = DateTime.tryParse(to ?? '') ?? now;
+    // final now = DateTime.now();
+    // final rangeStart = DateTime.tryParse(from ?? '') ?? DateTime(now.year, 1, 1);
+    // final rangeEnd = DateTime.tryParse(to ?? '') ?? now;
 
-    // final allIssues = await _db.select(_db.bookIssues).get();
-    final allIssues = await (_db.select(_db.bookIssues)
-      ..where((t) => t.createdAt.isBiggerOrEqualValue(rangeStart) & t.createdAt.isSmallerOrEqualValue(rangeEnd)))
-        .get();
+    final allIssues = await _db.select(_db.bookIssues).get();
+    // final allIssues = await (_db.select(_db.bookIssues)
+    //   ..where((t) => t.createdAt.isBiggerOrEqualValue(rangeStart) & t.createdAt.isSmallerOrEqualValue(rangeEnd)))
+    //     .get();
     final students = await _db.select(_db.students).get();
     final books = await _db.select(_db.books).get();
 

@@ -318,6 +318,7 @@ Future<String> getUniqueId(String? location) async {
         createdAt: now,
         updatedAt: now,
         createdBy: createdBy,
+        status: const Value('1'),
         syncStatus: const Value('pending'),
       ));
 
@@ -355,7 +356,9 @@ Future<String> getUniqueId(String? location) async {
   // NEW — offline student list
   // CHANGED signature — school now optional, ignored if blank/null
   Future<List<StudentModel>> getStudentsOffline([String? school]) async {
-    final query = _db.select(_db.students);
+    // final query = _db.select(_db.students);
+    final query = _db.select(_db.students)
+      ..where((t) => t.status.equals('1'));
     if (school != null && school.trim().isNotEmpty) {
       query.where((t) => t.school.equals(school));
       // query.where((t) => t.status.equals(1));

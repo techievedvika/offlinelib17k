@@ -86,34 +86,79 @@ Future<DashModel?> fetchDashData(
     }
   }
 
-  Future<DashModel> fetchDashDataOffline({String? from, String? to}) async {
+  // Future<DashModel> fetchDashDataOffline({String? from, String? to}) async {
+  //
+  //   final now = DateTime.now();
+  //   final rangeStart = from != null ? DateTime.tryParse(from) ?? DateTime(now.year, 1, 1) : DateTime(now.year, 1, 1);
+  //   final rangeEnd = to != null ? DateTime.tryParse(to) ?? now : now;
+  //
+  //   final students = await _db.select(_db.students).get();
+  //   // final allIssues = await _db.select(_db.bookIssues).get();
+  //   final allIssues = await (_db.select(_db.bookIssues)
+  //     ..where((t) => t.createdAt.isBiggerOrEqualValue(rangeStart) & t.createdAt.isSmallerOrEqualValue(rangeEnd)))
+  //       .get();
+  //   final books = await _db.select(_db.books).get();
+  //
+  //   // Same uniqid-based "open loan" logic we fixed in book_issue_repository
+  //   final returnedUniqids = allIssues
+  //       .where((i) => i.status == 'Returned')
+  //       .map((i) => i.uniqid)
+  //       .toSet();
+  //   final issuedRows = allIssues.where((i) => i.status == 'Issued').toList();
+  //   final openLoans =
+  //   issuedRows.where((i) => !returnedUniqids.contains(i.uniqid)).toList();
+  //
+  //   final levelByIsbn = {
+  //     for (final b in books) b.isbn: (b.level ?? 'na').toLowerCase()
+  //   };
+  //
+  //   final levelCounts = {'green': 0, 'orange': 0, 'white': 0, 'red': 0, 'na': 0};
+  //   for (final loan in openLoans) {
+  //     final level = levelByIsbn[loan.bookIsbn] ?? 'na';
+  //     levelCounts[levelCounts.containsKey(level) ? level : 'na'] =
+  //         levelCounts[levelCounts.containsKey(level) ? level : 'na']! + 1;
+  //   }
+  //
+  //   return DashModel(
+  //     error: false,
+  //     message: 'Loaded from offline cache',
+  //     students: students.length,
+  //     bookIssued: issuedRows.length,
+  //     pendingReturn: openLoans.length,
+  //     green: levelCounts['green']!,
+  //     orange: levelCounts['orange']!,
+  //     white: levelCounts['white']!,
+  //     red: levelCounts['red']!,
+  //     na: levelCounts['na']!,
+  //     bargraph: const [],       // charts need historical/date-grouped data —
+  //     gradebargraph: const [],  // out of scope for now, shown empty offline
+  //   );
+  // }
 
+  Future<DashModel> fetchDashDataOffline({String? from, String? to}) async {
     final now = DateTime.now();
     final rangeStart = from != null ? DateTime.tryParse(from) ?? DateTime(now.year, 1, 1) : DateTime(now.year, 1, 1);
     final rangeEnd = to != null ? DateTime.tryParse(to) ?? now : now;
 
-    final students = await _db.select(_db.students).get();
-    // final allIssues = await _db.select(_db.bookIssues).get();
-    final allIssues = await (_db.select(_db.bookIssues)
-      ..where((t) => t.createdAt.isBiggerOrEqualValue(rangeStart) & t.createdAt.isSmallerOrEqualValue(rangeEnd)))
-        .get();
+    final students = await (_db.select(_db.students)..where((t) => t.status.equals('1'))).get();
     final books = await _db.select(_db.books).get();
 
-    // Same uniqid-based "open loan" logic we fixed in book_issue_repository
-    final returnedUniqids = allIssues
-        .where((i) => i.status == 'Returned')
-        .map((i) => i.uniqid)
-        .toSet();
-    final issuedRows = allIssues.where((i) => i.status == 'Issued').toList();
-    final openLoans =
-    issuedRows.where((i) => !returnedUniqids.contains(i.uniqid)).toList();
+    // NEW — split into two queries: date-scoped for bookIssued, unscoped for pendingReturn
+    final allIssuesAllTime = await _db.select(_db.bookIssues).get();
+    final issuedInRange = allIssuesAllTime.where((i) =>
+    i.status == 'Issued' &&
+        !i.createdAt.isBefore(rangeStart) &&
+        !i.createdAt.isAfter(rangeEnd)).toList();
 
-    final levelByIsbn = {
-      for (final b in books) b.isbn: (b.level ?? 'na').toLowerCase()
-    };
+    // FIX — pending calculation now uses ALL-TIME data, no date filter
+    final returnedUniqids = allIssuesAllTime.where((i) => i.status == 'Returned').map((i) => i.uniqid).toSet();
+    final openLoans = allIssuesAllTime
+        .where((i) => i.status == 'Issued' && !returnedUniqids.contains(i.uniqid))
+        .toList();
 
+    final levelByIsbn = {for (final b in books) b.isbn: (b.level ?? 'na').toLowerCase()};
     final levelCounts = {'green': 0, 'orange': 0, 'white': 0, 'red': 0, 'na': 0};
-    for (final loan in openLoans) {
+    for (final loan in openLoans) { // unfiltered by date, matches new pendingReturn semantics
       final level = levelByIsbn[loan.bookIsbn] ?? 'na';
       levelCounts[levelCounts.containsKey(level) ? level : 'na'] =
           levelCounts[levelCounts.containsKey(level) ? level : 'na']! + 1;
@@ -123,15 +168,15 @@ Future<DashModel?> fetchDashData(
       error: false,
       message: 'Loaded from offline cache',
       students: students.length,
-      bookIssued: issuedRows.length,
-      pendingReturn: openLoans.length,
+      bookIssued: issuedInRange.length, // still date-scoped
+      pendingReturn: openLoans.length,  // FIX — no longer date-scoped
       green: levelCounts['green']!,
       orange: levelCounts['orange']!,
       white: levelCounts['white']!,
       red: levelCounts['red']!,
       na: levelCounts['na']!,
-      bargraph: const [],       // charts need historical/date-grouped data —
-      gradebargraph: const [],  // out of scope for now, shown empty offline
+      bargraph: const [],
+      gradebargraph: const [],
     );
   }
 

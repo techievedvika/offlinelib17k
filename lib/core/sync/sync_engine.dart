@@ -149,6 +149,7 @@ class SyncEngine {
             studentClass: item['class'] ?? '',
             rollno: item['rollno'] ?? '',
             gender: item['gender'] ?? '',
+            status: Value(item['status']?.toString()),
             createdAt: DateTime.tryParse(item['created_at'] ?? '') ?? DateTime.now(),
             updatedAt: DateTime.tryParse(item['updated_at'] ?? '') ?? DateTime.now(),
             createdBy: _asInt(item['created_by']),
@@ -281,9 +282,13 @@ class SyncEngine {
       }
 
       final schoolCodeNew = decoded['school_code_new']?.toString();
+      print('INITIAL SYNC: school_code_new received = "$schoolCodeNew" for school "$school"'); // NEW — temporary debug line
       if (schoolCodeNew != null && schoolCodeNew.isNotEmpty) {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('schoolCodeNew', schoolCodeNew);
+        print('INITIAL SYNC: cached schoolCodeNew successfully'); // NEW
+      } else {
+        print('INITIAL SYNC: school_code_new was null/empty — check school_basic.SCHOOL_NAME match for "$school"'); // NEW
       }
 
       final now = DateTime.now();
