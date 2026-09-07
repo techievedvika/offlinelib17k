@@ -1,24 +1,31 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:drift/drift.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'package:lib17000ft/forms/lib_activity_log/submit.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as p;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../../components/custom_appbar.dart';
-import '../../../components/custom_button.dart';
 import '../../../components/custom_labeltext.dart';
 import '../../../components/custom_textField.dart';
 import '../../../components/info_dialog.dart';
 import '../../../configs/app_urls.dart';
 import '../../../configs/color/color.dart';
 import '../../../configs/helper/responsive_helper.dart';
+import '../../../core/database/tables/database.dart' as db_tables;
+import '../../../core/di/service_locator.dart';
 import '../../../models/book/book_model.dart';
+
+import '../../book_issue/book_issue_repository.dart';
+import '../../student/student_repository.dart';
 
 import '../activity_name.dart';
 import '../book_scanner_section.dart';
@@ -134,27 +141,79 @@ class _LibActivityFormState extends State<LibActivityForm> {
     }
   }
 
+  // Future<void> _fetchGrades() async {
+  //   if (mounted) {
+  //     setState(() => _isLoadingGrades = true);
+  //   }
+  //   try {
+  //     final response = await http.post(Uri.parse(AppUrls.getGradeApi));
+  //     print("Grade API Response: ${response.body}");
+  //     if (response.statusCode == 200 && mounted) {
+  //       final data = json.decode(response.body);
+  //       if (data is Map<String, dynamic> && data['error'] == false) {
+  //         List<dynamic> messageList = data['message'];
+  //         setState(() {
+  //           _availableGrades = messageList.map((item) => item.toString()).toList();
+  //
+  //           _gradeParticipants = _availableGrades.map((g) => GradeParticipant(grade: g)).toList();
+  //         });
+  //       } else {
+  //         throw Exception('Failed to load grades: Invalid data format');
+  //       }
+  //     } else {
+  //       throw Exception('Server error while fetching grades');
+  //     }
+  //   } catch (e) {
+  //     if (mounted) {
+  //       print("Error fetching grades: $e");
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         SnackBar(content: Text("Error fetching grades: $e"), backgroundColor: AppColors.error),
+  //       );
+  //     }
+  //   } finally {
+  //     if (mounted) {
+  //       setState(() => _isLoadingGrades = false);
+  //     }
+  //   }
+  // }
+
   Future<void> _fetchGrades() async {
     if (mounted) {
       setState(() => _isLoadingGrades = true);
     }
     try {
-      final response = await http.post(Uri.parse(AppUrls.getGradeApi));
-      print("Grade API Response: ${response.body}");
-      if (response.statusCode == 200 && mounted) {
-        final data = json.decode(response.body);
-        if (data is Map<String, dynamic> && data['error'] == false) {
-          List<dynamic> messageList = data['message'];
-          setState(() {
-            _availableGrades = messageList.map((item) => item.toString()).toList();
+      final connectivityResult = await Connectivity().checkConnectivity();
+      final online = connectivityResult.isNotEmpty && !connectivityResult.contains(ConnectivityResult.none);
 
-            _gradeParticipants = _availableGrades.map((g) => GradeParticipant(grade: g)).toList();
-          });
-        } else {
-          throw Exception('Failed to load grades: Invalid data format');
+      List<String> grades = [];
+
+      if (online) {
+        try {
+          final response = await http.post(Uri.parse(AppUrls.getGradeApi)).timeout(const Duration(seconds: 15));
+          print("Grade API Response: ${response.body}");
+          if (response.statusCode == 200) {
+            final data = json.decode(response.body);
+            if (data is Map<String, dynamic> && data['error'] == false) {
+              grades = (data['message'] as List).map((item) => item.toString()).toList();
+            } else {
+              throw Exception('Invalid data format');
+            }
+          } else {
+            throw Exception('Server error while fetching grades');
+          }
+        } catch (e) {
+          print("Online grade fetch failed, falling back to offline cache: $e"); // NEW — fall through instead of surfacing an error
+          grades = await StudentRepository().getGradesOffline();
         }
       } else {
-        throw Exception('Server error while fetching grades');
+        grades = await StudentRepository().getGradesOffline(); // NEW — offline path
+      }
+
+      if (mounted) {
+        setState(() {
+          _availableGrades = grades;
+          _gradeParticipants = _availableGrades.map((g) => GradeParticipant(grade: g)).toList();
+        });
       }
     } catch (e) {
       if (mounted) {
@@ -168,6 +227,21 @@ class _LibActivityFormState extends State<LibActivityForm> {
         setState(() => _isLoadingGrades = false);
       }
     }
+  }
+
+  Future<List<String>> _saveImagesLocally(String localId) async {
+    final dir = await getApplicationDocumentsDirectory();
+    final activityDir = Directory(p.join(dir.path, 'activity_photos'));
+    if (!await activityDir.exists()) await activityDir.create(recursive: true);
+
+    final savedPaths = <String>[];
+    for (final image in selectedImages) {
+      final ext = p.extension(image.path);
+      final newPath = p.join(activityDir.path, '${localId}_${savedPaths.length}$ext');
+      await File(image.path).copy(newPath);
+      savedPaths.add(newPath);
+    }
+    return savedPaths;
   }
 
   Future<void> _scanISBN() async {
@@ -196,22 +270,120 @@ class _LibActivityFormState extends State<LibActivityForm> {
     }
   }
 
+  // Future<Book?> _fetchBookDetails(String isbn) async {
+  //   // final url = Uri.parse(AppUrls.getBooksApi);
+  //   final url = Uri.parse(AppUrls.getBookApi);
+  //   try {
+  //     final response = await http.post(url, body: {"isbn": isbn});
+  //     if (response.statusCode == 200) {
+  //       final data = json.decode(response.body);
+  //       if (data['book'] != null && data['book'].isNotEmpty) {
+  //         return Book.fromJson(data['book'][0]);
+  //       }
+  //     }
+  //     return null;
+  //   } catch (e) {
+  //     throw Exception('Error fetching book details: $e');
+  //   }
+  // }
+
   Future<Book?> _fetchBookDetails(String isbn) async {
-    // final url = Uri.parse(AppUrls.getBooksApi);
-    final url = Uri.parse(AppUrls.getBookApi);
-    try {
-      final response = await http.post(url, body: {"isbn": isbn});
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        if (data['book'] != null && data['book'].isNotEmpty) {
-          return Book.fromJson(data['book'][0]);
+    final connectivityResult = await Connectivity().checkConnectivity();
+    final online = connectivityResult.isNotEmpty && !connectivityResult.contains(ConnectivityResult.none);
+
+    if (online) {
+      try {
+        final url = Uri.parse(AppUrls.getBookApi);
+        final response = await http.post(url, body: {"isbn": isbn}).timeout(const Duration(seconds: 15));
+        if (response.statusCode == 200) {
+          final data = json.decode(response.body);
+          if (data['book'] != null && data['book'].isNotEmpty) {
+            return Book.fromJson(data['book'][0]);
+          }
         }
+      } catch (e) {
+        print('Online book lookup failed, falling back to offline cache: $e'); // fall through instead of throwing
       }
-      return null;
-    } catch (e) {
-      throw Exception('Error fetching book details: $e');
     }
+
+    return await BookIssueRepository().getBookByIsbnOffline(isbn); // offline OR online lookup failed above
   }
+
+  Future<void> _submitFormOffline() async {
+    final db = getIt<db_tables.AppDatabase>();
+    final localId = const Uuid().v4();
+    final now = DateTime.now();
+
+    final selectedData = _gradeParticipants
+        .where((p) => _participatingGrades.contains(p.grade))
+        .toList();
+
+    final bookDetailsJson = _books
+        .map((book) => {
+      'book_code': book.isbn,
+      'book_title': book.title,
+      'genre': book.genre,
+      'language': book.language,
+    })
+        .toList();
+
+    final participantsGradesStr = "[${_participatingGrades.join(',')}]";
+    final participantsNumberStr = jsonEncode(selectedData
+        .map((e) => {'grade': e.grade, 'boys': e.boys, 'girls': e.girls, 'total': e.total})
+        .toList());
+    final totalCount = selectedData.fold(0, (sum, p) => sum + p.total);
+
+    final localImagePaths = await _saveImagesLocally(localId);
+    final photoField = localImagePaths.join(','); // matches server's comma-separated convention
+
+    await db.transaction(() async {
+      await db.into(db.activityLogs).insert(db_tables.ActivityLogsCompanion.insert(
+        localId: localId,
+        date: _selectedDate!,
+        activityName: _activityName,
+        activityDescription: _description,
+        photo: Value(photoField),
+        bookDetails: jsonEncode(bookDetailsJson),
+        participantsGrades: participantsGradesStr,
+        participantsNumber: totalCount,
+        conductedBy: _conductedBy,
+        school: _school ?? '',
+        createdBy: int.tryParse(_userId ?? '') ?? 0,
+        createdAt: now,
+        syncStatus: const Value('pending'),
+      ));
+
+      await db.into(db.syncOutbox).insert(db_tables.SyncOutboxCompanion.insert(
+        entityType: 'activity_log',
+        entityKey: localId,
+        operation: 'create',
+        payloadJson: jsonEncode({
+          'date': DateFormat('yyyy-MM-dd').format(_selectedDate!),
+          'activity_name': _activityName,
+          'activity_description': _description,
+          'book_details': jsonEncode(bookDetailsJson),
+          'participants_grades': participantsGradesStr,
+          'participants_number': participantsNumberStr,
+          'conducted_by': _conductedBy,
+          'created_by': _userId,
+          'school': _school,
+          'created_at': now.toIso8601String(),
+        }),
+        createdAt: now,
+      ));
+
+      // Queue each photo individually — sync engine will upload and append each URL when back online
+      for (final path in localImagePaths) {
+        await db.into(db.pendingUploads).insert(db_tables.PendingUploadsCompanion.insert(
+          entityType: 'activity_log',
+          entityKey: localId,
+          fieldName: 'photo',
+          localFilePath: path,
+        ));
+      }
+    });
+  }
+
 
   // Future<void> _submitForm() async {
   //   // 1. Run standard form validation (for red error text under fields)
@@ -240,11 +412,7 @@ class _LibActivityFormState extends State<LibActivityForm> {
   //     errorMessage = 'Please scan at least one book.';
   //   } else if (_participatingGrades.isEmpty) {
   //     errorMessage = 'Please select participating grades.';
-  //   }
-  //   // else if (_totalParticipants.trim().isEmpty) {
-  //   //   errorMessage = 'Total participants field is empty.';
-  //   // }
-  //   else if (_conductedBy.trim().isEmpty) {
+  //   } else if (_conductedBy.trim().isEmpty) {
   //     errorMessage = 'Conducted by field is empty.';
   //   } else if (totalCount <= 0) {
   //     errorMessage = 'Total participants must be greater than 0.';
@@ -262,18 +430,80 @@ class _LibActivityFormState extends State<LibActivityForm> {
   //     return;
   //   }
   //
-  //   // 3. Proceed with API Submission
+  //   // ================= DEBUG PRINTS =================
+  //
+  //   print("\n========== LIB ACTIVITY FORM DATA ==========");
+  //
+  //   print("User ID: $_userId");
+  //   print("School: $_school");
+  //
+  //   print(
+  //     "Selected Date: ${_selectedDate != null ? DateFormat('yyyy-MM-dd').format(_selectedDate!) : 'NULL'}",
+  //   );
+  //
+  //   print("Activity Name: $_activityName");
+  //
+  //   print("Description:");
+  //   print(_description);
+  //
+  //   print("Conducted By: $_conductedBy");
+  //
+  //   print("\n========== SELECTED GRADES ==========");
+  //   print(_participatingGrades);
+  //
+  //   print("\n========== GRADE PARTICIPANTS ==========");
+  //
+  //   for (var participant in selectedData) {
+  //     print({
+  //       'grade': participant.grade,
+  //       'boys': participant.boys,
+  //       'girls': participant.girls,
+  //       'total': participant.total,
+  //     });
+  //   }
+  //
+  //   print("Total Participants Count: $totalCount");
+  //
+  //   print("\n========== BOOK DETAILS ==========");
+  //
+  //   for (var book in _books) {
+  //     print({
+  //       'isbn': book.isbn,
+  //       'title': book.title,
+  //       'genre': book.genre,
+  //       'language': book.language,
+  //     });
+  //   }
+  //
+  //   print("\n========== SELECTED IMAGES ==========");
+  //
+  //   for (var image in selectedImages) {
+  //     print("Image Path: ${image.path}");
+  //   }
+  //
+  //   print("Total Images: ${selectedImages.length}");
+  //
+  //   print("============================================\n");
+  //
+  //   // ================= API SUBMISSION =================
+  //
   //   widget.setSubmitting(true);
   //
   //   try {
-  //     final List<Map<String, dynamic>> bookDetailsJson = _books.map((book) => {
-  //       'book_code': book.isbn,
-  //       'book_title': book.title,
-  //       'genre': book.genre,
-  //       'language': book.language,
-  //     }).toList();
+  //     final List<Map<String, dynamic>> bookDetailsJson = _books
+  //         .map(
+  //           (book) => {
+  //         'book_code': book.isbn,
+  //         'book_title': book.title,
+  //         'genre': book.genre,
+  //         'language': book.language,
+  //       },
+  //     )
+  //         .toList();
   //
-  //     var uri = Uri.parse(AppUrls.insertFormApi);
+  //     // var uri = Uri.parse(AppUrls.insertFormApi);
+  //     var uri = Uri.parse(AppUrls.insertLibFormApi);
+  //
   //     var request = http.MultipartRequest("POST", uri);
   //
   //     request.fields.addAll({
@@ -282,28 +512,66 @@ class _LibActivityFormState extends State<LibActivityForm> {
   //       'date': DateFormat('yyyy-MM-dd').format(_selectedDate!),
   //       'activity_name': _activityName,
   //       'activity_description': _description,
-  //       //'participants_number': _totalParticipants,
   //       'conducted_by': _conductedBy,
-  //       'participants_grades': "[${_participatingGrades.join(',')}]",
+  //       'participants_grades':
+  //       "[${_participatingGrades.join(',')}]",
   //       'book_details': jsonEncode(bookDetailsJson),
-  //       'participants_number': jsonEncode(selectedData.map((e) => {
-  //         'grade': e.grade,
-  //         'boys': e.boys,
-  //         'girls': e.girls,
-  //         'total': e.total // Including total per grade just in case
-  //       }).toList()),
+  //       'participants_number': jsonEncode(
+  //         selectedData
+  //             .map(
+  //               (e) => {
+  //             'grade': e.grade,
+  //             'boys': e.boys,
+  //             'girls': e.girls,
+  //             'total': e.total,
+  //           },
+  //         )
+  //             .toList(),
+  //       ),
   //     });
   //
-  //
+  //     // Add Images
   //     for (var image in selectedImages) {
-  //       request.files.add(await http.MultipartFile.fromPath('photo[]', image.path));
+  //       request.files.add(
+  //         await http.MultipartFile.fromPath(
+  //           'photo[]',
+  //           image.path,
+  //         ),
+  //       );
   //     }
   //
+  //     // ================= REQUEST DEBUG =================
+  //
+  //     print("\n========== API REQUEST FIELDS ==========");
+  //     request.fields.forEach((key, value) {
+  //       print("$key : $value");
+  //     });
+  //
+  //     print("\n========== API REQUEST FILES ==========");
+  //
+  //     for (var file in request.files) {
+  //       print("File Name: ${file.filename}");
+  //     }
+  //
+  //     print("========================================\n");
+  //
+  //     // ================= SEND REQUEST =================
+  //
   //     var response = await request.send();
+  //
   //     var responseData = await response.stream.bytesToString();
+  //
+  //     // ================= RESPONSE DEBUG =================
+  //
+  //     print("\n========== API RESPONSE ==========");
+  //     print("Status Code: ${response.statusCode}");
+  //     print("Response Body:");
+  //     print(responseData);
+  //     print("==================================\n");
   //
   //     if (response.statusCode == 200) {
   //       final decoded = json.decode(responseData);
+  //
   //       if (decoded['error'] == false) {
   //         Fluttertoast.showToast(
   //           msg: "Activity Logged Successfully!",
@@ -312,16 +580,27 @@ class _LibActivityFormState extends State<LibActivityForm> {
   //         );
   //
   //         if (mounted) {
-  //           // Use pushNamedAndRemoveUntil to clear stack and ensure fresh state
-  //           Navigator.pushNamedAndRemoveUntil(context, '/dashboard', (route) => false);
+  //           Navigator.pushNamedAndRemoveUntil(
+  //             context,
+  //             '/dashboard',
+  //                 (route) => false,
+  //           );
   //         }
   //       } else {
-  //         throw Exception(decoded['message'] ?? 'Submission failed');
+  //         throw Exception(
+  //           decoded['message'] ?? 'Submission failed',
+  //         );
   //       }
   //     } else {
-  //       throw Exception('Server error: ${response.statusCode}');
+  //       throw Exception(
+  //         'Server error: ${response.statusCode}',
+  //       );
   //     }
   //   } catch (e) {
+  //     print("\n========== SUBMIT ERROR ==========");
+  //     print(e.toString());
+  //     print("==================================\n");
+  //
   //     Fluttertoast.showToast(
   //       msg: "Error: ${e.toString()}",
   //       backgroundColor: AppColors.error,
@@ -331,6 +610,7 @@ class _LibActivityFormState extends State<LibActivityForm> {
   //     widget.setSubmitting(false);
   //   }
   // }
+
   Future<void> _submitForm() async {
     // 1. Run standard form validation (for red error text under fields)
     bool isFormValid = _formKey.currentState!.validate();
@@ -379,26 +659,18 @@ class _LibActivityFormState extends State<LibActivityForm> {
     // ================= DEBUG PRINTS =================
 
     print("\n========== LIB ACTIVITY FORM DATA ==========");
-
     print("User ID: $_userId");
     print("School: $_school");
-
     print(
       "Selected Date: ${_selectedDate != null ? DateFormat('yyyy-MM-dd').format(_selectedDate!) : 'NULL'}",
     );
-
     print("Activity Name: $_activityName");
-
     print("Description:");
     print(_description);
-
     print("Conducted By: $_conductedBy");
-
     print("\n========== SELECTED GRADES ==========");
     print(_participatingGrades);
-
     print("\n========== GRADE PARTICIPANTS ==========");
-
     for (var participant in selectedData) {
       print({
         'grade': participant.grade,
@@ -407,11 +679,8 @@ class _LibActivityFormState extends State<LibActivityForm> {
         'total': participant.total,
       });
     }
-
     print("Total Participants Count: $totalCount");
-
     print("\n========== BOOK DETAILS ==========");
-
     for (var book in _books) {
       print({
         'isbn': book.isbn,
@@ -420,15 +689,11 @@ class _LibActivityFormState extends State<LibActivityForm> {
         'language': book.language,
       });
     }
-
     print("\n========== SELECTED IMAGES ==========");
-
     for (var image in selectedImages) {
       print("Image Path: ${image.path}");
     }
-
     print("Total Images: ${selectedImages.length}");
-
     print("============================================\n");
 
     // ================= API SUBMISSION =================
@@ -436,111 +701,106 @@ class _LibActivityFormState extends State<LibActivityForm> {
     widget.setSubmitting(true);
 
     try {
-      final List<Map<String, dynamic>> bookDetailsJson = _books
-          .map(
-            (book) => {
-          'book_code': book.isbn,
-          'book_title': book.title,
-          'genre': book.genre,
-          'language': book.language,
-        },
-      )
-          .toList();
+      final connectivityResult = await Connectivity().checkConnectivity();
+      final online = connectivityResult.isNotEmpty && !connectivityResult.contains(ConnectivityResult.none);
 
-      // var uri = Uri.parse(AppUrls.insertFormApi);
-      var uri = Uri.parse(AppUrls.insertLibFormApi);
+      bool succeededOnline = false;
 
-      var request = http.MultipartRequest("POST", uri);
-
-      request.fields.addAll({
-        'created_by': _userId ?? '',
-        'school': _school ?? '',
-        'date': DateFormat('yyyy-MM-dd').format(_selectedDate!),
-        'activity_name': _activityName,
-        'activity_description': _description,
-        'conducted_by': _conductedBy,
-        'participants_grades':
-        "[${_participatingGrades.join(',')}]",
-        'book_details': jsonEncode(bookDetailsJson),
-        'participants_number': jsonEncode(
-          selectedData
+      if (online) {
+        try {
+          final List<Map<String, dynamic>> bookDetailsJson = _books
               .map(
-                (e) => {
-              'grade': e.grade,
-              'boys': e.boys,
-              'girls': e.girls,
-              'total': e.total,
+                (book) => {
+              'book_code': book.isbn,
+              'book_title': book.title,
+              'genre': book.genre,
+              'language': book.language,
             },
           )
-              .toList(),
-        ),
-      });
+              .toList();
 
-      // Add Images
-      for (var image in selectedImages) {
-        request.files.add(
-          await http.MultipartFile.fromPath(
-            'photo[]',
-            image.path,
-          ),
-        );
-      }
+          var uri = Uri.parse(AppUrls.insertLibFormApi);
+          var request = http.MultipartRequest("POST", uri);
 
-      // ================= REQUEST DEBUG =================
+          request.fields.addAll({
+            'created_by': _userId ?? '',
+            'school': _school ?? '',
+            'date': DateFormat('yyyy-MM-dd').format(_selectedDate!),
+            'activity_name': _activityName,
+            'activity_description': _description,
+            'conducted_by': _conductedBy,
+            'participants_grades': "[${_participatingGrades.join(',')}]",
+            'book_details': jsonEncode(bookDetailsJson),
+            'participants_number': jsonEncode(
+              selectedData
+                  .map(
+                    (e) => {
+                  'grade': e.grade,
+                  'boys': e.boys,
+                  'girls': e.girls,
+                  'total': e.total,
+                },
+              )
+                  .toList(),
+            ),
+          });
 
-      print("\n========== API REQUEST FIELDS ==========");
-      request.fields.forEach((key, value) {
-        print("$key : $value");
-      });
-
-      print("\n========== API REQUEST FILES ==========");
-
-      for (var file in request.files) {
-        print("File Name: ${file.filename}");
-      }
-
-      print("========================================\n");
-
-      // ================= SEND REQUEST =================
-
-      var response = await request.send();
-
-      var responseData = await response.stream.bytesToString();
-
-      // ================= RESPONSE DEBUG =================
-
-      print("\n========== API RESPONSE ==========");
-      print("Status Code: ${response.statusCode}");
-      print("Response Body:");
-      print(responseData);
-      print("==================================\n");
-
-      if (response.statusCode == 200) {
-        final decoded = json.decode(responseData);
-
-        if (decoded['error'] == false) {
-          Fluttertoast.showToast(
-            msg: "Activity Logged Successfully!",
-            backgroundColor: AppColors.primary,
-            textColor: Colors.white,
-          );
-
-          if (mounted) {
-            Navigator.pushNamedAndRemoveUntil(
-              context,
-              '/dashboard',
-                  (route) => false,
+          // Add Images
+          for (var image in selectedImages) {
+            request.files.add(
+              await http.MultipartFile.fromPath('photo[]', image.path),
             );
           }
-        } else {
-          throw Exception(
-            decoded['message'] ?? 'Submission failed',
-          );
+
+          // ================= REQUEST DEBUG =================
+          print("\n========== API REQUEST FIELDS ==========");
+          request.fields.forEach((key, value) {
+            print("$key : $value");
+          });
+          print("\n========== API REQUEST FILES ==========");
+          for (var file in request.files) {
+            print("File Name: ${file.filename}");
+          }
+          print("========================================\n");
+
+          // ================= SEND REQUEST =================
+          var response = await request.send().timeout(const Duration(seconds: 30));
+          var responseData = await response.stream.bytesToString();
+
+          // ================= RESPONSE DEBUG =================
+          print("\n========== API RESPONSE ==========");
+          print("Status Code: ${response.statusCode}");
+          print("Response Body:");
+          print(responseData);
+          print("==================================\n");
+
+          if (response.statusCode == 200) {
+            final decoded = json.decode(responseData);
+            if (decoded['error'] == false) {
+              succeededOnline = true;
+            } else {
+              throw Exception(decoded['message'] ?? 'Submission failed');
+            }
+          } else {
+            throw Exception('Server error: ${response.statusCode}');
+          }
+        } catch (e) {
+          print('Online activity submission failed, falling back to offline save: $e');
         }
-      } else {
-        throw Exception(
-          'Server error: ${response.statusCode}',
-        );
+      }
+
+      if (!succeededOnline) {
+        await _submitFormOffline();
+      }
+
+      Fluttertoast.showToast(
+        msg: succeededOnline ? "Activity Logged Successfully!" : "Saved offline — will sync when online",
+        backgroundColor: AppColors.primary,
+        textColor: Colors.white,
+      );
+
+      if (mounted) {
+        Navigator.pushNamedAndRemoveUntil(context, '/dashboard', (route) => false);
       }
     } catch (e) {
       print("\n========== SUBMIT ERROR ==========");

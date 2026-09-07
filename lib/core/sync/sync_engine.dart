@@ -29,7 +29,11 @@ class SyncEngine {
   Future<void> _push() async {
     // Strict dependency order: books -> students -> issues -> activity logs
     for (final type in ['book', 'student', 'issue', 'activity_log']) {
-      final rows = await (db.select(db.syncOutbox)..where((t) => t.entityType.equals(type))).get();
+      // final rows = await (db.select(db.syncOutbox)..where((t) => t.entityType.equals(type))).get();
+      final rows = await (db.select(db.syncOutbox)
+        ..where((t) => t.entityType.equals(type))
+        ..orderBy([(t) => OrderingTerm.asc(t.createdAt)]))
+          .get();
 
       for (final row in rows) {
         try {
@@ -43,7 +47,7 @@ class SyncEngine {
               'operation': row.operation,
               'payload': jsonDecode(row.payloadJson),
             }),
-          );
+          ).timeout(const Duration(seconds: 30));
           print('RAW STATUS: ${resp.statusCode}'); // NEW
           print('RAW BODY (first 500 chars): ${resp.body.substring(0, resp.body.length > 500 ? 500 : resp.body.length)}');
 

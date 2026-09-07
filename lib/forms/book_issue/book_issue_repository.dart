@@ -8,6 +8,7 @@ import 'package:uuid/uuid.dart';
 import '../../core/database/tables/database.dart';
 import '../../core/di/service_locator.dart';
 import '../../data/network/network_api_services.dart';
+import '../../models/book/book_model.dart' as book_model;
 
 class BookIssueRepository {
   final _api = NetworkServicesApi();
@@ -427,6 +428,23 @@ class BookIssueRepository {
       );
       return {"error": 0, "message": "Success"};
     }
+  }
+
+
+// NEW — mirrors get_book()'s behavior: always returns a Book, even a placeholder for unknown ISBNs
+  Future<book_model.Book> getBookByIsbnOffline(String isbn) async {
+    final book = await (_db.select(_db.books)..where((t) => t.isbn.equals(isbn))).getSingleOrNull();
+
+    if (book == null) {
+      return book_model.Book(isbn: isbn, title: 'Unknown', genre: 'N/A', language: 'N/A');
+    }
+
+    return book_model.Book(
+      isbn: book.isbn,
+      title: book.title,
+      genre: book.gener ?? 'N/A',
+      language: book.language ?? 'N/A',
+    );
   }
 
   Future<BookIssue?> _findOpenLoan(String isbn, String rollno) async {
