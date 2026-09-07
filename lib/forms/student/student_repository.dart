@@ -99,6 +99,116 @@ class StudentRepository {
     }
    
   }
+
+
+  // NEW — mirrors Laravel's promote_student() class-increment logic exactly
+  String _nextClass(String currentClass) {
+    final cls = currentClass.trim();
+    if (cls.toLowerCase() == 'nursery') return 'LKG';
+    if (cls.toLowerCase() == 'lkg') return 'UKG';
+    if (cls.toLowerCase() == 'ukg') return 'Grade 1';
+
+    final match = RegExp(r'(\D+)(\d+)').firstMatch(cls);
+    if (match != null) {
+      final prefix = match.group(1)!.trim();
+      var number = int.parse(match.group(2)!) + 1;
+      if (number > 12) number = 12;
+      return '$prefix $number';
+    }
+    return cls; // couldn't parse — leave unchanged rather than corrupt it
+  }
+
+  Future<Map<String, dynamic>> promoteStudentOffline(String rollno, String currentClass) async {
+    final student = await (_db.select(_db.students)..where((t) => t.rollno.equals(rollno))).getSingleOrNull();
+    if (student == null) {
+      return {"error": 1, "message": "No Student Found with this ID"};
+    }
+
+    final newClass = _nextClass(currentClass);
+    final now = DateTime.now();
+
+    await _db.transaction(() async {
+      await (_db.update(_db.students)..where((t) => t.rollno.equals(rollno))).write(
+        StudentsCompanion(studentClass: Value(newClass), updatedAt: Value(now), syncStatus: const Value('pending')),
+      );
+
+      await _db.into(_db.syncOutbox).insert(SyncOutboxCompanion.insert(
+        entityType: 'student',
+        entityKey: rollno,
+        operation: 'update',
+        payloadJson: jsonEncode({'rollno': rollno, 'class': newClass, 'updated_at': now.toIso8601String()}),
+        createdAt: now,
+      ));
+    });
+
+    return {"error": 0, "message": "Student Promoted successfully!", "new_class": newClass};
+  }
+
+  Future<Map<String, dynamic>> updateStudentOffline(StudentModel student) async {
+    final rollno = student.rollNo;
+    print('UPDATE OFFLINE: rollno=$rollno name=${student.name} class=${student.classs}');
+
+    if (rollno == null || rollno.isEmpty) {
+      return {"error": 1, "message": "Missing student identifier"};
+    }
+
+    final existing = await (_db.select(_db.students)..where((t) => t.rollno.equals(rollno))).getSingleOrNull();
+    print('UPDATE OFFLINE: existing local row found? ${existing != null}');
+
+    if (existing == null) {
+      return {"error": 1, "message": "Student not found locally"};
+    }
+
+    final now = DateTime.now();
+
+    await _db.transaction(() async {
+      await (_db.update(_db.students)..where((t) => t.rollno.equals(rollno))).write(
+        StudentsCompanion(
+          name: Value(student.name ?? existing.name),
+          gender: Value(student.gender ?? existing.gender),
+          studentClass: Value(student.classs ?? existing.studentClass),
+          apaarId: Value(student.apaarId ?? existing.apaarId),
+          penId: Value(student.penId ?? existing.penId),
+          uniqueId: Value(student.uniqueId ?? existing.uniqueId),
+          status: Value(student.status ?? existing.status),
+          reason: Value(student.reason ?? existing.reason),
+          updatedAt: Value(now),
+          syncStatus: const Value('pending'),
+        ),
+      );
+
+      await _db.into(_db.syncOutbox).insert(SyncOutboxCompanion.insert(
+        entityType: 'student',
+        entityKey: rollno,
+        operation: 'update',
+        payloadJson: jsonEncode({
+          'rollno': rollno,
+          'name': student.name ?? existing.name,
+          'gender': student.gender ?? existing.gender,
+          'class': student.classs ?? existing.studentClass,
+          'apaarId': student.apaarId ?? existing.apaarId,
+          'pen_id': student.penId ?? existing.penId,
+          'unique_id': student.uniqueId ?? existing.uniqueId,
+          'status': student.status ?? existing.status,
+          'reason': student.reason ?? existing.reason,
+          'school': student.school ?? existing.school,       // NEW
+          'created_by': student.createdBy ?? existing.createdBy, // NEW
+          'updated_at': now.toIso8601String(),
+        }),
+        createdAt: now,
+      ));
+    });
+
+    print('UPDATE OFFLINE: outbox row inserted for rollno=$rollno');
+
+    return {"error": 0, "message": "Student updated offline, will sync when online"};
+  }
+
+
+
+
+
+
   //get student id function who has no unique id
 Future<String> getUniqueId(String? location) async {
   
@@ -280,26 +390,115 @@ Future<String> getUniqueId(String? location) async {
     }
   }
 
-  Future<Map<String, dynamic>> registerStudentOffline(Map<String, dynamic> data) async {
-    final apaarId = (data['apaarId']?.toString().trim().isNotEmpty ?? false) ? data['apaarId'].toString() : null;
-    final penId = (data['pen_id']?.toString().trim().isNotEmpty ?? false) ? data['pen_id'].toString() : null;
-    final rollnoInput = (data['rollno']?.toString().trim().isNotEmpty ?? false) ? data['rollno'].toString() : null;
+  // Future<Map<String, dynamic>> registerStudentOffline(Map<String, dynamic> data) async {
+  //   final apaarId = (data['apaarId']?.toString().trim().isNotEmpty ?? false) ? data['apaarId'].toString() : null;
+  //   final penId = (data['pen_id']?.toString().trim().isNotEmpty ?? false) ? data['pen_id'].toString() : null;
+  //   final rollnoInput = (data['rollno']?.toString().trim().isNotEmpty ?? false) ? data['rollno'].toString() : null;
+  //
+  //   // Mirror server's priority formula exactly
+  //   final rollno = rollnoInput ?? apaarId ?? penId;
+  //   if (rollno == null || rollno.isEmpty) {
+  //     return {"error": 1, "message": "Please provide at least one ID (rollno, apaarId, pen_id)"};
+  //   }
+  //
+  //   // Duplicate check against LOCAL cache — natural key
+  //   final existing = await (_db.select(_db.students)..where((t) => t.rollno.equals(rollno))).getSingleOrNull();
+  //   if (existing != null) {
+  //     return {"error": 1, "message": "Student already exists with ID $rollno"};
+  //   }
+  //
+  //   final school = data['school']?.toString() ?? '';
+  //   final schoolCodeNew = data['schoolCodeNew']?.toString() ?? '';
+  //   final uniqueId = await generateUniqueId(schoolCodeNew, school);
+  //   final now = DateTime.now();
+  //   final uuid = const Uuid().v4();
+  //   final createdBy = int.tryParse(data['created_by']?.toString() ?? '') ?? 0;
+  //
+  //   await _db.transaction(() async {
+  //     await _db.into(_db.students).insert(StudentsCompanion.insert(
+  //       uuid: uuid,
+  //       apaarId: Value(apaarId),
+  //       penId: Value(penId),
+  //       uniqueId: Value(uniqueId),
+  //       school: school,
+  //       name: data['name'].toString(),
+  //       studentClass: data['class'].toString(),
+  //       rollno: rollno,
+  //       gender: data['gender'].toString(),
+  //       createdAt: now,
+  //       updatedAt: now,
+  //       createdBy: createdBy,
+  //       status: const Value('1'),
+  //       syncStatus: const Value('pending'),
+  //     ));
+  //
+  //     await _db.into(_db.syncOutbox).insert(SyncOutboxCompanion.insert(
+  //       entityType: 'student',
+  //       entityKey: rollno,
+  //       operation: 'create',
+  //       payloadJson: jsonEncode({
+  //         'apaarId': apaarId, 'pen_id': penId, 'unique_id': uniqueId,
+  //         'school': school, 'name': data['name'], 'class': data['class'],
+  //         'rollno': rollno, 'gender': data['gender'], 'created_by': createdBy,
+  //         'created_at': now.toIso8601String(), 'updated_at': now.toIso8601String(),
+  //         'uuid': uuid,
+  //       }),
+  //       createdAt: now,
+  //     ));
+  //   });
+  //
+  //   return {"error": 0, "message": "Student saved offline, will sync when online"};
+  // }
 
-    // Mirror server's priority formula exactly
-    final rollno = rollnoInput ?? apaarId ?? penId;
-    if (rollno == null || rollno.isEmpty) {
-      return {"error": 1, "message": "Please provide at least one ID (rollno, apaarId, pen_id)"};
+  Future<Map<String, dynamic>> registerStudentOffline(Map<String, dynamic> data) async {
+    bool isReal(dynamic v) {
+      if (v == null) return false;
+      final s = v.toString().trim();
+      return s.isNotEmpty && s.toUpperCase() != 'NA';
     }
 
-    // Duplicate check against LOCAL cache — natural key
-    final existing = await (_db.select(_db.students)..where((t) => t.rollno.equals(rollno))).getSingleOrNull();
+    final rollnoRaw = data['rollno']?.toString();   // manually typed ID field, if the user entered one directly
+    final penIdRaw = data['pen_id']?.toString();
+    final apaarIdRaw = data['apaarId']?.toString();
+    final uniqueIdRaw = data['unique_id']?.toString();
+    final autoGenerateId = data['autoGenerateId'] == true;
+
+    final rollnoManual = isReal(rollnoRaw) ? rollnoRaw : null;
+    final penId = isReal(penIdRaw) ? penIdRaw : null;
+    final apaarId = isReal(apaarIdRaw) ? apaarIdRaw : null;
+    final uniqueIdInput = isReal(uniqueIdRaw) ? uniqueIdRaw : null;
+
+    // FIX — priority: manually-typed ID first (if given), then pen_id, then apaarId, then unique_id
+    final rollno = rollnoManual ?? penId ?? apaarId ?? uniqueIdInput;
+
+    if (rollno == null) {
+      return {"error": 1, "message": "Please provide at least one ID (rollno, pen_id, apaarId, unique_id)"};
+    }
+
+    // FIX — uniqueness check now matches against whichever ID field actually has a real value,
+    // not just a plain rollno equality check. Mirrors the natural-key check already used server-side.
+    final query = _db.select(_db.students)
+      ..where((t) =>
+      t.rollno.equals(rollno) |
+      (penId != null ? t.penId.equals(penId) : const Constant(false)) |
+      (apaarId != null ? t.apaarId.equals(apaarId) : const Constant(false)) |
+      (uniqueIdInput != null ? t.uniqueId.equals(uniqueIdInput) : const Constant(false)));
+
+    final existing = await query.getSingleOrNull();
     if (existing != null) {
-      return {"error": 1, "message": "Student already exists with ID $rollno"};
+      return {"error": 1, "message": "Student already exists with ID ${existing.rollno}"};
     }
 
     final school = data['school']?.toString() ?? '';
     final schoolCodeNew = data['schoolCodeNew']?.toString() ?? '';
-    final uniqueId = await generateUniqueId(schoolCodeNew, school);
+    // final generatedUniqueId = await generateUniqueId(schoolCodeNew, school);
+
+    // FIX — only auto-generate when the user explicitly chose "No" (autoGenerateId == true).
+    // Otherwise, unique_id stays whatever was actually provided (or 'NA' if none).
+    final finalUniqueId = autoGenerateId
+        ? await generateUniqueId(schoolCodeNew, school)
+        : (uniqueIdInput ?? 'NA');
+
     final now = DateTime.now();
     final uuid = const Uuid().v4();
     final createdBy = int.tryParse(data['created_by']?.toString() ?? '') ?? 0;
@@ -307,9 +506,9 @@ Future<String> getUniqueId(String? location) async {
     await _db.transaction(() async {
       await _db.into(_db.students).insert(StudentsCompanion.insert(
         uuid: uuid,
-        apaarId: Value(apaarId),
-        penId: Value(penId),
-        uniqueId: Value(uniqueId),
+        apaarId: Value(apaarId ?? 'NA'),
+        penId: Value(penId ?? 'NA'),
+        uniqueId: Value(uniqueIdInput ?? finalUniqueId), // keep a REAL user-given unique_id if they had one, else the generated one
         school: school,
         name: data['name'].toString(),
         studentClass: data['class'].toString(),
@@ -327,7 +526,9 @@ Future<String> getUniqueId(String? location) async {
         entityKey: rollno,
         operation: 'create',
         payloadJson: jsonEncode({
-          'apaarId': apaarId, 'pen_id': penId, 'unique_id': uniqueId,
+          'apaarId': apaarId ?? 'NA',
+          'pen_id': penId ?? 'NA',
+          'unique_id': uniqueIdInput ?? finalUniqueId,
           'school': school, 'name': data['name'], 'class': data['class'],
           'rollno': rollno, 'gender': data['gender'], 'created_by': createdBy,
           'created_at': now.toIso8601String(), 'updated_at': now.toIso8601String(),

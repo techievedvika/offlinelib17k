@@ -146,39 +146,39 @@ class StudentCubit extends Cubit<StudentState> {
     }
   }
 
-  void updateStudent(StudentModel? student) async {
-    emit(StudentLoading());
-
-    // Prepare the data map for the API
-    final data = {
-      "action": "update",
-      "id": student?.id,
-      "rollno": student?.rollNo,
-      "name": student?.name,
-      "gender": student?.gender,
-      "class": student?.classs,
-      "apaarId": student?.apaarId,
-      "penId": student?.penId,
-      "uniqueId": student?.uniqueId,
-      "school": student?.school,
-      "created_by" : student?.createdBy,
-      "status" : student?.status,
-      "reason" : student?.reason,
-    };
-
-    try {
-      final value = await _studentRepository.updateStudent(data);
-
-      if (value['error'] == false) {
-        emit(StudentSuccess(message: value['message'].toString()));
-      } else {
-        emit(StudentFailure(message: value['message'].toString()));
-      }
-    } catch (error) {
-      print('Update error: $error');
-      emit(StudentFailure(message: error.toString()));
-    }
-  }
+  // void updateStudent(StudentModel? student) async {
+  //   emit(StudentLoading());
+  //
+  //   // Prepare the data map for the API
+  //   final data = {
+  //     "action": "update",
+  //     "id": student?.id,
+  //     "rollno": student?.rollNo,
+  //     "name": student?.name,
+  //     "gender": student?.gender,
+  //     "class": student?.classs,
+  //     "apaarId": student?.apaarId,
+  //     "penId": student?.penId,
+  //     "uniqueId": student?.uniqueId,
+  //     "school": student?.school,
+  //     "created_by" : student?.createdBy,
+  //     "status" : student?.status,
+  //     "reason" : student?.reason,
+  //   };
+  //
+  //   try {
+  //     final value = await _studentRepository.updateStudent(data);
+  //
+  //     if (value['error'] == false) {
+  //       emit(StudentSuccess(message: value['message'].toString()));
+  //     } else {
+  //       emit(StudentFailure(message: value['message'].toString()));
+  //     }
+  //   } catch (error) {
+  //     print('Update error: $error');
+  //     emit(StudentFailure(message: error.toString()));
+  //   }
+  // }
 
   Future<void> getStudentId(String state) async {
   print('this is student id for state $state');
@@ -272,25 +272,95 @@ class StudentCubit extends Cubit<StudentState> {
   // }
 
 
- void promoteStudent(dynamic data) async {
-    emit(StudentLoading());
-    await Future.delayed(const Duration(seconds: 1)); // Simulating API call
-    try {
-      final value = await _studentRepository.promote(data);
-      print('value of promote Student $value');
+ // void promoteStudent(dynamic data) async {
+ //    emit(StudentLoading());
+ //    await Future.delayed(const Duration(seconds: 1)); // Simulating API call
+ //    try {
+ //      final value = await _studentRepository.promote(data);
+ //      print('value of promote Student $value');
+ //
+ //      if (value!['error'] == 1) {
+ //        print('Error occured at promotion');
+ //        emit(StudentFailure(message: value['message'].toString()));
+ //      } else if (value['error'] == 0) {
+ //         print('success occured at promotion');
+ //        emit(StudentPromote(message: value['message'].toString()));
+ //      }
+ //    } catch (error) {
+ //      print('catch error $error');
+ //      emit(StudentFailure(message: error.toString()));
+ //    }
+ //    // emit(StudentRegistered());
+ //  }
 
-      if (value!['error'] == 1) {
-        print('Error occured at promotion');
-        emit(StudentFailure(message: value['message'].toString()));
-      } else if (value['error'] == 0) {
-         print('success occured at promotion');
-        emit(StudentPromote(message: value['message'].toString()));
+  void updateStudent(StudentModel? student) async {
+    emit(StudentLoading());
+    try {
+      final online = await _isOnline();
+
+      if (online) {
+        final data = {
+          "action": "update", "id": student?.id, "rollno": student?.rollNo,
+          "name": student?.name, "gender": student?.gender, "class": student?.classs,
+          "apaarId": student?.apaarId, "penId": student?.penId, "uniqueId": student?.uniqueId,
+          "school": student?.school, "created_by": student?.createdBy,
+          "status": student?.status, "reason": student?.reason,
+        };
+        try {
+          final value = await _studentRepository.updateStudent(data);
+          if (value['error'] == false || value['error'] == 0) {
+            emit(StudentSuccess(message: value['message'].toString()));
+            return;
+          } else {
+            emit(StudentFailure(message: value['message'].toString()));
+            return;
+          }
+        } catch (_) {
+          // fall through to offline
+        }
+      }
+
+      final offlineValue = await _studentRepository.updateStudentOffline(student!);
+      if (offlineValue['error'] == 0) {
+        emit(StudentSuccess(message: offlineValue['message'].toString()));
+      } else {
+        emit(StudentFailure(message: offlineValue['message'].toString()));
       }
     } catch (error) {
-      print('catch error $error');
       emit(StudentFailure(message: error.toString()));
     }
-    // emit(StudentRegistered());
+  }
+
+  void promoteStudent(dynamic data) async {
+    emit(StudentLoading());
+    try {
+      final online = await _isOnline();
+
+      if (online) {
+        try {
+          final value = await _studentRepository.promote(data);
+          if (value['error'] == 0) {
+            emit(StudentPromote(message: value['message'].toString()));
+            return;
+          } else {
+            emit(StudentFailure(message: value['message'].toString()));
+            return;
+          }
+        } catch (_) {
+          // fall through to offline
+        }
+      }
+
+      final offlineValue = await _studentRepository.promoteStudentOffline(
+          data['rollno'].toString(), data['class'].toString());
+      if (offlineValue['error'] == 0) {
+        emit(StudentPromote(message: offlineValue['message'].toString()));
+      } else {
+        emit(StudentFailure(message: offlineValue['message'].toString()));
+      }
+    } catch (error) {
+      emit(StudentFailure(message: error.toString()));
+    }
   }
 
   // Add this method inside your StudentCubit class

@@ -21,6 +21,15 @@ class BookIssueCubit extends Cubit<BookIssueState> {
   int _page = 1; // For pagination, assuming 1 as the starting page
   bool _hasMoreData = true; // Flag to check if there's more data
 
+  bool _isLoadingIssued = false;
+  int _pageIssued = 1;
+  bool _hasMoreDataIssued = true;
+
+  bool _isLoadingReturned = false;
+  int _pageReturned = 1;
+  bool _hasMoreDataReturned = true;
+
+
   Future<bool> _isOnline() async {
     final result = await Connectivity().checkConnectivity();
     return result.isNotEmpty && !result.contains(ConnectivityResult.none);
@@ -174,8 +183,8 @@ class BookIssueCubit extends Cubit<BookIssueState> {
     required dynamic adminId, String? stateName, String? district, String? block,
     String? school, String? from, String? to, String? level, String? language,
   }) async {
-    if (_isLoading || !_hasMoreData) return;
-    _isLoading = true;
+    if (_isLoadingReturned || !_hasMoreDataReturned) return;
+    _isLoadingReturned = true;
     emit(BookIssueLoading());
 
     try {
@@ -183,7 +192,7 @@ class BookIssueCubit extends Cubit<BookIssueState> {
       if (online) {
         try {
           final value = await _bookIssueRepository.getBookReturn(
-              adminId, stateName, district, block, school, from, to, level, language, page: _page);
+              adminId, stateName, district, block, school, from, to, level, language, page: _pageReturned);
           if (value is Map<String, dynamic>) {
             if (value['error'] == true || value['error'] == 1) {
               emit(BookIssueFailure(message: value['message'].toString()));
@@ -191,8 +200,8 @@ class BookIssueCubit extends Cubit<BookIssueState> {
             } else {
               List<BookReturnModel> bookReturn =
               (value['data'] as List).map((s) => BookReturnModel.fromJson(s)).toList();
-              _hasMoreData = value['data'].length > 0;
-              if (_hasMoreData) _page++;
+              _hasMoreDataReturned = value['data'].length > 0;
+              if (_hasMoreDataReturned) _pageReturned++;
               emit(BookReturnListSuccess(bookReturnedList: bookReturn, message: value['message'].toString()));
               return;
             }
@@ -205,11 +214,11 @@ class BookIssueCubit extends Cubit<BookIssueState> {
       final offlineData = await _bookIssueRepository.getBookReturnOffline(from:from , to: to);
       final bookReturn = offlineData.map((s) => BookReturnModel.fromJson(s)).toList();
       emit(BookReturnListSuccess(bookReturnedList: bookReturn, message: 'Loaded from offline cache'));
-      _hasMoreData = false;
+      _hasMoreDataReturned = false;
     } catch (error) {
       emit(BookIssueFailure(message: error.toString()));
     } finally {
-      _isLoading = false;
+      _isLoadingReturned = false;
     }
   }
 
@@ -217,8 +226,8 @@ class BookIssueCubit extends Cubit<BookIssueState> {
     required dynamic adminId, String? stateName, String? district, String? block,
     String? school, String? from, String? to, String? level, String? language,
   }) async {
-    if (_isLoading) return;
-    _isLoading = true;
+    if (_isLoadingIssued) return;
+    _isLoadingIssued = true;
     emit(BookIssueLoading());
 
     try {
@@ -226,13 +235,13 @@ class BookIssueCubit extends Cubit<BookIssueState> {
       if (online) {
         try {
           final value = await _bookIssueRepository.getIssuedBook(
-              adminId, stateName, district, block, school, from, to, level, language, page: _page);
+              adminId, stateName, district, block, school, from, to, level, language, page: _pageIssued);
           if (value != null && value['error'] != true && value['error'] != 1) {
             final rawData = value['data'];
             List<BookIssueModel> bookIssued =
             (rawData as List).map((s) => BookIssueModel.fromJson(s)).toList();
-            _hasMoreData = rawData.length > 0;
-            if (_hasMoreData) _page++;
+            _hasMoreDataIssued = rawData.length > 0;
+            if (_hasMoreDataIssued) _pageIssued++;
             emit(BookIssuedListSuccess(bookIssuedList: bookIssued, message: value['message'].toString()));
             return;
           }
@@ -244,11 +253,11 @@ class BookIssueCubit extends Cubit<BookIssueState> {
       final offlineData = await _bookIssueRepository.getIssuedBookOffline(from:from , to: to);
       final bookIssued = offlineData.map((s) => BookIssueModel.fromJson(s)).toList();
       emit(BookIssuedListSuccess(bookIssuedList: bookIssued, message: 'Loaded from offline cache'));
-      _hasMoreData = false;
+      _hasMoreDataIssued = false;
     } catch (error) {
       emit(BookIssueFailure(message: error.toString()));
     } finally {
-      _isLoading = false;
+      _isLoadingIssued = false;
     }
   }
 

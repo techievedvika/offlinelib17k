@@ -724,6 +724,7 @@ class _StudentRegistrationState extends State<StudentRegistration> {
         'rollno': idValue == 'No' ? _dynamicIdController.text : _rollNoController.text,
         'school': school,
         'schoolCodeNew': schoolCodeNew,
+        'autoGenerateId': idValue == 'No',
       };
 
       context.read<StudentCubit>().registerStudent(data);

@@ -33,7 +33,8 @@ class SyncEngine {
 
       for (final row in rows) {
         try {
-          print("Push to Live server started.\nThis is the payload : ${jsonDecode(row.payloadJson)}");
+          print('PUSH ATTEMPT: type=$type key=${row.entityKey} op=${row.operation}'); // NEW
+          print('PUSH PAYLOAD: ${row.payloadJson}'); // NEW
           final resp = await http.post(
             Uri.parse(AppUrls.syncPush),
             headers: {'Content-Type': 'application/json'},
@@ -43,6 +44,9 @@ class SyncEngine {
               'payload': jsonDecode(row.payloadJson),
             }),
           );
+          print('RAW STATUS: ${resp.statusCode}'); // NEW
+          print('RAW BODY (first 500 chars): ${resp.body.substring(0, resp.body.length > 500 ? 500 : resp.body.length)}');
+
           final result = jsonDecode(resp.body);
 
           print('SYNC RESPONSE for $type/${row.entityKey}: ${resp.statusCode} - ${resp.body}');
@@ -171,21 +175,56 @@ class SyncEngine {
             syncStatus: const Value('synced'),
           ));
           break;
+        // case 'issue':
+        //   await db.into(db.bookIssues).insertOnConflictUpdate(BookIssuesCompanion.insert(
+        //     uniqid: item['uniqid'] ?? '',
+        //     uuid: item['uuid'] ?? item['uniqid'] ?? '',
+        //     bookIsbn: item['book_id'] ?? '',
+        //     bookName: item['book_name'] ?? '',
+        //     studentRollno: item['student_id'] ?? '',
+        //     studentGrade: item['student_grade'] ?? '',
+        //     status: item['status'] ?? 'Issued',
+        //     createdAt: DateTime.tryParse(item['created_at'] ?? '') ?? DateTime.now(),
+        //     updatedAt: DateTime.tryParse(item['updated_at'] ?? item['created_at'] ?? '') ?? DateTime.now(),
+        //     submittedAt: Value(DateTime.tryParse(item['submitted_at'] ?? '')),
+        //     createdBy: _asInt(item['created_by']),
+        //     syncStatus: const Value('synced'),
+        //   ));
+        //   break;
         case 'issue':
-          await db.into(db.bookIssues).insertOnConflictUpdate(BookIssuesCompanion.insert(
-            uniqid: item['uniqid'] ?? '',
-            uuid: item['uuid'] ?? item['uniqid'] ?? '',
-            bookIsbn: item['book_id'] ?? '',
-            bookName: item['book_name'] ?? '',
-            studentRollno: item['student_id'] ?? '',
-            studentGrade: item['student_grade'] ?? '',
-            status: item['status'] ?? 'Issued',
-            createdAt: DateTime.tryParse(item['created_at'] ?? '') ?? DateTime.now(),
-            updatedAt: DateTime.tryParse(item['updated_at'] ?? item['created_at'] ?? '') ?? DateTime.now(),
-            submittedAt: Value(DateTime.tryParse(item['submitted_at'] ?? '')),
-            createdBy: _asInt(item['created_by']),
-            syncStatus: const Value('synced'),
-          ));
+          await db.into(db.bookIssues).insert(
+            BookIssuesCompanion.insert(
+              uniqid: item['uniqid'] ?? '',
+              uuid: item['uuid'] ?? item['uniqid'] ?? '',
+              bookIsbn: item['book_id'] ?? '',
+              bookName: item['book_name'] ?? '',
+              studentRollno: item['student_id'] ?? '',
+              studentGrade: item['student_grade'] ?? '',
+              status: item['status'] ?? 'Issued',
+              createdAt: DateTime.tryParse(item['created_at'] ?? '') ?? DateTime.now(),
+              updatedAt: DateTime.tryParse(item['updated_at'] ?? item['created_at'] ?? '') ?? DateTime.now(),
+              submittedAt: Value(DateTime.tryParse(item['submitted_at'] ?? '')),
+              createdBy: _asInt(item['created_by']),
+              syncStatus: const Value('synced'),
+            ),
+            onConflict: DoUpdate(
+                  (old) => BookIssuesCompanion.custom(
+                uniqid: Constant(item['uniqid'] ?? ''),
+                uuid: Constant(item['uuid'] ?? item['uniqid'] ?? ''),
+                bookIsbn: Constant(item['book_id'] ?? ''),
+                bookName: Constant(item['book_name'] ?? ''),
+                studentRollno: Constant(item['student_id'] ?? ''),
+                studentGrade: Constant(item['student_grade'] ?? ''),
+                status: Constant(item['status'] ?? 'Issued'),
+                createdAt: Constant(DateTime.tryParse(item['created_at'] ?? '') ?? DateTime.now()),
+                updatedAt: Constant(DateTime.tryParse(item['updated_at'] ?? item['created_at'] ?? '') ?? DateTime.now()),
+                submittedAt: Constant(DateTime.tryParse(item['submitted_at'] ?? '')),
+                createdBy: Constant(_asInt(item['created_by'])),
+                syncStatus: const Constant('synced'),
+              ),
+              target: [db.bookIssues.uniqid, db.bookIssues.status], // FIX — tells SQLite to use THIS constraint, not the primary key
+            ),
+          );
           break;
         case 'activity_log':
           await db.into(db.activityLogs).insertOnConflictUpdate(ActivityLogsCompanion.insert(

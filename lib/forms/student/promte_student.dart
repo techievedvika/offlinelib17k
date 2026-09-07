@@ -649,6 +649,7 @@ class _PromoteStudentListState extends State<PromoteStudentList> {
       for (var student in studentsToPromote) {
         Map<String, dynamic> data = {
           "id": student.id,
+          "rollno": student.rollNo,
           "class": student.classs, // The Cubit logic usually handles +1 grade logic
         };
 
