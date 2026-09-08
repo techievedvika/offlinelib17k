@@ -1,5 +1,6 @@
 // ignore_for_file: deprecated_member_use, use_build_context_synchronously
 
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -16,6 +17,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../components/info_dialog.dart';
 import '../../configs/app_urls.dart';
 import '../../models/student_registration/student_model.dart';
+import '../book_issue/book_issue_repository.dart';
 import '../lib_activity_log/widget/ocr_reader_button.dart';
 
 class BookReturn extends StatefulWidget {
@@ -196,43 +198,89 @@ class _BookReturnState extends State<BookReturn> {
   }
 
   /// Fetch Book Details from Server
+  // Future<Map<String, String>> fetchBookDetails(String isbn) async {
+  //   //final url = Uri.parse('https://mis.17000ft.org/Library/apis/getBook.php');
+  //
+  //
+  //   //final url = Uri.parse(AppUrls.getBooksApi);
+  //   //final url = Uri.parse(AppUrls.testGetBooksApi);
+  //   final url = Uri.parse(AppUrls.getBookApi);
+  //
+  //   try {
+  //     final response = await http.post(
+  //       url,
+  //       body: {
+  //         "isbn": isbn,
+  //       },
+  //     );
+  //
+  //     if (response.statusCode == 200) {
+  //       final data = json.decode(response.body);
+  //       if (data['book'] != null && data['book'].isNotEmpty) {
+  //         return {
+  //           'title': data['book'][0]['title'] ?? 'Unknown',
+  //           'level': data['book'][0]['level'] ?? 'Unknown',
+  //           'author': data['book'][0]['author'] ?? 'Unknown',
+  //           'isbn': data['book'][0]['isbn']
+  //               .toString(), // Convert ISBN to String (if needed)
+  //           'publisher': data['book'][0]['publisher'] ?? 'Unknown',
+  //           'cover_page': data['book'][0]['cover_page'] ??
+  //               '', // Add cover image URL if needed
+  //         };
+  //       }
+  //       return {}; // Return empty if book array is null or empty
+  //     } else {
+  //       throw Exception('Failed to fetch book details: ${response.statusCode}');
+  //     }
+  //   } catch (e) {
+  //     throw Exception('Error fetching book details: $e');
+  //   }
+  // }
+
   Future<Map<String, String>> fetchBookDetails(String isbn) async {
-    //final url = Uri.parse('https://mis.17000ft.org/Library/apis/getBook.php');
+    final connectivityResult = await Connectivity().checkConnectivity();
+    final online = connectivityResult.isNotEmpty && !connectivityResult.contains(ConnectivityResult.none);
 
+    Map<String, String> result = {};
 
-    //final url = Uri.parse(AppUrls.getBooksApi);
-    //final url = Uri.parse(AppUrls.testGetBooksApi);
-    final url = Uri.parse(AppUrls.getBookApi);
+    if (online) {
+      try {
+        final url = Uri.parse(AppUrls.getBookApi);
+        final response = await http.post(url, body: {"isbn": isbn}).timeout(const Duration(seconds: 15));
 
-    try {
-      final response = await http.post(
-        url,
-        body: {
-          "isbn": isbn,
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        if (data['book'] != null && data['book'].isNotEmpty) {
-          return {
-            'title': data['book'][0]['title'] ?? 'Unknown',
-            'level': data['book'][0]['level'] ?? 'Unknown',
-            'author': data['book'][0]['author'] ?? 'Unknown',
-            'isbn': data['book'][0]['isbn']
-                .toString(), // Convert ISBN to String (if needed)
-            'publisher': data['book'][0]['publisher'] ?? 'Unknown',
-            'cover_page': data['book'][0]['cover_page'] ??
-                '', // Add cover image URL if needed
-          };
+        if (response.statusCode == 200) {
+          final data = json.decode(response.body);
+          if (data['book'] != null && data['book'].isNotEmpty) {
+            result = {
+              'title': data['book'][0]['title'] ?? 'Unknown',
+              'level': data['book'][0]['level'] ?? 'Unknown',
+              'author': data['book'][0]['author'] ?? 'Unknown',
+              'isbn': data['book'][0]['isbn'].toString(),
+              'publisher': data['book'][0]['publisher'] ?? 'Unknown',
+              'cover_page': data['book'][0]['cover_page'] ?? '',
+            };
+          }
+        } else {
+          throw Exception('Failed to fetch book details: ${response.statusCode}');
         }
-        return {}; // Return empty if book array is null or empty
-      } else {
-        throw Exception('Failed to fetch book details: ${response.statusCode}');
+      } catch (e) {
+        print('Online book lookup failed, falling back to offline cache: $e'); // fall through instead of throwing
       }
-    } catch (e) {
-      throw Exception('Error fetching book details: $e');
     }
+
+    if (result.isEmpty) {
+      final offlineData = await BookIssueRepository().getBookDetailsMapOffline(isbn); // NEW — same method from Book Issue
+      result = {
+        'title': offlineData['title']!,
+        'level': offlineData['level']!.isEmpty ? 'Unknown' : offlineData['level']!,
+        'author': offlineData['author']!,
+        'isbn': offlineData['isbn']!,
+        'publisher': offlineData['publisher']!,
+        'cover_page': offlineData['cover_page']!,
+      };
+    }
+
+    return result;
   }
 
   /// Function to reset form fields

@@ -60,6 +60,10 @@ class SyncEngine {
             case 'already_exists':
               await (db.delete(db.syncOutbox)..where((t) => t.id.equals(row.id))).go();
               await _markSynced(type, row.entityKey);
+              if (type == 'activity_log' && result['server_id'] != null) { // NEW
+                await (db.update(db.activityLogs)..where((t) => t.localId.equals(row.entityKey)))
+                    .write(ActivityLogsCompanion(id: Value(_asInt(result['server_id']))));
+              }
               break;
             case 'ignored_stale':
               await (db.delete(db.syncOutbox)..where((t) => t.id.equals(row.id))).go();
@@ -352,23 +356,59 @@ class SyncEngine {
 
   // ---------------- FILE UPLOADS ----------------
 
+  // Future<void> _uploadPendingFiles() async {
+  //   final pending = await (db.select(db.pendingUploads)..where((t) => t.uploaded.equals(false))).get();
+  //
+  //   for (final file in pending) {
+  //     try {
+  //       final request = http.MultipartRequest('POST', Uri.parse('$baseUrl/upload_file'));
+  //       request.fields['entity_type'] = file.entityType;
+  //       request.fields['entity_key'] = file.entityKey;
+  //       request.fields['field_name'] = file.fieldName;
+  //       request.files.add(await http.MultipartFile.fromPath('file', file.localFilePath));
+  //
+  //       final streamed = await request.send();
+  //       final resp = await http.Response.fromStream(streamed);
+  //       final decoded = jsonDecode(resp.body);
+  //
+  //       if (decoded['url'] != null) {
+  //         await _patchParentField(file.entityType, file.entityKey, file.fieldName, decoded['url']);
+  //         await (db.update(db.pendingUploads)..where((t) => t.id.equals(file.id)))
+  //             .write(const PendingUploadsCompanion(uploaded: Value(true)));
+  //       }
+  //     } catch (_) {
+  //       // leave in queue, retry next cycle
+  //     }
+  //   }
+  // }
+
   Future<void> _uploadPendingFiles() async {
     final pending = await (db.select(db.pendingUploads)..where((t) => t.uploaded.equals(false))).get();
 
     for (final file in pending) {
       try {
+        String uploadEntityKey = file.entityKey;
+
+        if (file.entityType == 'activity_log') {
+          final log = await (db.select(db.activityLogs)..where((t) => t.localId.equals(file.entityKey))).getSingleOrNull();
+          if (log?.id == null) {
+            continue; // activity log hasn't synced yet — server id not known, retry next cycle
+          }
+          uploadEntityKey = log!.id.toString(); // FIX — use the real server id, not localId
+        }
+
         final request = http.MultipartRequest('POST', Uri.parse('$baseUrl/upload_file'));
         request.fields['entity_type'] = file.entityType;
-        request.fields['entity_key'] = file.entityKey;
+        request.fields['entity_key'] = uploadEntityKey;
         request.fields['field_name'] = file.fieldName;
         request.files.add(await http.MultipartFile.fromPath('file', file.localFilePath));
 
-        final streamed = await request.send();
+        final streamed = await request.send().timeout(const Duration(seconds: 60));
         final resp = await http.Response.fromStream(streamed);
         final decoded = jsonDecode(resp.body);
 
         if (decoded['url'] != null) {
-          await _patchParentField(file.entityType, file.entityKey, file.fieldName, decoded['url']);
+          await _patchParentField(file.entityType, file.entityKey, file.fieldName, decoded['url']); // still keyed by localId locally, that's fine
           await (db.update(db.pendingUploads)..where((t) => t.id.equals(file.id)))
               .write(const PendingUploadsCompanion(uploaded: Value(true)));
         }

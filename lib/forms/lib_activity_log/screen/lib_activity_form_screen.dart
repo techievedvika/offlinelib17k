@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:drift/drift.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -35,6 +34,7 @@ import '../grade_selection.dart';
 import '../total_participants.dart';
 import '../upload_activity_img.dart';
 import '../widget/ocr_reader_button.dart';
+import 'package:drift/drift.dart' hide Column;
 
 class LibActivityFormScreen extends StatelessWidget {
   const LibActivityFormScreen({super.key});
@@ -368,6 +368,8 @@ class _LibActivityFormState extends State<LibActivityForm> {
           'created_by': _userId,
           'school': _school,
           'created_at': now.toIso8601String(),
+          'updated_at': now.toIso8601String(), // NEW
+          'uuid': localId, // NEW — reuse the same localId as the uuid value
         }),
         createdAt: now,
       ));

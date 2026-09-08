@@ -3,6 +3,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -23,6 +24,7 @@ import '../../components/school_tag.dart';
 import '../../configs/app_urls.dart';
 import '../../models/student_registration/student_model.dart';
 import '../lib_activity_log/widget/ocr_reader_button.dart';
+import 'book_issue_repository.dart';
 
 class BookIssue extends StatefulWidget {
   final String? student;
@@ -76,157 +78,6 @@ class _BookIssueState extends State<BookIssue> {
       });
     }
   }
-
-  // Future<void> scanStudentQR() async {
-  //   try {
-  //     setState(() => isScanning = true);
-  //     String scannedData = await FlutterBarcodeScanner.scanBarcode(
-  //         '#ff6666', 'Cancel', true, ScanMode.QR);
-  //
-  //     if (scannedData == '-1' || !mounted) return;
-  //
-  //     try {
-  //       Map<String, dynamic> studentDetails = jsonDecode(scannedData);
-  //
-  //       if (studentDetails['id'] == null) {
-  //         throw const FormatException("Invalid QR: Missing ID");
-  //       }
-  //
-  //       setState(() {
-  //         idController.text = studentDetails['id']?.toString() ?? '';
-  //         studentNameController.text = studentDetails['name']?.toString() ?? '';
-  //         studentClassController.text = studentDetails['class']?.toString() ?? '';
-  //         studentIdController.text = studentDetails['rollno']?.toString() ?? '';
-  //       });
-  //
-  //
-  //       final List<StudentModel> students = await context
-  //           .read<BookIssueCubit>()
-  //           .fetchStudentByRollno(studentIdController.text);
-  //
-  //       if (students.isEmpty) {
-  //         ScaffoldMessenger.of(context).showSnackBar(
-  //           const SnackBar(
-  //             content: Text("Student not found in database. Please check Roll No."),
-  //             backgroundColor: AppColors.error,
-  //           ),
-  //         );
-  //         return;
-  //       }
-  //
-  //       print('Student School: ${students.first.school}');
-  //
-  //       if(students.first.school != libSchool){
-  //         await showDialog(
-  //           context: context,
-  //           barrierDismissible: false,
-  //           builder: (context) => Dialog(
-  //             shape: RoundedRectangleBorder(
-  //               borderRadius: BorderRadius.circular(20),
-  //             ),
-  //             child: Padding(
-  //               padding: const EdgeInsets.fromLTRB(24, 28, 24, 20),
-  //               child: Column(
-  //                 mainAxisSize: MainAxisSize.min,
-  //                 crossAxisAlignment: CrossAxisAlignment.start,
-  //                 children: [
-  //                   Row(
-  //                     children: [
-  //                       Container(
-  //                         width: 40,
-  //                         height: 40,
-  //                         decoration: const BoxDecoration(
-  //                           color: AppColors.primary,
-  //                           shape: BoxShape.circle,
-  //                         ),
-  //                         child: const Icon(
-  //                           Icons.warning_amber_rounded,
-  //                           color: AppColors.onPrimary,
-  //                           size: 22,
-  //                         ),
-  //                       ),
-  //                       const SizedBox(width: 12),
-  //                       const Expanded(
-  //                         child: Text(
-  //                           'Different school detected',
-  //                           style: TextStyle(
-  //                             fontSize: 16,
-  //                             fontWeight: FontWeight.w600,
-  //                           ),
-  //                         ),
-  //                       ),
-  //                     ],
-  //                   ),
-  //                   const SizedBox(height: 20),
-  //                   Text(
-  //                     'This student belongs to',
-  //                     style: TextStyle(
-  //                       fontSize: 13,
-  //                       color: Colors.grey.shade600,
-  //                     ),
-  //                   ),
-  //                   const SizedBox(height: 6),
-  //                   SchoolTag(
-  //                     name: students.first.school,
-  //                     accentColor: AppColors.onPrimary,
-  //                   ),
-  //                   const SizedBox(height: 12),
-  //                   Text(
-  //                     'Please scan a student from',
-  //                     style: TextStyle(
-  //                       fontSize: 13,
-  //                       color: Colors.grey.shade600,
-  //                     ),
-  //                   ),
-  //                   const SizedBox(height: 6),
-  //                   SchoolTag(
-  //                     name: libSchool,
-  //                     accentColor: AppColors.onPrimary,
-  //                   ),
-  //                   const SizedBox(height: 24),
-  //                   Align(
-  //                     alignment: Alignment.centerRight,
-  //                     child: FilledButton(
-  //                       onPressed: () {
-  //                         Navigator.pop(context);
-  //                         resetForm();
-  //                       },
-  //                       style: FilledButton.styleFrom(
-  //                         backgroundColor: AppColors.primary,
-  //                         padding: const EdgeInsets.symmetric(
-  //                           horizontal: 28,
-  //                           vertical: 12,
-  //                         ),
-  //                         shape: RoundedRectangleBorder(
-  //                           borderRadius: BorderRadius.circular(10),
-  //                         ),
-  //                       ),
-  //                       child: const Text('Got it',style: TextStyle(color: AppColors.onPrimary,fontWeight: FontWeight.bold)),
-  //                     ),
-  //                   ),
-  //                 ],
-  //               ),
-  //             ),
-  //           ),
-  //         );
-  //         return;
-  //       }
-  //
-  //     } on FormatException {
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         const SnackBar(
-  //             content: Text("Invalid QR Code format."),
-  //             backgroundColor: AppColors.error),
-  //       );
-  //     } catch (e) {
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         SnackBar(content: Text("Error: ${e.toString()}"), backgroundColor: AppColors.error),
-  //       );
-  //     }
-  //   } finally {
-  //     if (mounted) setState(() => isScanning = false);
-  //   }
-  // }
 
   void populateStudentFields(String? studentData) {
     if (studentData == null || studentData.isEmpty) return;
@@ -293,54 +144,98 @@ class _BookIssueState extends State<BookIssue> {
     }
   }
 
+  // Future<Map<String, String>> fetchBookDetails(String isbn) async {
+  //   //final url = Uri.parse('https://mis.17000ft.org/Library/apis/getBook.php');
+  //   //final url = Uri.parse(AppUrls.getBooksApi);
+  //   final url = Uri.parse(AppUrls.getBookApi);
+  //   //final url = Uri.parse(AppUrls.testGetBooksApi);
+  //   try {
+  //     final response = await http.post(url, body: {"isbn": isbn});
+  //     if (response.statusCode == 200) {
+  //       final data = json.decode(response.body);
+  //       print("Book detail = $data");
+  //       if (data['book'] != null && data['book'].isNotEmpty) {
+  //
+  //         if(data['book'][0]['title'] == 'Unknown'){
+  //           if(mounted){
+  //             setState(() {
+  //               bookInDb = false;
+  //             });
+  //           }
+  //         } else{
+  //           if(mounted){
+  //             setState(() {
+  //               bookInDb = true;
+  //             });
+  //           }
+  //         }
+  //
+  //         return {
+  //           'title': data['book'][0]['title'] ?? 'Unknown',
+  //           'author': data['book'][0]['author'] ?? 'Unknown',
+  //           'isbn': data['book'][0]['isbn'].toString(),
+  //           'publisher': data['book'][0]['publisher'] ?? 'Unknown',
+  //           'level': data['book'][0]['level'] ?? '',
+  //           'language': data['book'][0]['language'] ?? 'Unknown',
+  //           'cover_page': data['book'][0]['cover_page'] ?? '',
+  //         };
+  //       }
+  //       // if(data['book'][0]['title'] == 'Unknown'){
+  //       //   setState(() {
+  //       //     bookInDb = false;
+  //       //   });
+  //       // }
+  //       return {}; // Return empty if book not found in response
+  //     } else {
+  //       throw Exception('Failed to fetch book details: ${response.statusCode}');
+  //     }
+  //   } catch (e) {
+  //     throw Exception('Error fetching book details: $e');
+  //   }
+  // }
+
   Future<Map<String, String>> fetchBookDetails(String isbn) async {
-    //final url = Uri.parse('https://mis.17000ft.org/Library/apis/getBook.php');
-    //final url = Uri.parse(AppUrls.getBooksApi);
-    final url = Uri.parse(AppUrls.getBookApi);
-    //final url = Uri.parse(AppUrls.testGetBooksApi);
-    try {
-      final response = await http.post(url, body: {"isbn": isbn});
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        print("Book detail = $data");
-        if (data['book'] != null && data['book'].isNotEmpty) {
+    final connectivityResult = await Connectivity().checkConnectivity();
+    final online = connectivityResult.isNotEmpty && !connectivityResult.contains(ConnectivityResult.none);
 
-          if(data['book'][0]['title'] == 'Unknown'){
-            if(mounted){
-              setState(() {
-                bookInDb = false;
-              });
-            }
-          } else{
-            if(mounted){
-              setState(() {
-                bookInDb = true;
-              });
-            }
+    Map<String, String> result = {};
+
+    if (online) {
+      try {
+        final url = Uri.parse(AppUrls.getBookApi);
+        final response = await http.post(url, body: {"isbn": isbn}).timeout(const Duration(seconds: 15));
+        if (response.statusCode == 200) {
+          final data = json.decode(response.body);
+          if (data['book'] != null && data['book'].isNotEmpty) {
+            result = {
+              'title': data['book'][0]['title'] ?? 'Unknown',
+              'author': data['book'][0]['author'] ?? 'Unknown',
+              'isbn': data['book'][0]['isbn'].toString(),
+              'publisher': data['book'][0]['publisher'] ?? 'Unknown',
+              'level': data['book'][0]['level'] ?? '',
+              'language': data['book'][0]['language'] ?? 'Unknown',
+              'cover_page': data['book'][0]['cover_page'] ?? '',
+            };
           }
-
-          return {
-            'title': data['book'][0]['title'] ?? 'Unknown',
-            'author': data['book'][0]['author'] ?? 'Unknown',
-            'isbn': data['book'][0]['isbn'].toString(),
-            'publisher': data['book'][0]['publisher'] ?? 'Unknown',
-            'level': data['book'][0]['level'] ?? '',
-            'language': data['book'][0]['language'] ?? 'Unknown',
-            'cover_page': data['book'][0]['cover_page'] ?? '',
-          };
+        } else {
+          throw Exception('Failed to fetch book details: ${response.statusCode}');
         }
-        // if(data['book'][0]['title'] == 'Unknown'){
-        //   setState(() {
-        //     bookInDb = false;
-        //   });
-        // }
-        return {}; // Return empty if book not found in response
-      } else {
-        throw Exception('Failed to fetch book details: ${response.statusCode}');
+      } catch (e) {
+        print('Online book lookup failed, falling back to offline cache: $e'); // fall through instead of throwing
       }
-    } catch (e) {
-      throw Exception('Error fetching book details: $e');
     }
+
+    if (result.isEmpty) {
+      result = await BookIssueRepository().getBookDetailsMapOffline(isbn); // offline OR online lookup failed above
+    }
+
+    if (mounted) {
+      setState(() {
+        bookInDb = result['title'] != 'Unknown';
+      });
+    }
+
+    return result;
   }
 
   void resetForm() {

@@ -502,4 +502,32 @@ class BookIssueRepository {
       createdAt: now,
     ));
   }
+
+  // NEW — returns the same field shape as get_book(), for the Book Issue screen's scan flow
+  Future<Map<String, String>> getBookDetailsMapOffline(String isbn) async {
+    final book = await (_db.select(_db.books)..where((t) => t.isbn.equals(isbn))).getSingleOrNull();
+
+    if (book == null) {
+      return {
+        'title': 'Unknown',
+        'author': 'Unknown',
+        'isbn': isbn,
+        'publisher': 'Unknown',
+        'level': '',
+        'language': 'Unknown',
+        'cover_page': '',
+      };
+    }
+
+    return {
+      'title': book.title,
+      'author': book.author ?? 'Unknown',
+      'isbn': book.isbn,
+      'publisher': book.publisher ?? 'Unknown',
+      'level': book.level ?? '',
+      'language': book.language ?? 'Unknown',
+      'cover_page': book.coverPage ?? '',
+    };
+  }
+
 }
