@@ -165,15 +165,80 @@ class _CustomDrawerState extends State<CustomDrawer> {
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                              // ListTile(
+                              //   leading: Icon(
+                              //     pending > 0 ? Icons.cloud_upload_outlined : Icons.cloud_done_outlined,
+                              //     color: pending > 0 ? AppColors.error : AppColors.primary,
+                              //   ),
+                              //   title: Text(pending > 0 ? '$pending item${pending == 1 ? '' : 's'} pending sync' : 'All data synced', style: const TextStyle(fontSize:14)),
+                              //   contentPadding: const EdgeInsets.symmetric(horizontal: 24),
+                              //   minLeadingWidth: 24,
+                              //   subtitle: state is SyncOffline ? const Text('Offline') : null,
+                              // ),
                               ListTile(
                                 leading: Icon(
-                                  pending > 0 ? Icons.cloud_upload_outlined : Icons.cloud_done_outlined,
+                                  pending > 0
+                                      ? Icons.cloud_upload_outlined
+                                      : Icons.cloud_done_outlined,
                                   color: pending > 0 ? AppColors.error : AppColors.primary,
                                 ),
-                                title: Text(pending > 0 ? '$pending item${pending == 1 ? '' : 's'} pending sync' : 'All data synced', style: const TextStyle(fontSize:14)),
+                                title: Text(
+                                  pending > 0
+                                      ? '$pending item${pending == 1 ? '' : 's'} pending sync'
+                                      : 'All data synced',
+                                  style: const TextStyle(fontSize: 14),
+                                ),
                                 contentPadding: const EdgeInsets.symmetric(horizontal: 24),
                                 minLeadingWidth: 24,
                                 subtitle: state is SyncOffline ? const Text('Offline') : null,
+                                onTap: pending == 0
+                                    ? null
+                                    : () async {
+                                  final entries =
+                                  await context.read<SyncStatusCubit>().getPendingEntries();
+
+                                  if (!context.mounted) return;
+
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) {
+                                      return AlertDialog(
+                                        title: const Text('Pending Sync Data'),
+                                        content: SizedBox(
+                                          width: double.maxFinite,
+                                          child: ListView.separated(
+                                            shrinkWrap: true,
+                                            itemCount: entries.length,
+                                            separatorBuilder: (_, __) => const Divider(),
+                                            itemBuilder: (context, index) {
+                                              final entry = entries[index];
+
+                                              return ListTile(
+                                                contentPadding: EdgeInsets.zero,
+                                                leading: const Icon(Icons.sync_problem),
+                                                title: Text(
+                                                  entry.entityType.toUpperCase(),
+                                                  style: const TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                                subtitle: Text(
+                                                  '${entry.operation} • ${entry.entityKey}',
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                        ),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () => Navigator.pop(context),
+                                            child: const Text('Close'),
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                  );
+                                },
                               ),
                               ListTile(
                                 leading: isSyncing

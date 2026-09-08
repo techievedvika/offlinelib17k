@@ -1,6 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'dart:async';
+import '../database/tables/database.dart';
 import 'sync_engine.dart';
 //
 // abstract class SyncStatusState {}
@@ -83,6 +84,10 @@ class SyncStatusCubit extends Cubit<SyncStatusState> {
   }
 
   Future<int> currentPendingCount() => syncEngine.getPendingCount(); // NEW — for display without triggering a sync
+
+  Future<List<SyncOutboxData>> getPendingEntries() {
+    return syncEngine.getPendingEntries();
+  }
 
   @override
   Future<void> close() {

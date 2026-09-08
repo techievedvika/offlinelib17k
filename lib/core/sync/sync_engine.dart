@@ -183,22 +183,6 @@ class SyncEngine {
             syncStatus: const Value('synced'),
           ));
           break;
-        // case 'issue':
-        //   await db.into(db.bookIssues).insertOnConflictUpdate(BookIssuesCompanion.insert(
-        //     uniqid: item['uniqid'] ?? '',
-        //     uuid: item['uuid'] ?? item['uniqid'] ?? '',
-        //     bookIsbn: item['book_id'] ?? '',
-        //     bookName: item['book_name'] ?? '',
-        //     studentRollno: item['student_id'] ?? '',
-        //     studentGrade: item['student_grade'] ?? '',
-        //     status: item['status'] ?? 'Issued',
-        //     createdAt: DateTime.tryParse(item['created_at'] ?? '') ?? DateTime.now(),
-        //     updatedAt: DateTime.tryParse(item['updated_at'] ?? item['created_at'] ?? '') ?? DateTime.now(),
-        //     submittedAt: Value(DateTime.tryParse(item['submitted_at'] ?? '')),
-        //     createdBy: _asInt(item['created_by']),
-        //     syncStatus: const Value('synced'),
-        //   ));
-        //   break;
         case 'issue':
           await db.into(db.bookIssues).insert(
             BookIssuesCompanion.insert(
@@ -354,33 +338,6 @@ class SyncEngine {
     }
   }
 
-  // ---------------- FILE UPLOADS ----------------
-
-  // Future<void> _uploadPendingFiles() async {
-  //   final pending = await (db.select(db.pendingUploads)..where((t) => t.uploaded.equals(false))).get();
-  //
-  //   for (final file in pending) {
-  //     try {
-  //       final request = http.MultipartRequest('POST', Uri.parse('$baseUrl/upload_file'));
-  //       request.fields['entity_type'] = file.entityType;
-  //       request.fields['entity_key'] = file.entityKey;
-  //       request.fields['field_name'] = file.fieldName;
-  //       request.files.add(await http.MultipartFile.fromPath('file', file.localFilePath));
-  //
-  //       final streamed = await request.send();
-  //       final resp = await http.Response.fromStream(streamed);
-  //       final decoded = jsonDecode(resp.body);
-  //
-  //       if (decoded['url'] != null) {
-  //         await _patchParentField(file.entityType, file.entityKey, file.fieldName, decoded['url']);
-  //         await (db.update(db.pendingUploads)..where((t) => t.id.equals(file.id)))
-  //             .write(const PendingUploadsCompanion(uploaded: Value(true)));
-  //       }
-  //     } catch (_) {
-  //       // leave in queue, retry next cycle
-  //     }
-  //   }
-  // }
 
   Future<void> _uploadPendingFiles() async {
     final pending = await (db.select(db.pendingUploads)..where((t) => t.uploaded.equals(false))).get();
@@ -441,6 +398,12 @@ class SyncEngine {
       counts[row.entityType] = (counts[row.entityType] ?? 0) + 1;
     }
     return counts;
+  }
+
+  Future<List<SyncOutboxData>> getPendingEntries() async {
+    return (db.select(db.syncOutbox)
+      ..orderBy([(t) => OrderingTerm.asc(t.createdAt)]))
+        .get();
   }
 
   int _asInt(dynamic value, [int fallback = 0]) {
