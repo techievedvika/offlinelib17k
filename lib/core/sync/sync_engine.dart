@@ -429,6 +429,20 @@ class SyncEngine {
     }
   }
 
+  Future<int> getPendingCount() async {
+    final rows = await db.select(db.syncOutbox).get();
+    return rows.length;
+  }
+
+  Future<Map<String, int>> getPendingCountByType() async {
+    final rows = await db.select(db.syncOutbox).get();
+    final counts = <String, int>{};
+    for (final row in rows) {
+      counts[row.entityType] = (counts[row.entityType] ?? 0) + 1;
+    }
+    return counts;
+  }
+
   int _asInt(dynamic value, [int fallback = 0]) {
     if (value == null) return fallback;
     if (value is int) return value;

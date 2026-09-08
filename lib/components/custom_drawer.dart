@@ -1,9 +1,13 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:lib17000ft/configs/color/color.dart';
 import 'package:lib17000ft/configs/routes/routes_name.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../core/sync/sync_status_cubit.dart';
 
 class CustomDrawer extends StatefulWidget {
   const CustomDrawer({super.key});
@@ -147,6 +151,68 @@ class _CustomDrawerState extends State<CustomDrawer> {
                       ) : const SizedBox(),
 
                     ]),
+
+                _buildDrawerSection('Offline Data', [
+                  // lib/components/custom_drawer.dart — add inside the drawer's Column
+                  BlocBuilder<SyncStatusCubit, SyncStatusState>(
+                    builder: (context, state) {
+                      return FutureBuilder<int>(
+                        future: context.read<SyncStatusCubit>().currentPendingCount(),
+                        builder: (context, snapshot) {
+                          final pending = snapshot.data ?? 0;
+                          final isSyncing = state is SyncInProgress;
+
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              ListTile(
+                                leading: Icon(
+                                  pending > 0 ? Icons.cloud_upload_outlined : Icons.cloud_done_outlined,
+                                  color: pending > 0 ? AppColors.error : AppColors.primary,
+                                ),
+                                title: Text(pending > 0 ? '$pending item${pending == 1 ? '' : 's'} pending sync' : 'All data synced', style: const TextStyle(fontSize:14)),
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 24),
+                                minLeadingWidth: 24,
+                                subtitle: state is SyncOffline ? const Text('Offline') : null,
+                              ),
+                              ListTile(
+                                leading: isSyncing
+                                    ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                                    : const Icon(Icons.refresh),
+                                title: const Text('Refresh / Sync Now', style:  TextStyle(fontSize:14)),
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 24),
+                                minLeadingWidth: 24,
+                                enabled: !isSyncing,
+                                onTap: isSyncing
+                                    ? null
+                                    : () async {
+                                  final connectivityResult = await Connectivity().checkConnectivity();
+                                  final online = connectivityResult.isNotEmpty && !connectivityResult.contains(ConnectivityResult.none);
+
+                                  if (!online) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(content: Text('Cannot sync — you are offline')),
+                                    );
+                                    return;
+                                  }
+
+                                  await context.read<SyncStatusCubit>().manualSync();
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(content: Text('Sync completed')),
+                                    );
+                                  }
+                                },
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ]),
+
+
 
                     // _buildDrawerSection('App Version', [
                     //    _buildDrawerItem(
