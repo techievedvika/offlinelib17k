@@ -620,6 +620,7 @@ class _StudentRegistrationState extends State<StudentRegistration> {
   String? studentJsonData;
   String? userId;
   String? location;
+  String? udiseCode;
   bool? verifyStudent = false;
 
   // State for dynamically loading grades
@@ -652,6 +653,7 @@ class _StudentRegistrationState extends State<StudentRegistration> {
       setState(() {
         userId = prefs.getString('userId');
         location = prefs.getString('location');
+        udiseCode = prefs.getString('schoolCodeNew');
       });
     }
   }
@@ -820,7 +822,7 @@ class _StudentRegistrationState extends State<StudentRegistration> {
                               if (value == 'No') {
                                 final online = await _isOnline();
                                 online ?
-                                context.read<StudentCubit>().getStudentId(location!)
+                                context.read<StudentCubit>().getStudentId(udiseCode!)
                                     : context.read<StudentCubit>().getOfflineStudentId();
 
                               }
@@ -828,6 +830,7 @@ class _StudentRegistrationState extends State<StudentRegistration> {
                                 idValue = value;
                                 _apparController.clear();
                                 _penController.clear();
+                                _rollNoController.clear();
                               });
                             },
                             validator: (value) {

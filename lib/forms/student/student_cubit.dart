@@ -180,24 +180,44 @@ class StudentCubit extends Cubit<StudentState> {
   //   }
   // }
 
-  Future<void> getStudentId(String state) async {
-  print('this is student id for state $state');
-  emit(StudentLoading());
-  await Future.delayed(const Duration(seconds: 1)); // Simulate delay
-  try {
-    final String studentId = await _studentRepository.getUniqueId(state);
+//   Future<void> getStudentId(String state) async {
+//   print('this is student id for state $state');
+//   emit(StudentLoading());
+//   await Future.delayed(const Duration(seconds: 1)); // Simulate delay
+//   try {
+//     final String studentId = await _studentRepository.getUniqueId(state);
+//
+//     if (studentId.isNotEmpty) {
+//
+//       emit(StudentIdSuccess(studentId: studentId));
+//     } else {
+//       emit(StudentFailure(message: 'Empty student ID returned'));
+//     }
+//   } catch (error) {
+//     print(error);
+//     emit(StudentFailure(message: error.toString()));
+//   }
+// }
 
-    if (studentId.isNotEmpty) {
-     
-      emit(StudentIdSuccess(studentId: studentId));
-    } else {
-      emit(StudentFailure(message: 'Empty student ID returned'));
+  Future<void> getStudentId(String schoolUdise) async {
+    print('this is student id for school UDISE: $schoolUdise');
+
+    emit(StudentLoading());
+
+    try {
+      final String studentId =
+      await _studentRepository.getUniqueId(schoolUdise);
+
+      if (studentId.isNotEmpty) {
+        emit(StudentIdSuccess(studentId: studentId));
+      } else {
+        emit(StudentFailure(message: 'Empty student ID returned'));
+      }
+    } catch (error) {
+      print('getStudentId error: $error');
+      emit(StudentFailure(message: error.toString()));
     }
-  } catch (error) {
-    print(error);
-    emit(StudentFailure(message: error.toString()));
   }
-}
 
   Future<void> getOfflineStudentId() async {
     emit(StudentLoading());

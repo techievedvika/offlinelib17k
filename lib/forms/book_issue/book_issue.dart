@@ -144,55 +144,6 @@ class _BookIssueState extends State<BookIssue> {
     }
   }
 
-  // Future<Map<String, String>> fetchBookDetails(String isbn) async {
-  //   //final url = Uri.parse('https://mis.17000ft.org/Library/apis/getBook.php');
-  //   //final url = Uri.parse(AppUrls.getBooksApi);
-  //   final url = Uri.parse(AppUrls.getBookApi);
-  //   //final url = Uri.parse(AppUrls.testGetBooksApi);
-  //   try {
-  //     final response = await http.post(url, body: {"isbn": isbn});
-  //     if (response.statusCode == 200) {
-  //       final data = json.decode(response.body);
-  //       print("Book detail = $data");
-  //       if (data['book'] != null && data['book'].isNotEmpty) {
-  //
-  //         if(data['book'][0]['title'] == 'Unknown'){
-  //           if(mounted){
-  //             setState(() {
-  //               bookInDb = false;
-  //             });
-  //           }
-  //         } else{
-  //           if(mounted){
-  //             setState(() {
-  //               bookInDb = true;
-  //             });
-  //           }
-  //         }
-  //
-  //         return {
-  //           'title': data['book'][0]['title'] ?? 'Unknown',
-  //           'author': data['book'][0]['author'] ?? 'Unknown',
-  //           'isbn': data['book'][0]['isbn'].toString(),
-  //           'publisher': data['book'][0]['publisher'] ?? 'Unknown',
-  //           'level': data['book'][0]['level'] ?? '',
-  //           'language': data['book'][0]['language'] ?? 'Unknown',
-  //           'cover_page': data['book'][0]['cover_page'] ?? '',
-  //         };
-  //       }
-  //       // if(data['book'][0]['title'] == 'Unknown'){
-  //       //   setState(() {
-  //       //     bookInDb = false;
-  //       //   });
-  //       // }
-  //       return {}; // Return empty if book not found in response
-  //     } else {
-  //       throw Exception('Failed to fetch book details: ${response.statusCode}');
-  //     }
-  //   } catch (e) {
-  //     throw Exception('Error fetching book details: $e');
-  //   }
-  // }
 
   Future<Map<String, String>> fetchBookDetails(String isbn) async {
     final connectivityResult = await Connectivity().checkConnectivity();
@@ -305,85 +256,6 @@ class _BookIssueState extends State<BookIssue> {
                     const SizedBox(height: 20),
 
 
-                    // LabelText(label: 'Scan Book Barcode'),
-                    // Row(
-                    //   mainAxisAlignment: MainAxisAlignment.center,
-                    //   children: [
-                    //     CustomButton(
-                    //       onPressedButton: isScanning ? null : scanISBN,
-                    //       icon: Icons.barcode_reader,
-                    //       title: 'Scan ISBN',
-                    //     ),
-                    //     SizedBox(width: size.width* 0.01),
-                    //     CustomButton(
-                    //       onPressedButton : isScanning ? null : () async {
-                    //
-                    //         final image = await captureImage();
-                    //
-                    //         if (image != null) {
-                    //           final isbn = await extractISBN(image.path);
-                    //
-                    //           if (isbn != null) {
-                    //             isbnController.text = isbn;
-                    //             print("ISBN Found: $isbn");
-                    //           } else {
-                    //             print("No ISBN detected");
-                    //           }
-                    //         }
-                    //
-                    //         if (isbnController.text.isEmpty) return;
-                    //
-                    //         setState(() => isScanning = true); // Visual feedback
-                    //         try {
-                    //           final bookDetails = await fetchBookDetails(isbnController.text);
-                    //           if (mounted) {
-                    //             if (bookDetails.isNotEmpty && bookDetails['title'] != 'NA') {
-                    //               setState(() {
-                    //                 bookTitleController.text = bookDetails['title'] ?? 'No Title';
-                    //                 // Use 'author' if 'publisher' is empty
-                    //                 authorController.text = bookDetails['publisher'] ?? bookDetails['author'] ?? 'No Publisher';
-                    //                 growValue = bookDetails['level'];
-                    //               });
-                    //               print('Book Details: $bookDetails');
-                    //               print('Book level: $growValue');
-                    //             } else {
-                    //               setState(() {
-                    //                 bookTitleController.text = bookDetails['title'] ?? 'No Title';
-                    //                 // Use 'author' if 'publisher' is empty
-                    //                 authorController.text = bookDetails['publisher'] ?? bookDetails['author'] ?? 'No Publisher';
-                    //                 growValue = bookDetails['level'];
-                    //               });
-                    //               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                    //                   content: Text('Book details not found.'),
-                    //                   backgroundColor: AppColors.primary));
-                    //             }
-                    //           }
-                    //         } catch (e) {
-                    //           ScaffoldMessenger.of(context).showSnackBar(
-                    //             SnackBar(content: Text("Search failed: $e")),
-                    //           );
-                    //         } finally {
-                    //           if (mounted) setState(() => isScanning = false);
-                    //         }
-                    //       },
-                    //       // onPressedButton: () async{
-                    //       //   final image = await captureImage();
-                    //       //
-                    //       //   if (image != null) {
-                    //       //     final isbn = await extractISBN(image.path);
-                    //       //
-                    //       //     if (isbn != null) {
-                    //       //       print("ISBN Found: $isbn");
-                    //       //     } else {
-                    //       //       print("No ISBN detected");
-                    //       //     }
-                    //       //   }
-                    //       // },
-                    //       icon: Icons.barcode_reader,
-                    //       title: 'Scan ISBN',
-                    //     ),
-                    //   ],
-                    // ),
                     Row(
                       children: [
                         CustomButton(
@@ -525,16 +397,6 @@ class _BookIssueState extends State<BookIssue> {
                           const SizedBox(height: 10),
                           LabelText(label: 'Book Cover Image', astrick: true),
                           const SizedBox(height: 10),
-                          // CustomImagePicker(
-                          //   // validator: (value) => value == null ? 'Please capture an image of the book Cover Page' : null,
-                          //   // onSaved: (value) => bookImage = value,
-                          //   validator: (value) => (bookTitleController.text == 'Unknown' && value == null)
-                          //       ? 'Please capture an image of the book Cover Page'
-                          //       : null,
-                          //   onSaved: (value) => bookImage = value,
-                          //   // If your CustomImagePicker supports it, you can pass a controller or handle change
-                          //   onChanged: (file) => setState(() => bookImage = file),
-                          // ),
                           CustomImagePicker(
                             onChanged: (File? file) {
                               setState(() {
@@ -584,7 +446,7 @@ class _BookIssueState extends State<BookIssue> {
                       gridCount: 3,
                       onChanged: (value) => setState(() => growValue = value),
                       validator: (value) => growValue == null ? 'Please select an option.' : null,
-                      isEnabled: growValue == null || growValue!.isEmpty,
+                      //isEnabled: growValue == null || growValue!.isEmpty,
                     ),
 
 

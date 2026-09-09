@@ -32,6 +32,22 @@ class AppDatabase extends _$AppDatabase {
     });
   }
 
+  // inside AppDatabase class
+  Future<void> clearAllLocalData() async {
+    await transaction(() async {
+      await delete(students).go();
+      await delete(books).go();
+      await delete(bookIssues).go();
+      await delete(activityLogs).go();
+      await delete(grades).go();
+      await delete(schoolBasicCache).go();
+      await delete(generalLinksCache).go();
+      await delete(syncOutbox).go();
+      await delete(pendingUploads).go();
+      await delete(syncMeta).go();
+    });
+  }
+
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onUpgrade: (m, from, to) async {

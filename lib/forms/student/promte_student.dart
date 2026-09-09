@@ -53,6 +53,7 @@ class _PromoteStudentListState extends State<PromoteStudentList> {
   bool _isAscending = true;
 
   Set<String> _selectedStudentIds = {};
+  final List<StudentModel> _offlineSelectedStudents = [];
   bool _isSelectAll = false;
 
   @override
@@ -359,7 +360,8 @@ class _PromoteStudentListState extends State<PromoteStudentList> {
                                       setState(() {
                                         _isSelectAll = value!;
                                         if (_isSelectAll) {
-                                          _selectedStudentIds = filteredStudents.map((s) => s.id!).toSet();
+                                          // _selectedStudentIds = filteredStudents.map((s) => s.id!).toSet();
+                                          _selectedStudentIds = filteredStudents.map((s) => s.rollNo ?? '').toSet(); // CHANGED — was s.id!
                                         } else {
                                           _selectedStudentIds.clear();
                                         }
@@ -548,8 +550,11 @@ class _PromoteStudentListState extends State<PromoteStudentList> {
                     FloatingActionButton.extended(
                       heroTag: 'promote_all_button',
                       onPressed: () {
+                        // final selectedList = filteredStudents
+                        //     .where((s) => _selectedStudentIds.contains(s.id))
+                        //     .toList();
                         final selectedList = filteredStudents
-                            .where((s) => _selectedStudentIds.contains(s.id))
+                            .where((s) => _selectedStudentIds.contains(s.rollNo)) // CHANGED — was s.id
                             .toList();
                         _promoteSelectedStudents(selectedList);
                       },
@@ -784,7 +789,8 @@ class _PromoteStudentListState extends State<PromoteStudentList> {
         MediaQuery.of(context).orientation == Orientation.portrait;
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final isSelected = _selectedStudentIds.contains(student.id);
+    // final isSelected = _selectedStudentIds.contains(student.id);
+    final isSelected = _selectedStudentIds.contains(student.rollNo); // CHANGED — was student.id
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -801,13 +807,22 @@ class _PromoteStudentListState extends State<PromoteStudentList> {
         controlAffinity: ListTileControlAffinity.leading, // Checkbox on the left
         value: isSelected,
         activeColor: AppColors.primary,
+        // onChanged: (bool? value) {
+        //   setState(() {
+        //     if (value == true) {
+        //       _selectedStudentIds.add(student.id!);
+        //     } else {
+        //       _selectedStudentIds.remove(student.id);
+        //       _isSelectAll = false; // Uncheck 'Select All' if one is manually removed
+        //     }
+        //   });
         onChanged: (bool? value) {
           setState(() {
             if (value == true) {
-              _selectedStudentIds.add(student.id!);
+              _selectedStudentIds.add(student.rollNo ?? ''); // CHANGED — was student.id!, no more forced unwrap
             } else {
-              _selectedStudentIds.remove(student.id);
-              _isSelectAll = false; // Uncheck 'Select All' if one is manually removed
+              _selectedStudentIds.remove(student.rollNo); // CHANGED — was student.id
+              _isSelectAll = false;
             }
           });
         },

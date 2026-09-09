@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:drift/drift.dart';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:lib17000ft/configs/app_urls.dart';
 import 'package:uuid/uuid.dart';
@@ -210,18 +211,59 @@ class StudentRepository {
 
 
   //get student id function who has no unique id
-Future<String> getUniqueId(String? location) async {
-  
+// Future<String> getUniqueId(String? location) async {
+//
+//
+//   //final List<dynamic> data = await _api.getApi("${AppUrls.getStudentId}&location=$location"); // Don't call `.body`!
+//   final List<dynamic> data = await _api.getApi("${AppUrls.getUniqueIdApi}?location=$location&getUniqueId");
+//
+//   if (data.isNotEmpty && data.first is String) {
+//     return data.first; // e.g. "SIK/2025/00001"
+//   } else {
+//     throw Exception('Invalid or empty response');
+//   }
+// }
+  Future<String> getUniqueId(String schoolUdise) async {
+    try {
+      final uri = Uri.parse(
+        '${AppUrls.baseUrl}get_uniqueId',
+      ).replace(
+        queryParameters: {
+          'school_udise': schoolUdise,
+          'getUniqueId': '',
+        },
+      );
 
-  //final List<dynamic> data = await _api.getApi("${AppUrls.getStudentId}&location=$location"); // Don't call `.body`!
-  final List<dynamic> data = await _api.getApi("${AppUrls.getUniqueIdApi}?location=$location&getUniqueId");
+      print('this is url in get $uri');
 
-  if (data.isNotEmpty && data.first is String) {
-    return data.first; // e.g. "SIK/2025/00001"
-  } else {
-    throw Exception('Invalid or empty response');
+      final response = await http.get(uri).timeout(
+        const Duration(seconds: 40),
+      );
+
+      print('this is response in get ${response.body}');
+
+      if (response.statusCode != 200) {
+        throw Exception(
+          'Failed to get unique ID. Status code: ${response.statusCode}',
+        );
+      }
+
+      final Map<String, dynamic> data = jsonDecode(response.body);
+
+      print('parsed data: $data');
+
+      if (data['status'] == 1) {
+        return data['unique_id']?.toString() ?? '';
+      }
+
+      throw Exception(
+        data['message']?.toString() ?? 'Failed to generate unique ID',
+      );
+    } catch (e) {
+      print('getUniqueId repository error: $e');
+      rethrow;
+    }
   }
-}
 
   //
   Future<dynamic> getStudents(
@@ -497,7 +539,7 @@ Future<String> getUniqueId(String? location) async {
     // Otherwise, unique_id stays whatever was actually provided (or 'NA' if none).
     final finalUniqueId = autoGenerateId
         ? await generateUniqueId(schoolCodeNew, school)
-        : (uniqueIdInput ?? 'NA');
+        : (uniqueIdInput ?? rollno);
 
     final now = DateTime.now();
     final uuid = const Uuid().v4();
