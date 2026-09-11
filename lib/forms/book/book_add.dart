@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 import '../../components/custom_button.dart';
 import '../../components/custom_image_picker.dart';
 import '../../components/custom_labeltext.dart';
+import '../../components/custom_radio.dart';
 import '../../components/custom_textField.dart';
 import '../../components/info_dialog.dart';
 import '../../configs/color/color.dart';
@@ -34,6 +35,9 @@ class _AddBookScreenState extends State<AddBookScreen> {
   final TextEditingController levelController = TextEditingController();
   final TextEditingController coverPageController = TextEditingController();
   final TextEditingController codeController = TextEditingController();
+
+  final _radioKey = GlobalKey<ResettableRadioState>();
+  String? growValue;
 
   bool isScanning = false;
   File? bookImage;
@@ -273,27 +277,39 @@ class _AddBookScreenState extends State<AddBookScreen> {
 
               const SizedBox(height: 10),
 
-              LabelText(label: 'Level'),
-              const SizedBox(height: 10),
-              CustomTextFormField(
-                textController: levelController,
-                hintText: "Enter Level",
-                readOnly: false,
-                validator: (value) => value == null || value.isEmpty ? 'Please Enter Level.' : null,
+              // LabelText(label: 'Level'),
+              // const SizedBox(height: 10),
+              // CustomTextFormField(
+              //   textController: levelController,
+              //   hintText: "Enter Level",
+              //   readOnly: false,
+              //   validator: (value) => value == null || value.isEmpty ? 'Please Enter Level.' : null,
+              // ),
+              const SizedBox(height: 20),
+              LabelText(label: 'G-R-O-W level ', astrick: true),
+              ResettableRadio(
+                key: _radioKey,
+                selectedOption: growValue,
+                options: const ['Green', 'Red', 'Orange','White', 'Other'],
+                layout: RadioLayout.grid,
+                gridCount: 3,
+                onChanged: (value) => setState(() => growValue = value),
+                validator: (value) => growValue == null ? 'Please select an option.' : null,
+                //isEnabled: growValue == null || growValue!.isEmpty,
               ),
 
-              const SizedBox(height: 10),
-              LabelText(label: 'Book Cover Image'),
-              const SizedBox(height: 10),
-
-              CustomImagePicker(
-                onChanged: (File? file) {
-                  setState(() {
-                    bookImage = file;
-                  });
-                },
-                validator: (value) => value == null ? "Please capture book image" : null,
-              ),
+              // const SizedBox(height: 10),
+              // LabelText(label: 'Book Cover Image'),
+              // const SizedBox(height: 10),
+              //
+              // CustomImagePicker(
+              //   onChanged: (File? file) {
+              //     setState(() {
+              //       bookImage = file;
+              //     });
+              //   },
+              //   validator: (value) => value == null ? "Please capture book image" : null,
+              // ),
 
               // buildTextField(
               //   label: "Code",

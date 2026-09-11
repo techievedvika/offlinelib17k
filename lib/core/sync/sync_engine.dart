@@ -88,7 +88,7 @@ class SyncEngine {
   Future<void> _markSynced(String type, String key) async {
     switch (type) {
       case 'student':
-        await (db.update(db.students)..where((t) => t.rollno.equals(key)))
+        await (db.update(db.students)..where((t) => t.libId.equals(key)))
             .write(const StudentsCompanion(syncStatus: Value('synced')));
         break;
       case 'book':
@@ -112,9 +112,9 @@ class SyncEngine {
     // e.g. two devices created the same real student with different rollno inputs —
     // relink any pending issue rows referencing the old key, then drop the local duplicate.
     if (type == 'student' && localKey != serverKey) {
-      await (db.update(db.bookIssues)..where((t) => t.studentRollno.equals(localKey)))
-          .write(BookIssuesCompanion(studentRollno: Value(serverKey)));
-      await (db.delete(db.students)..where((t) => t.rollno.equals(localKey))).go();
+      await (db.update(db.bookIssues)..where((t) => t.studentLibId.equals(localKey)))
+          .write(BookIssuesCompanion(studentLibId: Value(serverKey)));
+      await (db.delete(db.students)..where((t) => t.libId.equals(localKey))).go();
     }
     if (type == 'book' && localKey != serverKey) {
       await (db.update(db.bookIssues)..where((t) => t.bookIsbn.equals(localKey)))
@@ -153,6 +153,7 @@ class SyncEngine {
         case 'student':
           await db.into(db.students).insertOnConflictUpdate(StudentsCompanion.insert(
             uuid: item['uuid'] ?? '',
+            libId: item['lib_id'] ?? '', // NEW
             apaarId: Value(item['apaarId']),
             penId: Value(item['pen_id']),
             uniqueId: Value(item['unique_id']),
@@ -191,6 +192,7 @@ class SyncEngine {
               bookIsbn: item['book_id'] ?? '',
               bookName: item['book_name'] ?? '',
               studentRollno: item['student_id'] ?? '',
+              studentLibId: item['lib_id'] ?? '',
               studentGrade: item['student_grade'] ?? '',
               status: item['status'] ?? 'Issued',
               createdAt: DateTime.tryParse(item['created_at'] ?? '') ?? DateTime.now(),

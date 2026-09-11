@@ -40,6 +40,7 @@ class _BookIssueState extends State<BookIssue> {
   final TextEditingController idController = TextEditingController();
   final TextEditingController studentNameController = TextEditingController();
   final TextEditingController studentClassController = TextEditingController();
+  final TextEditingController libIdController = TextEditingController(); // NEW
 
   // Controllers for Book Info
   final TextEditingController isbnController = TextEditingController();
@@ -56,6 +57,7 @@ class _BookIssueState extends State<BookIssue> {
   String? idValue; // Stores the value of the 'For Reading only?' radio button
   String? growValue; // Stores the value of the 'G-R-O-W level' radio button
   String? isbnValue;
+  String? libIdValue;
   String? userIdValue;
   bool bookInDb = true;
 
@@ -89,13 +91,12 @@ class _BookIssueState extends State<BookIssue> {
       setState(() {
 
         studentIdController.text = studentDetails['rollno']?.toString() ?? '';
-
         studentNameController.text = studentDetails['name']?.toString() ?? '';
-
         studentClassController.text = studentDetails['class']?.toString() ?? '';
-
         idController.text = studentDetails['id']?.toString() ?? '';
+        libIdController.text = studentDetails['lib_id']?.toString() ?? '';
       });
+      print("Student Details: $studentDetails");
     } catch (e) {
       debugPrint("Error parsing student data: $e");
       ScaffoldMessenger.of(context).showSnackBar(
@@ -447,6 +448,7 @@ class _BookIssueState extends State<BookIssue> {
                       onChanged: (value) => setState(() => growValue = value),
                       validator: (value) => growValue == null ? 'Please select an option.' : null,
                       //isEnabled: growValue == null || growValue!.isEmpty,
+                      isEnabled: bookInDb != true,
                     ),
 
 
@@ -507,9 +509,11 @@ class _BookIssueState extends State<BookIssue> {
                                 // Store values to ensure they persist for the delayed call
                                 userIdValue = studentIdController.text;
                                 isbnValue = isbnController.text;
+                                libIdValue = libIdController.text;
 
                                 final bookIssuePayload = {
                                   'student_id': userIdValue,
+                                  'lib_id': libIdValue,
                                   'isbn': isbnValue,
                                   'created_by': userId,
                                   'status': 'Issued',

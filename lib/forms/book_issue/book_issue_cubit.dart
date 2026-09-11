@@ -113,6 +113,7 @@ class BookIssueCubit extends Cubit<BookIssueState> {
           isbn: data['isbn'].toString(),
           title: data['title'].toString(),
           rollno: data['student_id'].toString(),
+          studentLibId: data['lib_id'].toString(),
           status: status,
           createdBy: int.tryParse(data['created_by']?.toString() ?? '') ?? 0,
           level: data['level']?.toString(),

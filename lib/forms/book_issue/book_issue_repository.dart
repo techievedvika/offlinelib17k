@@ -209,7 +209,8 @@ class BookIssueRepository {
     final students = await _db.select(_db.students).get();
     final books = await _db.select(_db.books).get();
 
-    final studentByRollno = {for (final s in students) s.rollno: s};
+    // final studentByRollno = {for (final s in students) s.rollno: s};
+    final studentByLibId = {for (final s in students) s.libId: s};
     final bookByIsbn = {for (final b in books) b.isbn: b};
     final returnedByUniqid = {
       for (final r in allIssues.where((i) => i.status == 'Returned')) r.uniqid: r
@@ -218,7 +219,8 @@ class BookIssueRepository {
     final issuedRows = allIssues.where((i) => i.status == 'Issued');
 
     return issuedRows.map((issue) {
-      final student = studentByRollno[issue.studentRollno];
+      // final student = studentByRollno[issue.studentRollno];
+      final student = studentByLibId[issue.studentLibId];
       final book = bookByIsbn[issue.bookIsbn];
       final returnRow = returnedByUniqid[issue.uniqid]; // null if still open
 
@@ -259,7 +261,8 @@ class BookIssueRepository {
     final students = await _db.select(_db.students).get();
     final books = await _db.select(_db.books).get();
 
-    final studentByRollno = {for (final s in students) s.rollno: s};
+    // final studentByRollno = {for (final s in students) s.rollno: s};
+    final studentByLibId = {for (final s in students) s.libId: s};
     final bookByIsbn = {for (final b in books) b.isbn: b};
     final returnedUniqids =
     allIssues.where((i) => i.status == 'Returned').map((i) => i.uniqid).toSet();
@@ -268,7 +271,8 @@ class BookIssueRepository {
     allIssues.where((i) => i.status == 'Issued' && !returnedUniqids.contains(i.uniqid));
 
     return openLoans.map((issue) {
-      final student = studentByRollno[issue.studentRollno];
+      // final student = studentByRollno[issue.studentRollno];
+      final student = studentByLibId[issue.studentLibId];
       final book = bookByIsbn[issue.bookIsbn];
 
       return {
@@ -279,6 +283,7 @@ class BookIssueRepository {
         'unique_id': student?.uniqueId ?? '',
         'school': student?.school ?? '',
         'rollno': issue.studentRollno,
+        'lib_id': issue.studentLibId,
         'pen_id': student?.penId ?? '',
         'created_at': issue.createdAt.toIso8601String(), // issue date — this list is only open loans
         'isbn': issue.bookIsbn,
@@ -346,6 +351,7 @@ class BookIssueRepository {
   Future<Map<String, dynamic>> bookIssueReturnOffline({
     required String isbn,
     required String title,
+    required String studentLibId,
     required String rollno,
     required String status,
     required int createdBy,
@@ -390,21 +396,27 @@ class BookIssueRepository {
       }
     }
 
-    final openLoan = await _findOpenLoan(isbn, rollno);
+    // final openLoan = await _findOpenLoan(isbn, rollno);
+    final openLoan = await _findOpenLoan(isbn, studentLibId);
 
     if (status == 'Returned') {
       if (openLoan == null) {
         return {"error": 1, "message": "No Issued Book Found"};
       }
+      // await _insertIssueRow(
+      //   uniqid: openLoan.uniqid,
+      //   isbn: isbn,
+      //   title: title,
+      //   rollno: rollno,
+      //   grade: openLoan.studentGrade,
+      //   status: 'Returned',
+      //   createdBy: createdBy,
+      //   now: now,
+      // );
       await _insertIssueRow(
-        uniqid: openLoan.uniqid,
-        isbn: isbn,
-        title: title,
-        rollno: rollno,
-        grade: openLoan.studentGrade,
-        status: 'Returned',
-        createdBy: createdBy,
-        now: now,
+        uniqid: openLoan.uniqid, isbn: isbn, title: title,
+        studentLibId: studentLibId, studentRollno: openLoan.studentRollno,
+        grade: openLoan.studentGrade, status: 'Returned', createdBy: createdBy, now: now,
       );
       return {"error": 0, "message": "Success"};
     } else {
@@ -416,15 +428,20 @@ class BookIssueRepository {
         return {"error": 1, "message": "Student not found"};
       }
       final uniqid = const Uuid().v4();
+      // await _insertIssueRow(
+      //   uniqid: uniqid,
+      //   isbn: isbn,
+      //   title: title,
+      //   rollno: rollno,
+      //   grade: student.studentClass,
+      //   status: 'Issued',
+      //   createdBy: createdBy,
+      //   now: now,
+      // );
       await _insertIssueRow(
-        uniqid: uniqid,
-        isbn: isbn,
-        title: title,
-        rollno: rollno,
-        grade: student.studentClass,
-        status: 'Issued',
-        createdBy: createdBy,
-        now: now,
+        uniqid: uniqid, isbn: isbn, title: title,
+        studentLibId: studentLibId, studentRollno: student.rollno,
+        grade: student.studentClass, status: 'Issued', createdBy: createdBy, now: now,
       );
       return {"error": 0, "message": "Success"};
     }
@@ -465,22 +482,56 @@ class BookIssueRepository {
     return query.getSingleOrNull();
   }
 
+  // Future<void> _insertIssueRow({
+  //   required String uniqid,
+  //   required String isbn,
+  //   required String title,
+  //   required String rollno,
+  //   required String grade,
+  //   required String status,
+  //   required int createdBy,
+  //   required DateTime now,
+  //   required String studentLibId,
+  // }) async {
+  //   await _db.into(_db.bookIssues).insert(BookIssuesCompanion.insert(
+  //     uniqid: uniqid,
+  //     uuid: uniqid,
+  //     bookIsbn: isbn,
+  //     bookName: title,
+  //     studentRollno: rollno,
+  //     studentGrade: grade,
+  //     status: status,
+  //     createdAt: now,
+  //     updatedAt: now,
+  //     submittedAt: status == 'Returned' ? Value(now) : const Value(null),
+  //     createdBy: createdBy,
+  //     syncStatus: const Value('pending'),
+  //   ));
+  //
+  //   await _db.into(_db.syncOutbox).insert(SyncOutboxCompanion.insert(
+  //     entityType: 'issue',
+  //     entityKey: '$uniqid-$status',
+  //     operation: 'create',
+  //     payloadJson: jsonEncode({
+  //       'uniqid': uniqid, 'isbn': isbn, 'title': title, 'student_id': rollno,
+  //       'student_grade': grade, 'status': status, 'created_by': createdBy,
+  //       'created_at': now.toIso8601String(), 'updated_at': now.toIso8601String(),
+  //     }),
+  //     createdAt: now,
+  //   ));
+  // }
   Future<void> _insertIssueRow({
-    required String uniqid,
-    required String isbn,
-    required String title,
-    required String rollno,
-    required String grade,
-    required String status,
-    required int createdBy,
-    required DateTime now,
+    required String uniqid, required String isbn, required String title,
+    required String studentLibId, required String studentRollno, // NEW param
+    required String grade, required String status, required int createdBy, required DateTime now,
   }) async {
     await _db.into(_db.bookIssues).insert(BookIssuesCompanion.insert(
       uniqid: uniqid,
       uuid: uniqid,
       bookIsbn: isbn,
       bookName: title,
-      studentRollno: rollno,
+      studentLibId: studentLibId, // NEW
+      studentRollno: studentRollno, // kept for display only
       studentGrade: grade,
       status: status,
       createdAt: now,
@@ -495,7 +546,8 @@ class BookIssueRepository {
       entityKey: '$uniqid-$status',
       operation: 'create',
       payloadJson: jsonEncode({
-        'uniqid': uniqid, 'isbn': isbn, 'title': title, 'student_id': rollno,
+        'uniqid': uniqid, 'isbn': isbn, 'title': title,
+        'lib_id': studentLibId, // CHANGED — was 'student_id': rollno
         'student_grade': grade, 'status': status, 'created_by': createdBy,
         'created_at': now.toIso8601String(), 'updated_at': now.toIso8601String(),
       }),

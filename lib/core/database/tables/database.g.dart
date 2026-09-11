@@ -18,6 +18,11 @@ class $StudentsTable extends Students with TableInfo<$StudentsTable, Student> {
   late final GeneratedColumn<String> uuid = GeneratedColumn<String>(
       'uuid', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _libIdMeta = const VerificationMeta('libId');
+  @override
+  late final GeneratedColumn<String> libId = GeneratedColumn<String>(
+      'lib_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
   static const VerificationMeta _apaarIdMeta =
       const VerificationMeta('apaarId');
   @override
@@ -101,6 +106,7 @@ class $StudentsTable extends Students with TableInfo<$StudentsTable, Student> {
   List<GeneratedColumn> get $columns => [
         id,
         uuid,
+        libId,
         apaarId,
         penId,
         uniqueId,
@@ -134,6 +140,12 @@ class $StudentsTable extends Students with TableInfo<$StudentsTable, Student> {
           _uuidMeta, uuid.isAcceptableOrUnknown(data['uuid']!, _uuidMeta));
     } else if (isInserting) {
       context.missing(_uuidMeta);
+    }
+    if (data.containsKey('lib_id')) {
+      context.handle(
+          _libIdMeta, libId.isAcceptableOrUnknown(data['lib_id']!, _libIdMeta));
+    } else if (isInserting) {
+      context.missing(_libIdMeta);
     }
     if (data.containsKey('apaar_id')) {
       context.handle(_apaarIdMeta,
@@ -215,7 +227,7 @@ class $StudentsTable extends Students with TableInfo<$StudentsTable, Student> {
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => {rollno};
+  Set<GeneratedColumn> get $primaryKey => {libId};
   @override
   Student map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -224,6 +236,8 @@ class $StudentsTable extends Students with TableInfo<$StudentsTable, Student> {
           .read(DriftSqlType.int, data['${effectivePrefix}id']),
       uuid: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}uuid'])!,
+      libId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}lib_id'])!,
       apaarId: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}apaar_id']),
       penId: attachedDatabase.typeMapping
@@ -264,6 +278,7 @@ class $StudentsTable extends Students with TableInfo<$StudentsTable, Student> {
 class Student extends DataClass implements Insertable<Student> {
   final int? id;
   final String uuid;
+  final String libId;
   final String? apaarId;
   final String? penId;
   final String? uniqueId;
@@ -281,6 +296,7 @@ class Student extends DataClass implements Insertable<Student> {
   const Student(
       {this.id,
       required this.uuid,
+      required this.libId,
       this.apaarId,
       this.penId,
       this.uniqueId,
@@ -302,6 +318,7 @@ class Student extends DataClass implements Insertable<Student> {
       map['id'] = Variable<int>(id);
     }
     map['uuid'] = Variable<String>(uuid);
+    map['lib_id'] = Variable<String>(libId);
     if (!nullToAbsent || apaarId != null) {
       map['apaar_id'] = Variable<String>(apaarId);
     }
@@ -333,6 +350,7 @@ class Student extends DataClass implements Insertable<Student> {
     return StudentsCompanion(
       id: id == null && nullToAbsent ? const Value.absent() : Value(id),
       uuid: Value(uuid),
+      libId: Value(libId),
       apaarId: apaarId == null && nullToAbsent
           ? const Value.absent()
           : Value(apaarId),
@@ -363,6 +381,7 @@ class Student extends DataClass implements Insertable<Student> {
     return Student(
       id: serializer.fromJson<int?>(json['id']),
       uuid: serializer.fromJson<String>(json['uuid']),
+      libId: serializer.fromJson<String>(json['libId']),
       apaarId: serializer.fromJson<String?>(json['apaarId']),
       penId: serializer.fromJson<String?>(json['penId']),
       uniqueId: serializer.fromJson<String?>(json['uniqueId']),
@@ -385,6 +404,7 @@ class Student extends DataClass implements Insertable<Student> {
     return <String, dynamic>{
       'id': serializer.toJson<int?>(id),
       'uuid': serializer.toJson<String>(uuid),
+      'libId': serializer.toJson<String>(libId),
       'apaarId': serializer.toJson<String?>(apaarId),
       'penId': serializer.toJson<String?>(penId),
       'uniqueId': serializer.toJson<String?>(uniqueId),
@@ -405,6 +425,7 @@ class Student extends DataClass implements Insertable<Student> {
   Student copyWith(
           {Value<int?> id = const Value.absent(),
           String? uuid,
+          String? libId,
           Value<String?> apaarId = const Value.absent(),
           Value<String?> penId = const Value.absent(),
           Value<String?> uniqueId = const Value.absent(),
@@ -422,6 +443,7 @@ class Student extends DataClass implements Insertable<Student> {
       Student(
         id: id.present ? id.value : this.id,
         uuid: uuid ?? this.uuid,
+        libId: libId ?? this.libId,
         apaarId: apaarId.present ? apaarId.value : this.apaarId,
         penId: penId.present ? penId.value : this.penId,
         uniqueId: uniqueId.present ? uniqueId.value : this.uniqueId,
@@ -441,6 +463,7 @@ class Student extends DataClass implements Insertable<Student> {
     return Student(
       id: data.id.present ? data.id.value : this.id,
       uuid: data.uuid.present ? data.uuid.value : this.uuid,
+      libId: data.libId.present ? data.libId.value : this.libId,
       apaarId: data.apaarId.present ? data.apaarId.value : this.apaarId,
       penId: data.penId.present ? data.penId.value : this.penId,
       uniqueId: data.uniqueId.present ? data.uniqueId.value : this.uniqueId,
@@ -466,6 +489,7 @@ class Student extends DataClass implements Insertable<Student> {
     return (StringBuffer('Student(')
           ..write('id: $id, ')
           ..write('uuid: $uuid, ')
+          ..write('libId: $libId, ')
           ..write('apaarId: $apaarId, ')
           ..write('penId: $penId, ')
           ..write('uniqueId: $uniqueId, ')
@@ -488,6 +512,7 @@ class Student extends DataClass implements Insertable<Student> {
   int get hashCode => Object.hash(
       id,
       uuid,
+      libId,
       apaarId,
       penId,
       uniqueId,
@@ -508,6 +533,7 @@ class Student extends DataClass implements Insertable<Student> {
       (other is Student &&
           other.id == this.id &&
           other.uuid == this.uuid &&
+          other.libId == this.libId &&
           other.apaarId == this.apaarId &&
           other.penId == this.penId &&
           other.uniqueId == this.uniqueId &&
@@ -527,6 +553,7 @@ class Student extends DataClass implements Insertable<Student> {
 class StudentsCompanion extends UpdateCompanion<Student> {
   final Value<int?> id;
   final Value<String> uuid;
+  final Value<String> libId;
   final Value<String?> apaarId;
   final Value<String?> penId;
   final Value<String?> uniqueId;
@@ -545,6 +572,7 @@ class StudentsCompanion extends UpdateCompanion<Student> {
   const StudentsCompanion({
     this.id = const Value.absent(),
     this.uuid = const Value.absent(),
+    this.libId = const Value.absent(),
     this.apaarId = const Value.absent(),
     this.penId = const Value.absent(),
     this.uniqueId = const Value.absent(),
@@ -564,6 +592,7 @@ class StudentsCompanion extends UpdateCompanion<Student> {
   StudentsCompanion.insert({
     this.id = const Value.absent(),
     required String uuid,
+    required String libId,
     this.apaarId = const Value.absent(),
     this.penId = const Value.absent(),
     this.uniqueId = const Value.absent(),
@@ -580,6 +609,7 @@ class StudentsCompanion extends UpdateCompanion<Student> {
     this.syncStatus = const Value.absent(),
     this.rowid = const Value.absent(),
   })  : uuid = Value(uuid),
+        libId = Value(libId),
         school = Value(school),
         name = Value(name),
         studentClass = Value(studentClass),
@@ -591,6 +621,7 @@ class StudentsCompanion extends UpdateCompanion<Student> {
   static Insertable<Student> custom({
     Expression<int>? id,
     Expression<String>? uuid,
+    Expression<String>? libId,
     Expression<String>? apaarId,
     Expression<String>? penId,
     Expression<String>? uniqueId,
@@ -610,6 +641,7 @@ class StudentsCompanion extends UpdateCompanion<Student> {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (uuid != null) 'uuid': uuid,
+      if (libId != null) 'lib_id': libId,
       if (apaarId != null) 'apaar_id': apaarId,
       if (penId != null) 'pen_id': penId,
       if (uniqueId != null) 'unique_id': uniqueId,
@@ -631,6 +663,7 @@ class StudentsCompanion extends UpdateCompanion<Student> {
   StudentsCompanion copyWith(
       {Value<int?>? id,
       Value<String>? uuid,
+      Value<String>? libId,
       Value<String?>? apaarId,
       Value<String?>? penId,
       Value<String?>? uniqueId,
@@ -649,6 +682,7 @@ class StudentsCompanion extends UpdateCompanion<Student> {
     return StudentsCompanion(
       id: id ?? this.id,
       uuid: uuid ?? this.uuid,
+      libId: libId ?? this.libId,
       apaarId: apaarId ?? this.apaarId,
       penId: penId ?? this.penId,
       uniqueId: uniqueId ?? this.uniqueId,
@@ -675,6 +709,9 @@ class StudentsCompanion extends UpdateCompanion<Student> {
     }
     if (uuid.present) {
       map['uuid'] = Variable<String>(uuid.value);
+    }
+    if (libId.present) {
+      map['lib_id'] = Variable<String>(libId.value);
     }
     if (apaarId.present) {
       map['apaar_id'] = Variable<String>(apaarId.value);
@@ -729,6 +766,7 @@ class StudentsCompanion extends UpdateCompanion<Student> {
     return (StringBuffer('StudentsCompanion(')
           ..write('id: $id, ')
           ..write('uuid: $uuid, ')
+          ..write('libId: $libId, ')
           ..write('apaarId: $apaarId, ')
           ..write('penId: $penId, ')
           ..write('uniqueId: $uniqueId, ')
@@ -1359,6 +1397,12 @@ class $BookIssuesTable extends BookIssues
   late final GeneratedColumn<String> bookName = GeneratedColumn<String>(
       'book_name', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _studentLibIdMeta =
+      const VerificationMeta('studentLibId');
+  @override
+  late final GeneratedColumn<String> studentLibId = GeneratedColumn<String>(
+      'student_lib_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
   static const VerificationMeta _studentRollnoMeta =
       const VerificationMeta('studentRollno');
   @override
@@ -1425,6 +1469,7 @@ class $BookIssuesTable extends BookIssues
         uuid,
         bookIsbn,
         bookName,
+        studentLibId,
         studentRollno,
         studentGrade,
         status,
@@ -1471,6 +1516,14 @@ class $BookIssuesTable extends BookIssues
           bookName.isAcceptableOrUnknown(data['book_name']!, _bookNameMeta));
     } else if (isInserting) {
       context.missing(_bookNameMeta);
+    }
+    if (data.containsKey('student_lib_id')) {
+      context.handle(
+          _studentLibIdMeta,
+          studentLibId.isAcceptableOrUnknown(
+              data['student_lib_id']!, _studentLibIdMeta));
+    } else if (isInserting) {
+      context.missing(_studentLibIdMeta);
     }
     if (data.containsKey('student_rollno')) {
       context.handle(
@@ -1553,6 +1606,8 @@ class $BookIssuesTable extends BookIssues
           .read(DriftSqlType.string, data['${effectivePrefix}book_isbn'])!,
       bookName: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}book_name'])!,
+      studentLibId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}student_lib_id'])!,
       studentRollno: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}student_rollno'])!,
       studentGrade: attachedDatabase.typeMapping
@@ -1586,6 +1641,7 @@ class BookIssue extends DataClass implements Insertable<BookIssue> {
   final String uuid;
   final String bookIsbn;
   final String bookName;
+  final String studentLibId;
   final String studentRollno;
   final String studentGrade;
   final String status;
@@ -1601,6 +1657,7 @@ class BookIssue extends DataClass implements Insertable<BookIssue> {
       required this.uuid,
       required this.bookIsbn,
       required this.bookName,
+      required this.studentLibId,
       required this.studentRollno,
       required this.studentGrade,
       required this.status,
@@ -1620,6 +1677,7 @@ class BookIssue extends DataClass implements Insertable<BookIssue> {
     map['uuid'] = Variable<String>(uuid);
     map['book_isbn'] = Variable<String>(bookIsbn);
     map['book_name'] = Variable<String>(bookName);
+    map['student_lib_id'] = Variable<String>(studentLibId);
     map['student_rollno'] = Variable<String>(studentRollno);
     map['student_grade'] = Variable<String>(studentGrade);
     map['status'] = Variable<String>(status);
@@ -1641,6 +1699,7 @@ class BookIssue extends DataClass implements Insertable<BookIssue> {
       uuid: Value(uuid),
       bookIsbn: Value(bookIsbn),
       bookName: Value(bookName),
+      studentLibId: Value(studentLibId),
       studentRollno: Value(studentRollno),
       studentGrade: Value(studentGrade),
       status: Value(status),
@@ -1664,6 +1723,7 @@ class BookIssue extends DataClass implements Insertable<BookIssue> {
       uuid: serializer.fromJson<String>(json['uuid']),
       bookIsbn: serializer.fromJson<String>(json['bookIsbn']),
       bookName: serializer.fromJson<String>(json['bookName']),
+      studentLibId: serializer.fromJson<String>(json['studentLibId']),
       studentRollno: serializer.fromJson<String>(json['studentRollno']),
       studentGrade: serializer.fromJson<String>(json['studentGrade']),
       status: serializer.fromJson<String>(json['status']),
@@ -1684,6 +1744,7 @@ class BookIssue extends DataClass implements Insertable<BookIssue> {
       'uuid': serializer.toJson<String>(uuid),
       'bookIsbn': serializer.toJson<String>(bookIsbn),
       'bookName': serializer.toJson<String>(bookName),
+      'studentLibId': serializer.toJson<String>(studentLibId),
       'studentRollno': serializer.toJson<String>(studentRollno),
       'studentGrade': serializer.toJson<String>(studentGrade),
       'status': serializer.toJson<String>(status),
@@ -1702,6 +1763,7 @@ class BookIssue extends DataClass implements Insertable<BookIssue> {
           String? uuid,
           String? bookIsbn,
           String? bookName,
+          String? studentLibId,
           String? studentRollno,
           String? studentGrade,
           String? status,
@@ -1717,6 +1779,7 @@ class BookIssue extends DataClass implements Insertable<BookIssue> {
         uuid: uuid ?? this.uuid,
         bookIsbn: bookIsbn ?? this.bookIsbn,
         bookName: bookName ?? this.bookName,
+        studentLibId: studentLibId ?? this.studentLibId,
         studentRollno: studentRollno ?? this.studentRollno,
         studentGrade: studentGrade ?? this.studentGrade,
         status: status ?? this.status,
@@ -1734,6 +1797,9 @@ class BookIssue extends DataClass implements Insertable<BookIssue> {
       uuid: data.uuid.present ? data.uuid.value : this.uuid,
       bookIsbn: data.bookIsbn.present ? data.bookIsbn.value : this.bookIsbn,
       bookName: data.bookName.present ? data.bookName.value : this.bookName,
+      studentLibId: data.studentLibId.present
+          ? data.studentLibId.value
+          : this.studentLibId,
       studentRollno: data.studentRollno.present
           ? data.studentRollno.value
           : this.studentRollno,
@@ -1761,6 +1827,7 @@ class BookIssue extends DataClass implements Insertable<BookIssue> {
           ..write('uuid: $uuid, ')
           ..write('bookIsbn: $bookIsbn, ')
           ..write('bookName: $bookName, ')
+          ..write('studentLibId: $studentLibId, ')
           ..write('studentRollno: $studentRollno, ')
           ..write('studentGrade: $studentGrade, ')
           ..write('status: $status, ')
@@ -1781,6 +1848,7 @@ class BookIssue extends DataClass implements Insertable<BookIssue> {
       uuid,
       bookIsbn,
       bookName,
+      studentLibId,
       studentRollno,
       studentGrade,
       status,
@@ -1799,6 +1867,7 @@ class BookIssue extends DataClass implements Insertable<BookIssue> {
           other.uuid == this.uuid &&
           other.bookIsbn == this.bookIsbn &&
           other.bookName == this.bookName &&
+          other.studentLibId == this.studentLibId &&
           other.studentRollno == this.studentRollno &&
           other.studentGrade == this.studentGrade &&
           other.status == this.status &&
@@ -1816,6 +1885,7 @@ class BookIssuesCompanion extends UpdateCompanion<BookIssue> {
   final Value<String> uuid;
   final Value<String> bookIsbn;
   final Value<String> bookName;
+  final Value<String> studentLibId;
   final Value<String> studentRollno;
   final Value<String> studentGrade;
   final Value<String> status;
@@ -1831,6 +1901,7 @@ class BookIssuesCompanion extends UpdateCompanion<BookIssue> {
     this.uuid = const Value.absent(),
     this.bookIsbn = const Value.absent(),
     this.bookName = const Value.absent(),
+    this.studentLibId = const Value.absent(),
     this.studentRollno = const Value.absent(),
     this.studentGrade = const Value.absent(),
     this.status = const Value.absent(),
@@ -1847,6 +1918,7 @@ class BookIssuesCompanion extends UpdateCompanion<BookIssue> {
     required String uuid,
     required String bookIsbn,
     required String bookName,
+    required String studentLibId,
     required String studentRollno,
     required String studentGrade,
     required String status,
@@ -1860,6 +1932,7 @@ class BookIssuesCompanion extends UpdateCompanion<BookIssue> {
         uuid = Value(uuid),
         bookIsbn = Value(bookIsbn),
         bookName = Value(bookName),
+        studentLibId = Value(studentLibId),
         studentRollno = Value(studentRollno),
         studentGrade = Value(studentGrade),
         status = Value(status),
@@ -1872,6 +1945,7 @@ class BookIssuesCompanion extends UpdateCompanion<BookIssue> {
     Expression<String>? uuid,
     Expression<String>? bookIsbn,
     Expression<String>? bookName,
+    Expression<String>? studentLibId,
     Expression<String>? studentRollno,
     Expression<String>? studentGrade,
     Expression<String>? status,
@@ -1888,6 +1962,7 @@ class BookIssuesCompanion extends UpdateCompanion<BookIssue> {
       if (uuid != null) 'uuid': uuid,
       if (bookIsbn != null) 'book_isbn': bookIsbn,
       if (bookName != null) 'book_name': bookName,
+      if (studentLibId != null) 'student_lib_id': studentLibId,
       if (studentRollno != null) 'student_rollno': studentRollno,
       if (studentGrade != null) 'student_grade': studentGrade,
       if (status != null) 'status': status,
@@ -1906,6 +1981,7 @@ class BookIssuesCompanion extends UpdateCompanion<BookIssue> {
       Value<String>? uuid,
       Value<String>? bookIsbn,
       Value<String>? bookName,
+      Value<String>? studentLibId,
       Value<String>? studentRollno,
       Value<String>? studentGrade,
       Value<String>? status,
@@ -1921,6 +1997,7 @@ class BookIssuesCompanion extends UpdateCompanion<BookIssue> {
       uuid: uuid ?? this.uuid,
       bookIsbn: bookIsbn ?? this.bookIsbn,
       bookName: bookName ?? this.bookName,
+      studentLibId: studentLibId ?? this.studentLibId,
       studentRollno: studentRollno ?? this.studentRollno,
       studentGrade: studentGrade ?? this.studentGrade,
       status: status ?? this.status,
@@ -1950,6 +2027,9 @@ class BookIssuesCompanion extends UpdateCompanion<BookIssue> {
     }
     if (bookName.present) {
       map['book_name'] = Variable<String>(bookName.value);
+    }
+    if (studentLibId.present) {
+      map['student_lib_id'] = Variable<String>(studentLibId.value);
     }
     if (studentRollno.present) {
       map['student_rollno'] = Variable<String>(studentRollno.value);
@@ -1989,6 +2069,7 @@ class BookIssuesCompanion extends UpdateCompanion<BookIssue> {
           ..write('uuid: $uuid, ')
           ..write('bookIsbn: $bookIsbn, ')
           ..write('bookName: $bookName, ')
+          ..write('studentLibId: $studentLibId, ')
           ..write('studentRollno: $studentRollno, ')
           ..write('studentGrade: $studentGrade, ')
           ..write('status: $status, ')
@@ -4399,6 +4480,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
 typedef $$StudentsTableCreateCompanionBuilder = StudentsCompanion Function({
   Value<int?> id,
   required String uuid,
+  required String libId,
   Value<String?> apaarId,
   Value<String?> penId,
   Value<String?> uniqueId,
@@ -4418,6 +4500,7 @@ typedef $$StudentsTableCreateCompanionBuilder = StudentsCompanion Function({
 typedef $$StudentsTableUpdateCompanionBuilder = StudentsCompanion Function({
   Value<int?> id,
   Value<String> uuid,
+  Value<String> libId,
   Value<String?> apaarId,
   Value<String?> penId,
   Value<String?> uniqueId,
@@ -4449,6 +4532,9 @@ class $$StudentsTableFilterComposer
 
   ColumnFilters<String> get uuid => $composableBuilder(
       column: $table.uuid, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get libId => $composableBuilder(
+      column: $table.libId, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get apaarId => $composableBuilder(
       column: $table.apaarId, builder: (column) => ColumnFilters(column));
@@ -4508,6 +4594,9 @@ class $$StudentsTableOrderingComposer
   ColumnOrderings<String> get uuid => $composableBuilder(
       column: $table.uuid, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<String> get libId => $composableBuilder(
+      column: $table.libId, builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<String> get apaarId => $composableBuilder(
       column: $table.apaarId, builder: (column) => ColumnOrderings(column));
 
@@ -4566,6 +4655,9 @@ class $$StudentsTableAnnotationComposer
 
   GeneratedColumn<String> get uuid =>
       $composableBuilder(column: $table.uuid, builder: (column) => column);
+
+  GeneratedColumn<String> get libId =>
+      $composableBuilder(column: $table.libId, builder: (column) => column);
 
   GeneratedColumn<String> get apaarId =>
       $composableBuilder(column: $table.apaarId, builder: (column) => column);
@@ -4635,6 +4727,7 @@ class $$StudentsTableTableManager extends RootTableManager<
           updateCompanionCallback: ({
             Value<int?> id = const Value.absent(),
             Value<String> uuid = const Value.absent(),
+            Value<String> libId = const Value.absent(),
             Value<String?> apaarId = const Value.absent(),
             Value<String?> penId = const Value.absent(),
             Value<String?> uniqueId = const Value.absent(),
@@ -4654,6 +4747,7 @@ class $$StudentsTableTableManager extends RootTableManager<
               StudentsCompanion(
             id: id,
             uuid: uuid,
+            libId: libId,
             apaarId: apaarId,
             penId: penId,
             uniqueId: uniqueId,
@@ -4673,6 +4767,7 @@ class $$StudentsTableTableManager extends RootTableManager<
           createCompanionCallback: ({
             Value<int?> id = const Value.absent(),
             required String uuid,
+            required String libId,
             Value<String?> apaarId = const Value.absent(),
             Value<String?> penId = const Value.absent(),
             Value<String?> uniqueId = const Value.absent(),
@@ -4692,6 +4787,7 @@ class $$StudentsTableTableManager extends RootTableManager<
               StudentsCompanion.insert(
             id: id,
             uuid: uuid,
+            libId: libId,
             apaarId: apaarId,
             penId: penId,
             uniqueId: uniqueId,
@@ -5002,6 +5098,7 @@ typedef $$BookIssuesTableCreateCompanionBuilder = BookIssuesCompanion Function({
   required String uuid,
   required String bookIsbn,
   required String bookName,
+  required String studentLibId,
   required String studentRollno,
   required String studentGrade,
   required String status,
@@ -5018,6 +5115,7 @@ typedef $$BookIssuesTableUpdateCompanionBuilder = BookIssuesCompanion Function({
   Value<String> uuid,
   Value<String> bookIsbn,
   Value<String> bookName,
+  Value<String> studentLibId,
   Value<String> studentRollno,
   Value<String> studentGrade,
   Value<String> status,
@@ -5052,6 +5150,9 @@ class $$BookIssuesTableFilterComposer
 
   ColumnFilters<String> get bookName => $composableBuilder(
       column: $table.bookName, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get studentLibId => $composableBuilder(
+      column: $table.studentLibId, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get studentRollno => $composableBuilder(
       column: $table.studentRollno, builder: (column) => ColumnFilters(column));
@@ -5104,6 +5205,10 @@ class $$BookIssuesTableOrderingComposer
 
   ColumnOrderings<String> get bookName => $composableBuilder(
       column: $table.bookName, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get studentLibId => $composableBuilder(
+      column: $table.studentLibId,
+      builder: (column) => ColumnOrderings(column));
 
   ColumnOrderings<String> get studentRollno => $composableBuilder(
       column: $table.studentRollno,
@@ -5158,6 +5263,9 @@ class $$BookIssuesTableAnnotationComposer
 
   GeneratedColumn<String> get bookName =>
       $composableBuilder(column: $table.bookName, builder: (column) => column);
+
+  GeneratedColumn<String> get studentLibId => $composableBuilder(
+      column: $table.studentLibId, builder: (column) => column);
 
   GeneratedColumn<String> get studentRollno => $composableBuilder(
       column: $table.studentRollno, builder: (column) => column);
@@ -5215,6 +5323,7 @@ class $$BookIssuesTableTableManager extends RootTableManager<
             Value<String> uuid = const Value.absent(),
             Value<String> bookIsbn = const Value.absent(),
             Value<String> bookName = const Value.absent(),
+            Value<String> studentLibId = const Value.absent(),
             Value<String> studentRollno = const Value.absent(),
             Value<String> studentGrade = const Value.absent(),
             Value<String> status = const Value.absent(),
@@ -5231,6 +5340,7 @@ class $$BookIssuesTableTableManager extends RootTableManager<
             uuid: uuid,
             bookIsbn: bookIsbn,
             bookName: bookName,
+            studentLibId: studentLibId,
             studentRollno: studentRollno,
             studentGrade: studentGrade,
             status: status,
@@ -5247,6 +5357,7 @@ class $$BookIssuesTableTableManager extends RootTableManager<
             required String uuid,
             required String bookIsbn,
             required String bookName,
+            required String studentLibId,
             required String studentRollno,
             required String studentGrade,
             required String status,
@@ -5263,6 +5374,7 @@ class $$BookIssuesTableTableManager extends RootTableManager<
             uuid: uuid,
             bookIsbn: bookIsbn,
             bookName: bookName,
+            studentLibId: studentLibId,
             studentRollno: studentRollno,
             studentGrade: studentGrade,
             status: status,

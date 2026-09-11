@@ -361,7 +361,7 @@ class _PromoteStudentListState extends State<PromoteStudentList> {
                                         _isSelectAll = value!;
                                         if (_isSelectAll) {
                                           // _selectedStudentIds = filteredStudents.map((s) => s.id!).toSet();
-                                          _selectedStudentIds = filteredStudents.map((s) => s.rollNo ?? '').toSet(); // CHANGED — was s.id!
+                                          _selectedStudentIds = filteredStudents.map((s) => s.libId ?? '').toSet(); // CHANGED — was s.id!
                                         } else {
                                           _selectedStudentIds.clear();
                                         }
@@ -554,7 +554,7 @@ class _PromoteStudentListState extends State<PromoteStudentList> {
                         //     .where((s) => _selectedStudentIds.contains(s.id))
                         //     .toList();
                         final selectedList = filteredStudents
-                            .where((s) => _selectedStudentIds.contains(s.rollNo)) // CHANGED — was s.id
+                            .where((s) => _selectedStudentIds.contains(s.libId)) // CHANGED — was s.id
                             .toList();
                         _promoteSelectedStudents(selectedList);
                       },
@@ -654,7 +654,7 @@ class _PromoteStudentListState extends State<PromoteStudentList> {
       for (var student in studentsToPromote) {
         Map<String, dynamic> data = {
           "id": student.id,
-          "rollno": student.rollNo,
+          "lib_id": student.rollNo,
           "class": student.classs, // The Cubit logic usually handles +1 grade logic
         };
 
@@ -819,9 +819,9 @@ class _PromoteStudentListState extends State<PromoteStudentList> {
         onChanged: (bool? value) {
           setState(() {
             if (value == true) {
-              _selectedStudentIds.add(student.rollNo ?? ''); // CHANGED — was student.id!, no more forced unwrap
+              _selectedStudentIds.add(student.libId ?? ''); // CHANGED — was student.id!, no more forced unwrap
             } else {
-              _selectedStudentIds.remove(student.rollNo); // CHANGED — was student.id
+              _selectedStudentIds.remove(student.libId); // CHANGED — was student.id
               _isSelectAll = false;
             }
           });

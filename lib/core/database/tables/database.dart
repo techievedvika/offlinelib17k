@@ -22,7 +22,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   static LazyDatabase _openConnection() {
     return LazyDatabase(() async {
@@ -58,6 +58,17 @@ class AppDatabase extends _$AppDatabase {
           SELECT MIN(local_row_id) FROM book_issues GROUP BY uniqid, status
         )
       ''');
+        await m.deleteTable('book_issues');
+        await m.createTable(bookIssues);
+      }
+      if (from < 3) {
+        // Since libId is now the primary key and old local rows only have rollno,
+        // simplest safe path: wipe and let the next initial_sync repopulate everything fresh.
+        await m.database.customStatement('DELETE FROM students');
+        await m.database.customStatement('DELETE FROM book_issues');
+        await m.database.customStatement('DELETE FROM sync_outbox');
+        await m.deleteTable('students');
+        await m.createTable(students);
         await m.deleteTable('book_issues');
         await m.createTable(bookIssues);
       }

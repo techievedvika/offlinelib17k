@@ -45,6 +45,8 @@ mixin _$StudentModel {
   String? get status => throw _privateConstructorUsedError;
   @JsonKey(name: 'reason')
   String? get reason => throw _privateConstructorUsedError;
+  @JsonKey(name: 'lib_id')
+  String? get libId => throw _privateConstructorUsedError;
 
   /// Serializes this StudentModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -81,7 +83,8 @@ abstract class $StudentModelCopyWith<$Res> {
           fromJson: _intOrStringToString,
           toJson: _stringToDynamic)
       String? status,
-      @JsonKey(name: 'reason') String? reason});
+      @JsonKey(name: 'reason') String? reason,
+      @JsonKey(name: 'lib_id') String? libId});
 }
 
 /// @nodoc
@@ -111,6 +114,7 @@ class _$StudentModelCopyWithImpl<$Res, $Val extends StudentModel>
     Object? school = freezed,
     Object? status = freezed,
     Object? reason = freezed,
+    Object? libId = freezed,
   }) {
     return _then(_value.copyWith(
       createdBy: freezed == createdBy
@@ -161,6 +165,10 @@ class _$StudentModelCopyWithImpl<$Res, $Val extends StudentModel>
           ? _value.reason
           : reason // ignore: cast_nullable_to_non_nullable
               as String?,
+      libId: freezed == libId
+          ? _value.libId
+          : libId // ignore: cast_nullable_to_non_nullable
+              as String?,
     ) as $Val);
   }
 }
@@ -192,7 +200,8 @@ abstract class _$$StudentModelImplCopyWith<$Res>
           fromJson: _intOrStringToString,
           toJson: _stringToDynamic)
       String? status,
-      @JsonKey(name: 'reason') String? reason});
+      @JsonKey(name: 'reason') String? reason,
+      @JsonKey(name: 'lib_id') String? libId});
 }
 
 /// @nodoc
@@ -220,6 +229,7 @@ class __$$StudentModelImplCopyWithImpl<$Res>
     Object? school = freezed,
     Object? status = freezed,
     Object? reason = freezed,
+    Object? libId = freezed,
   }) {
     return _then(_$StudentModelImpl(
       createdBy: freezed == createdBy
@@ -270,6 +280,10 @@ class __$$StudentModelImplCopyWithImpl<$Res>
           ? _value.reason
           : reason // ignore: cast_nullable_to_non_nullable
               as String?,
+      libId: freezed == libId
+          ? _value.libId
+          : libId // ignore: cast_nullable_to_non_nullable
+              as String?,
     ));
   }
 }
@@ -296,7 +310,8 @@ class _$StudentModelImpl implements _StudentModel {
           fromJson: _intOrStringToString,
           toJson: _stringToDynamic)
       this.status,
-      @JsonKey(name: 'reason') this.reason});
+      @JsonKey(name: 'reason') this.reason,
+      @JsonKey(name: 'lib_id') this.libId});
 
   factory _$StudentModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$StudentModelImplFromJson(json);
@@ -338,10 +353,13 @@ class _$StudentModelImpl implements _StudentModel {
   @override
   @JsonKey(name: 'reason')
   final String? reason;
+  @override
+  @JsonKey(name: 'lib_id')
+  final String? libId;
 
   @override
   String toString() {
-    return 'StudentModel(createdBy: $createdBy, name: $name, rollNo: $rollNo, gender: $gender, classs: $classs, id: $id, apaarId: $apaarId, penId: $penId, uniqueId: $uniqueId, school: $school, status: $status, reason: $reason)';
+    return 'StudentModel(createdBy: $createdBy, name: $name, rollNo: $rollNo, gender: $gender, classs: $classs, id: $id, apaarId: $apaarId, penId: $penId, uniqueId: $uniqueId, school: $school, status: $status, reason: $reason, libId: $libId)';
   }
 
   @override
@@ -362,13 +380,14 @@ class _$StudentModelImpl implements _StudentModel {
                 other.uniqueId == uniqueId) &&
             (identical(other.school, school) || other.school == school) &&
             (identical(other.status, status) || other.status == status) &&
-            (identical(other.reason, reason) || other.reason == reason));
+            (identical(other.reason, reason) || other.reason == reason) &&
+            (identical(other.libId, libId) || other.libId == libId));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(runtimeType, createdBy, name, rollNo, gender,
-      classs, id, apaarId, penId, uniqueId, school, status, reason);
+      classs, id, apaarId, penId, uniqueId, school, status, reason, libId);
 
   /// Create a copy of StudentModel
   /// with the given fields replaced by the non-null parameter values.
@@ -406,7 +425,8 @@ abstract class _StudentModel implements StudentModel {
           fromJson: _intOrStringToString,
           toJson: _stringToDynamic)
       final String? status,
-      @JsonKey(name: 'reason') final String? reason}) = _$StudentModelImpl;
+      @JsonKey(name: 'reason') final String? reason,
+      @JsonKey(name: 'lib_id') final String? libId}) = _$StudentModelImpl;
 
   factory _StudentModel.fromJson(Map<String, dynamic> json) =
       _$StudentModelImpl.fromJson;
@@ -448,6 +468,9 @@ abstract class _StudentModel implements StudentModel {
   @override
   @JsonKey(name: 'reason')
   String? get reason;
+  @override
+  @JsonKey(name: 'lib_id')
+  String? get libId;
 
   /// Create a copy of StudentModel
   /// with the given fields replaced by the non-null parameter values.

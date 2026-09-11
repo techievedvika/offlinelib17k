@@ -184,6 +184,7 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
         createdBy: widget.student?.createdBy,
         name: nameController.text.trim(),
         rollNo: rollNoController.text.trim(),
+        libId: widget.student?.libId,
         classs: gradeValue?.trim() ?? "",
         gender: gender,
         apaarId: finalApaar,

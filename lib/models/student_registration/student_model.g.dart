@@ -20,6 +20,7 @@ _$StudentModelImpl _$$StudentModelImplFromJson(Map<String, dynamic> json) =>
       school: json['school'] as String?,
       status: _intOrStringToString(json['status']),
       reason: json['reason'] as String?,
+      libId: json['lib_id'] as String?,
     );
 
 Map<String, dynamic> _$$StudentModelImplToJson(_$StudentModelImpl instance) =>
@@ -36,4 +37,5 @@ Map<String, dynamic> _$$StudentModelImplToJson(_$StudentModelImpl instance) =>
       'school': instance.school,
       'status': _stringToDynamic(instance.status),
       'reason': instance.reason,
+      'lib_id': instance.libId,
     };

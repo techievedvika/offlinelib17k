@@ -34,6 +34,7 @@ class _BookReturnState extends State<BookReturn> {
   final TextEditingController studentNameController = TextEditingController();
   final TextEditingController studentClassController = TextEditingController();
   final TextEditingController idController = TextEditingController();
+  final TextEditingController libIdController = TextEditingController();
 
   // Controllers for Book Info
   final TextEditingController isbnController = TextEditingController();
@@ -115,6 +116,7 @@ class _BookReturnState extends State<BookReturn> {
         studentNameController.text = studentDetails['name']?.toString() ?? '';
 
         studentClassController.text = studentDetails['class']?.toString() ?? '';
+        libIdController.text = studentDetails['lib_id']?.toString() ?? '';
 
         idController.text = studentDetails['id']?.toString() ?? '';
       });
@@ -288,6 +290,7 @@ class _BookReturnState extends State<BookReturn> {
     studentIdController.clear();
     studentNameController.clear();
     studentClassController.clear();
+    libIdController.clear();
     isbnController.clear();
     bookTitleController.clear();
     bookLevelController.clear();
@@ -540,6 +543,7 @@ class _BookReturnState extends State<BookReturn> {
                               if (_formKey.currentState!.validate()) {
                                 final dynamic bookReturnPayload = {
                                   'student_id': studentIdController.text,
+                                  'lib_id': libIdController.text,
                                   'isbn': isbnController.text,
                                   'created_by': userId,
                                   'title': bookTitleController.text,

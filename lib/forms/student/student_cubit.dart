@@ -91,6 +91,7 @@ class StudentCubit extends Cubit<StudentState> {
         'rollno': (data['rollno'] == null || data['rollno'].toString().trim().isEmpty) ? 'NA' : data['rollno'].toString(),
         'school': data['school']?.toString() ?? '',
         'schoolCodeNew': data['schoolCodeNew']?.toString() ?? '',
+        'lib_code': data['lib_code']?.toString() ?? '',
       };
 
       // NEW — branch on connectivity
@@ -199,7 +200,7 @@ class StudentCubit extends Cubit<StudentState> {
 //   }
 // }
 
-  Future<void> getStudentId(String schoolUdise) async {
+  Future<String> getStudentId(String schoolUdise) async {
     print('this is student id for school UDISE: $schoolUdise');
 
     emit(StudentLoading());
@@ -210,16 +211,19 @@ class StudentCubit extends Cubit<StudentState> {
 
       if (studentId.isNotEmpty) {
         emit(StudentIdSuccess(studentId: studentId));
+        return studentId;
       } else {
         emit(StudentFailure(message: 'Empty student ID returned'));
+        return '';
       }
     } catch (error) {
       print('getStudentId error: $error');
       emit(StudentFailure(message: error.toString()));
+      return '';
     }
   }
 
-  Future<void> getOfflineStudentId() async {
+  Future<String> getOfflineStudentId() async {
     emit(StudentLoading());
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -228,13 +232,15 @@ class StudentCubit extends Cubit<StudentState> {
 
       if (schoolCodeNew.isEmpty) {
         emit(StudentFailure(message: 'School code not available yet — please sync once while online'));
-        return;
+        return '';
       }
 
       final studentId = await _studentRepository.generateUniqueId(schoolCodeNew, school);
       emit(StudentIdSuccess(studentId: studentId));
+      return studentId;
     } catch (error) {
       emit(StudentFailure(message: error.toString()));
+      return '';
     }
   }
 
@@ -372,7 +378,7 @@ class StudentCubit extends Cubit<StudentState> {
       }
 
       final offlineValue = await _studentRepository.promoteStudentOffline(
-          data['rollno'].toString(), data['class'].toString());
+          data['lib_id'].toString(), data['class'].toString());
       if (offlineValue['error'] == 0) {
         emit(StudentPromote(message: offlineValue['message'].toString()));
       } else {

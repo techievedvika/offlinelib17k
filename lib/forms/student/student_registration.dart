@@ -716,6 +716,11 @@ class _StudentRegistrationState extends State<StudentRegistration> {
       final school = prefs.getString('school') ?? '';
       final schoolCodeNew = prefs.getString('schoolCodeNew') ?? '';
 
+      final online = await _isOnline();
+      final libCode = online
+          ? await context.read<StudentCubit>().getStudentId(udiseCode!)
+          : await context.read<StudentCubit>().getOfflineStudentId();
+
       final Map<String, dynamic> data = {
         'name': _nameController.text.trim(),
         'class': gradeValue, // Dropdown value
@@ -727,6 +732,7 @@ class _StudentRegistrationState extends State<StudentRegistration> {
         'school': school,
         'schoolCodeNew': schoolCodeNew,
         'autoGenerateId': idValue == 'No',
+        'lib_code': libCode,
       };
 
       context.read<StudentCubit>().registerStudent(data);
