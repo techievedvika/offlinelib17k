@@ -654,7 +654,7 @@ class _PromoteStudentListState extends State<PromoteStudentList> {
       for (var student in studentsToPromote) {
         Map<String, dynamic> data = {
           "id": student.id,
-          "lib_id": student.rollNo,
+          "lib_id": student.libId,
           "class": student.classs, // The Cubit logic usually handles +1 grade logic
         };
 
@@ -790,7 +790,7 @@ class _PromoteStudentListState extends State<PromoteStudentList> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     // final isSelected = _selectedStudentIds.contains(student.id);
-    final isSelected = _selectedStudentIds.contains(student.rollNo); // CHANGED — was student.id
+    final isSelected = _selectedStudentIds.contains(student.libId); // CHANGED — was student.id
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),

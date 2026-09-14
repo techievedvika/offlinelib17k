@@ -670,7 +670,7 @@ class StudentRepository {
     final apaarId = isReal(apaarIdRaw) ? apaarIdRaw : null;
     final uniqueIdInput = isReal(uniqueIdRaw) ? uniqueIdRaw : null;
 
-    if (rollno == null) {
+    if (rollno == null && penId == null && apaarId == null && uniqueIdInput == null) {
       return {"error": 1, "message": "Please provide a Roll Number / Student ID"};
     }
 
@@ -678,16 +678,56 @@ class StudentRepository {
     final schoolCodeNew = data['schoolCodeNew']?.toString() ?? '';
 
     // Duplicate check still runs against the informational fields — lib_id itself is always fresh/generated
-    final query = _db.select(_db.students)
-      ..where((t) =>
-      t.rollno.equals(rollno) |
-      (penId != null ? t.penId.equals(penId) : const Constant(false)) |
-      (apaarId != null ? t.apaarId.equals(apaarId) : const Constant(false)) |
-      (uniqueIdInput != null ? t.uniqueId.equals(uniqueIdInput) : const Constant(false)));
+    // final query = _db.select(_db.students)
+    //   ..where((t) =>
+    //   t.rollno.equals(rollno!) |
+    //   (penId != null ? t.penId.equals(penId) : const Constant(false)) |
+    //   (apaarId != null ? t.apaarId.equals(apaarId) : const Constant(false)) |
+    //   (uniqueIdInput != null ? t.uniqueId.equals(uniqueIdInput) : const Constant(false)));
+    //
+    // final existing = await query.getSingleOrNull();
+    // if (existing != null) {
+    //   return {"error": 1, "message": "Student already exists with ID ${existing.rollno}"};
+    // }
 
-    final existing = await query.getSingleOrNull();
-    if (existing != null) {
-      return {"error": 1, "message": "Student already exists with ID ${existing.rollno}"};
+    final conditions = <Expression<bool>>[];
+
+    if (rollno != null) {
+      conditions.add(_db.students.rollno.equals(rollno));
+    }
+
+    if (penId != null) {
+      conditions.add(_db.students.penId.equals(penId));
+    }
+
+    if (apaarId != null) {
+      conditions.add(_db.students.apaarId.equals(apaarId));
+    }
+
+    if (uniqueIdInput != null) {
+      conditions.add(_db.students.uniqueId.equals(uniqueIdInput));
+    }
+
+    if (conditions.isNotEmpty) {
+      final query = _db.select(_db.students)
+        ..where((t) {
+          Expression<bool> condition = conditions.first;
+
+          for (var i = 1; i < conditions.length; i++) {
+            condition = condition | conditions[i];
+          }
+
+          return condition;
+        });
+
+      final existing = await query.getSingleOrNull();
+
+      if (existing != null) {
+        return {
+          "error": 1,
+          "message": "Student already exists with ID ${existing.rollno}"
+        };
+      }
     }
 
     final libIdProvided = data['lib_code']?.toString();
@@ -697,7 +737,7 @@ class StudentRepository {
 
     final finalUniqueId = autoGenerateId
         ? libId
-        : (uniqueIdInput ?? rollno);
+        : (uniqueIdInput ?? rollno ?? 'NA');
 
     final now = DateTime.now();
     final uuid = const Uuid().v4();
@@ -713,7 +753,7 @@ class StudentRepository {
         school: school,
         name: data['name'].toString(),
         studentClass: data['class'].toString(),
-        rollno: rollno,
+        rollno: rollno ?? 'NA',
         gender: data['gender'].toString(),
         createdAt: now,
         updatedAt: now,
