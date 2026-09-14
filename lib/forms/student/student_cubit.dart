@@ -330,7 +330,7 @@ class StudentCubit extends Cubit<StudentState> {
           "name": student?.name, "gender": student?.gender, "class": student?.classs,
           "apaarId": student?.apaarId, "penId": student?.penId, "uniqueId": student?.uniqueId,
           "school": student?.school, "created_by": student?.createdBy,
-          "status": student?.status, "reason": student?.reason,
+          "status": student?.status, "reason": student?.reason, "lib_id": student?.libId,
         };
         try {
           final value = await _studentRepository.updateStudent(data);
