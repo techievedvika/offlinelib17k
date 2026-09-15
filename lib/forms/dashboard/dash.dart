@@ -22,6 +22,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../components/animated_pie_chart.dart';
 import '../../components/sync_banner_widget.dart';
+import '../../components/sync_spinner.dart';
 import '../../core/di/service_locator.dart';
 import '../../core/sync/sync_engine.dart';
 import 'gradebargraph.dart';
@@ -51,6 +52,8 @@ class _DashBoardState extends State<DashBoard>
   String? rights;
   bool? isSuperAdmin;
   String? libSchool;
+
+  bool _isInitialSyncing = false;
 
   List<String> optionBarGraph = [
       "Month-wise Books Issued",
@@ -185,11 +188,46 @@ class _DashBoardState extends State<DashBoard>
     libSchool = prefs.getString('school');
 
     if (userId != null && libSchool != null) {
-      getIt<SyncEngine>().runInitialSync(
-        createdBy: userId!,
-        school: libSchool!,
-        role: role!,
-      ).catchError((e) => print('Initial sync failed: $e'));
+      setState(() => _isInitialSyncing = true);
+      // getIt<SyncEngine>().runInitialSync(
+      //   createdBy: userId!,
+      //   school: libSchool!,
+      //   role: role!,
+      // ).catchError((e) => print('Initial sync failed: $e'));
+
+      try {
+        await getIt<SyncEngine>().runInitialSync( // CHANGED — now awaited, was fire-and-forget
+          createdBy: userId!,
+          school: libSchool!,
+          role: role!,
+        );
+      } catch (e) {
+        print('Initial sync failed: $e');
+      } finally {
+        if (mounted) {
+          setState(() => _isInitialSyncing = false); // NEW — hide overlay regardless of outcome
+
+          // NEW — the "ready for offline" confirmation
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Row(
+                children: [
+                  Icon(Icons.cloud_done, color: Colors.white),
+                  SizedBox(width: 10),
+                  Expanded(child: Text("You're all set — the app is ready for offline use!")),
+                ],
+              ),
+              backgroundColor: AppColors.primary,
+              duration: Duration(seconds: 3),
+            ),
+          );
+        }
+      }
+    }
+
+    if (userId != null && mounted) {
+      context.read<DashCubit>().dashData(adminId: userId!);
+      context.read<DashCubit>().fetchFormLogs(adminId: userId!);
     }
 
     if (userId != null && mounted) {
@@ -289,117 +327,240 @@ class _DashBoardState extends State<DashBoard>
         title: 'Dashboard',
       ),
       drawer: const CustomDrawer(),
-      body: SafeArea(
-        child: BlocConsumer<DashCubit, DashState>(
-          listener: (context, state) {
-            if (state is DashSuccess) {
-              dashData = state.data;
-              barGraph = state.data.bargraph;
-              totalBooksIssued = barGraph!
-                  .fold(0, (sum, item) => sum! + (item['total_issues'] as int));
+      // body: SafeArea(
+      //   child: BlocConsumer<DashCubit, DashState>(
+      //     listener: (context, state) {
+      //       if (state is DashSuccess) {
+      //         dashData = state.data;
+      //         barGraph = state.data.bargraph;
+      //         totalBooksIssued = barGraph!
+      //             .fold(0, (sum, item) => sum! + (item['total_issues'] as int));
+      //
+      //         // barGraph
+      //       }
+      //     },
+      //     builder: (context, state) {
+      //       if (state is DashLoading) {
+      //         return const Center(
+      //           child: TextWithCircularProgress(
+      //             text: 'Loading data...',
+      //             indicatorColor: AppColors.primary,
+      //             fontsize: 16,
+      //             strokeSize: 3,
+      //           ),
+      //         );
+      //       }
+      //
+      //       if (state is DashFailure) {
+      //         return Center(
+      //           child: Text(
+      //             state.message,
+      //             style: const TextStyle(
+      //               color: Colors.red,
+      //               fontSize: 18,
+      //               fontWeight: FontWeight.bold,
+      //             ),
+      //           ),
+      //         );
+      //       }
+      //
+      //       if (dashData == null) {
+      //         return const Center(child: Text("No dashboard data found."));
+      //       }
+      //
+      //       return Padding(
+      //         padding: EdgeInsets.symmetric(
+      //           horizontal: isMobile ? 16.0 : 24.0,
+      //           vertical: 16.0,
+      //         ),
+      //         child: SingleChildScrollView(
+      //           child: Column(
+      //             crossAxisAlignment: CrossAxisAlignment.start,
+      //             children: [
+      //               const SyncBannerWidget(),
+      //               _buildHeader(isMobile),
+      //               //const SizedBox(height: 14),
+      //               // New Filter Section
+      //               //_buildFiltersSection(isMobile),
+      //               const SizedBox(height: 14),
+      //               _buildMetricsGrid(isMobile, isTablet),
+      //               // const SizedBox(height: 14),
+      //               // _buildBookActivityChart(isMobile),
+      //               const SizedBox(height: 14),
+      //               Card(
+      //                 child: Padding(
+      //                   padding: const EdgeInsets.all(8.0),
+      //                   child: Column(
+      //                     children: [
+      //                       CustomDropdownFormField(
+      //                         //height: size.height * 0.2,
+      //                         labelText: 'Select Bargraph',
+      //                         options: optionBarGraph,
+      //                         selectedOption: barGraphValue, // Auto-fills with current value
+      //                         onChanged: (value) {
+      //                           setState(() {
+      //                             barGraphValue = value!;
+      //                           });
+      //                         },
+      //                         validator: (value) {
+      //                           if (value == null || value.isEmpty) {
+      //                             return "Please select a grade";
+      //                           }
+      //                           return null;
+      //                         },
+      //                       ),
+      //                       SizedBox(height: size.height * 0.01),
+      //                       if(barGraphValue == optionBarGraph[0])
+      //                       BookStatsChart(
+      //                         barGraphData: dashData!.bargraph,
+      //                         //An totalBooksIssued: totalBooksIssued!,
+      //                       ),
+      //                       if(barGraphValue == optionBarGraph[1])
+      //                         GradeBookStatsChart(
+      //                           gradeBarGraphData: dashData!.gradebargraph,
+      //                           //An totalBooksIssued: totalBooksIssued!,
+      //                         ),
+      //                     ],
+      //                   ),
+      //                 ),
+      //               ),
+      //               // : const SizedBox(),
+      //               // const SizedBox(height: 14),
+      //               // GradeBookStatsChart(
+      //               //   gradeBarGraphData: dashData!.gradebargraph,
+      //               //   //An totalBooksIssued: totalBooksIssued!,
+      //               // ),
+      //               const SizedBox(height:14),
+      //               _buildFormLogsSection(isMobile),
+      //               if (_isInitialSyncing) _buildSyncOverlay(),
+      //             ],
+      //           ),
+      //         ),
+      //       );
+      //     },
+      //   ),
+      // ),
 
-              // barGraph
-            }
-          },
-          builder: (context, state) {
-            if (state is DashLoading) {
-              return const Center(
-                child: TextWithCircularProgress(
-                  text: 'Loading data...',
-                  indicatorColor: AppColors.primary,
-                  fontsize: 16,
-                  strokeSize: 3,
-                ),
-              );
-            }
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: BlocConsumer<DashCubit, DashState>(
+              listener: (context, state) {
+                if (state is DashSuccess) {
+                  dashData = state.data;
+                  barGraph = state.data.bargraph;
+                  totalBooksIssued = barGraph!
+                      .fold(0, (sum, item) => sum! + (item['total_issues'] as int));
 
-            if (state is DashFailure) {
-              return Center(
-                child: Text(
-                  state.message,
-                  style: const TextStyle(
-                    color: Colors.red,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              );
-            }
+                  // barGraph
+                }
+              },
+              builder: (context, state) {
+                if (state is DashLoading) {
+                  return const Center(
+                    child: TextWithCircularProgress(
+                      text: 'Loading data...',
+                      indicatorColor: AppColors.primary,
+                      fontsize: 16,
+                      strokeSize: 3,
+                    ),
+                  );
+                }
 
-            if (dashData == null) {
-              return const Center(child: Text("No dashboard data found."));
-            }
-
-            return Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: isMobile ? 16.0 : 24.0,
-                vertical: 16.0,
-              ),
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SyncBannerWidget(),
-                    _buildHeader(isMobile),
-                    //const SizedBox(height: 14),
-                    // New Filter Section
-                    //_buildFiltersSection(isMobile),
-                    const SizedBox(height: 14),
-                    _buildMetricsGrid(isMobile, isTablet),
-                    // const SizedBox(height: 14),
-                    // _buildBookActivityChart(isMobile),
-                    const SizedBox(height: 14),
-                    Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Column(
-                          children: [
-                            CustomDropdownFormField(
-                              //height: size.height * 0.2,
-                              labelText: 'Select Bargraph',
-                              options: optionBarGraph,
-                              selectedOption: barGraphValue, // Auto-fills with current value
-                              onChanged: (value) {
-                                setState(() {
-                                  barGraphValue = value!;
-                                });
-                              },
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return "Please select a grade";
-                                }
-                                return null;
-                              },
-                            ),
-                            SizedBox(height: size.height * 0.01),
-                            if(barGraphValue == optionBarGraph[0])
-                            BookStatsChart(
-                              barGraphData: dashData!.bargraph,
-                              //An totalBooksIssued: totalBooksIssued!,
-                            ),
-                            if(barGraphValue == optionBarGraph[1])
-                              GradeBookStatsChart(
-                                gradeBarGraphData: dashData!.gradebargraph,
-                                //An totalBooksIssued: totalBooksIssued!,
-                              ),
-                          ],
-                        ),
+                if (state is DashFailure) {
+                  return Center(
+                    child: Text(
+                      state.message,
+                      style: const TextStyle(
+                        color: Colors.red,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                    // : const SizedBox(),
-                    // const SizedBox(height: 14),
-                    // GradeBookStatsChart(
-                    //   gradeBarGraphData: dashData!.gradebargraph,
-                    //   //An totalBooksIssued: totalBooksIssued!,
-                    // ),
-                    const SizedBox(height:14),
-                    _buildFormLogsSection(isMobile),
-                  ],
-                ),
-              ),
-            );
-          },
-        ),
+                  );
+                }
+
+                if (dashData == null) {
+                  return const Center(child: Text("No dashboard data found."));
+                }
+
+                return Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isMobile ? 16.0 : 24.0,
+                    vertical: 16.0,
+                  ),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SyncBannerWidget(),
+                        _buildHeader(isMobile),
+                        //const SizedBox(height: 14),
+                        // New Filter Section
+                        //_buildFiltersSection(isMobile),
+                        const SizedBox(height: 14),
+                        _buildMetricsGrid(isMobile, isTablet),
+                        // const SizedBox(height: 14),
+                        // _buildBookActivityChart(isMobile),
+                        const SizedBox(height: 14),
+                        Card(
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Column(
+                              children: [
+                                CustomDropdownFormField(
+                                  //height: size.height * 0.2,
+                                  labelText: 'Select Bargraph',
+                                  options: optionBarGraph,
+                                  selectedOption: barGraphValue, // Auto-fills with current value
+                                  onChanged: (value) {
+                                    setState(() {
+                                      barGraphValue = value!;
+                                    });
+                                  },
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return "Please select a grade";
+                                    }
+                                    return null;
+                                  },
+                                ),
+                                SizedBox(height: size.height * 0.01),
+                                if(barGraphValue == optionBarGraph[0])
+                                  BookStatsChart(
+                                    barGraphData: dashData!.bargraph,
+                                    //An totalBooksIssued: totalBooksIssued!,
+                                  ),
+                                if(barGraphValue == optionBarGraph[1])
+                                  GradeBookStatsChart(
+                                    gradeBarGraphData: dashData!.gradebargraph,
+                                    //An totalBooksIssued: totalBooksIssued!,
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        // : const SizedBox(),
+                        // const SizedBox(height: 14),
+                        // GradeBookStatsChart(
+                        //   gradeBarGraphData: dashData!.gradebargraph,
+                        //   //An totalBooksIssued: totalBooksIssued!,
+                        // ),
+                        const SizedBox(height:14),
+                        _buildFormLogsSection(isMobile),
+                        if (_isInitialSyncing) _buildSyncOverlay(),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          if (_isInitialSyncing)
+            Positioned.fill( // NEW — wraps the overlay too
+              child: _buildSyncOverlay(),
+            ),
+        ],
       ),
     );
   }
@@ -997,6 +1158,8 @@ class _DashBoardState extends State<DashBoard>
     );
   }
 
+
+
   Widget _buildFormLogsSection(bool isMobile) {
     return Card(
       elevation: 3,
@@ -1104,6 +1267,42 @@ class _DashBoardState extends State<DashBoard>
       ),
     );
   }
+
+  Widget _buildSyncOverlay() {
+    return Container(
+      color: Colors.black.withOpacity(0.6),
+      width: double.infinity,
+      height: double.infinity,
+      child: Center(
+        child: Card(
+          margin: const EdgeInsets.symmetric(horizontal: 40),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          child: const Padding(
+            padding: EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SyncSpinnerIcon(), // NEW — animated icon, defined below
+                SizedBox(height: 16),
+                Text(
+                  "Preparing your offline library...",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  "Downloading students, books, and records for offline use.",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
 }
 
 class ActivityItem {
