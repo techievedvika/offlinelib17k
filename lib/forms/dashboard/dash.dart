@@ -1,3 +1,4 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -84,7 +85,14 @@ class _DashBoardState extends State<DashBoard>
     super.dispose();
   }
 
+
   Future<void> getAppVersion() async {
+    final connectivityResult = await Connectivity().checkConnectivity();
+    final online = connectivityResult.isNotEmpty && !connectivityResult.contains(ConnectivityResult.none);
+    if (!online) {
+      return;
+    }
+
     //PackageInfo packageInfo = await PackageInfo.fromPlatform();
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
@@ -92,6 +100,10 @@ class _DashBoardState extends State<DashBoard>
     final currentVersion = prefs.getString('currentVersion');
 
     final libVersion = await context.read<DashCubit>().fetchLibVersion();
+
+    if (libVersion == null) {
+      return;
+    }
 
     if(libVersion != currentVersion){
       await showDialog(
@@ -1231,7 +1243,7 @@ class _DashBoardState extends State<DashBoard>
                           mainAxisAlignment: MainAxisAlignment.start,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text("Date: ${log['created_at'] ?? 'N/A'}"),
+                            Text("Date: ${log['date'] ?? 'N/A'}"),
                             // const SizedBox(height: 4),
                             // Text("Participants : ${log['participants_number'] ?? 'N/A'}"),
                             // const SizedBox(height: 4),

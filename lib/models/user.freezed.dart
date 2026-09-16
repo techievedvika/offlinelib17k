@@ -41,6 +41,8 @@ mixin _$User {
   String get role => throw _privateConstructorUsedError;
   @JsonKey(name: 'rights')
   String get rights => throw _privateConstructorUsedError;
+  @JsonKey(name: 'school_code_new')
+  String? get schoolCodeNew => throw _privateConstructorUsedError;
 
   /// Serializes this User to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -66,7 +68,8 @@ abstract class $UserCopyWith<$Res> {
       @JsonKey(name: 'school') String school,
       @JsonKey(name: 'full_name') String fullName,
       @JsonKey(name: 'role') String role,
-      @JsonKey(name: 'rights') String rights});
+      @JsonKey(name: 'rights') String rights,
+      @JsonKey(name: 'school_code_new') String? schoolCodeNew});
 }
 
 /// @nodoc
@@ -94,6 +97,7 @@ class _$UserCopyWithImpl<$Res, $Val extends User>
     Object? fullName = null,
     Object? role = null,
     Object? rights = null,
+    Object? schoolCodeNew = freezed,
   }) {
     return _then(_value.copyWith(
       username: null == username
@@ -136,6 +140,10 @@ class _$UserCopyWithImpl<$Res, $Val extends User>
           ? _value.rights
           : rights // ignore: cast_nullable_to_non_nullable
               as String,
+      schoolCodeNew: freezed == schoolCodeNew
+          ? _value.schoolCodeNew
+          : schoolCodeNew // ignore: cast_nullable_to_non_nullable
+              as String?,
     ) as $Val);
   }
 }
@@ -157,7 +165,8 @@ abstract class _$$UserImplCopyWith<$Res> implements $UserCopyWith<$Res> {
       @JsonKey(name: 'school') String school,
       @JsonKey(name: 'full_name') String fullName,
       @JsonKey(name: 'role') String role,
-      @JsonKey(name: 'rights') String rights});
+      @JsonKey(name: 'rights') String rights,
+      @JsonKey(name: 'school_code_new') String? schoolCodeNew});
 }
 
 /// @nodoc
@@ -182,6 +191,7 @@ class __$$UserImplCopyWithImpl<$Res>
     Object? fullName = null,
     Object? role = null,
     Object? rights = null,
+    Object? schoolCodeNew = freezed,
   }) {
     return _then(_$UserImpl(
       username: null == username
@@ -224,6 +234,10 @@ class __$$UserImplCopyWithImpl<$Res>
           ? _value.rights
           : rights // ignore: cast_nullable_to_non_nullable
               as String,
+      schoolCodeNew: freezed == schoolCodeNew
+          ? _value.schoolCodeNew
+          : schoolCodeNew // ignore: cast_nullable_to_non_nullable
+              as String?,
     ));
   }
 }
@@ -241,7 +255,8 @@ class _$UserImpl implements _User {
       @JsonKey(name: 'school') required this.school,
       @JsonKey(name: 'full_name') required this.fullName,
       @JsonKey(name: 'role') required this.role,
-      @JsonKey(name: 'rights') required this.rights});
+      @JsonKey(name: 'rights') required this.rights,
+      @JsonKey(name: 'school_code_new') this.schoolCodeNew});
 
   factory _$UserImpl.fromJson(Map<String, dynamic> json) =>
       _$$UserImplFromJson(json);
@@ -277,10 +292,13 @@ class _$UserImpl implements _User {
   @override
   @JsonKey(name: 'rights')
   final String rights;
+  @override
+  @JsonKey(name: 'school_code_new')
+  final String? schoolCodeNew;
 
   @override
   String toString() {
-    return 'User(username: $username, state: $state, district: $district, location: $location, id: $id, block: $block, school: $school, fullName: $fullName, role: $role, rights: $rights)';
+    return 'User(username: $username, state: $state, district: $district, location: $location, id: $id, block: $block, school: $school, fullName: $fullName, role: $role, rights: $rights, schoolCodeNew: $schoolCodeNew)';
   }
 
   @override
@@ -301,13 +319,15 @@ class _$UserImpl implements _User {
             (identical(other.fullName, fullName) ||
                 other.fullName == fullName) &&
             (identical(other.role, role) || other.role == role) &&
-            (identical(other.rights, rights) || other.rights == rights));
+            (identical(other.rights, rights) || other.rights == rights) &&
+            (identical(other.schoolCodeNew, schoolCodeNew) ||
+                other.schoolCodeNew == schoolCodeNew));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(runtimeType, username, state, district,
-      location, id, block, school, fullName, role, rights);
+      location, id, block, school, fullName, role, rights, schoolCodeNew);
 
   /// Create a copy of User
   /// with the given fields replaced by the non-null parameter values.
@@ -327,16 +347,18 @@ class _$UserImpl implements _User {
 
 abstract class _User implements User {
   factory _User(
-      {@JsonKey(name: 'username') required final String username,
-      @JsonKey(name: 'state') required final String state,
-      @JsonKey(name: 'district') required final String district,
-      @JsonKey(name: 'location') required final String location,
-      @JsonKey(name: 'id') required final int id,
-      @JsonKey(name: 'block') required final String block,
-      @JsonKey(name: 'school') required final String school,
-      @JsonKey(name: 'full_name') required final String fullName,
-      @JsonKey(name: 'role') required final String role,
-      @JsonKey(name: 'rights') required final String rights}) = _$UserImpl;
+          {@JsonKey(name: 'username') required final String username,
+          @JsonKey(name: 'state') required final String state,
+          @JsonKey(name: 'district') required final String district,
+          @JsonKey(name: 'location') required final String location,
+          @JsonKey(name: 'id') required final int id,
+          @JsonKey(name: 'block') required final String block,
+          @JsonKey(name: 'school') required final String school,
+          @JsonKey(name: 'full_name') required final String fullName,
+          @JsonKey(name: 'role') required final String role,
+          @JsonKey(name: 'rights') required final String rights,
+          @JsonKey(name: 'school_code_new') final String? schoolCodeNew}) =
+      _$UserImpl;
 
   factory _User.fromJson(Map<String, dynamic> json) = _$UserImpl.fromJson;
 
@@ -370,6 +392,9 @@ abstract class _User implements User {
   @override
   @JsonKey(name: 'rights')
   String get rights;
+  @override
+  @JsonKey(name: 'school_code_new')
+  String? get schoolCodeNew;
 
   /// Create a copy of User
   /// with the given fields replaced by the non-null parameter values.

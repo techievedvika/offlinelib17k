@@ -924,6 +924,7 @@ class _LibActivityFormState extends State<LibActivityForm> {
             CustomTextFormField(
               textController: _isbnController,
               hintText: "Fill ISBN Manually",
+               textInputType: TextInputType.number,
                validator: (value) => null,
               suffixIcon: IconButton(
                 onPressed: () async{

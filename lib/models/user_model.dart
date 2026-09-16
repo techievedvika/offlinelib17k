@@ -2,6 +2,7 @@
 
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'user.dart';
+import 'license.dart';
 
 part 'user_model.freezed.dart';
 part 'user_model.g.dart';
@@ -11,7 +12,9 @@ class UserModel with _$UserModel {
   factory UserModel({
     @JsonKey(name: 'message') required String message,
     @JsonKey(name: 'status') required int status,
+    @JsonKey(name: 'code') String? code,
     @JsonKey(name: 'user') User? user, // User is now optional (nullable)
+    @JsonKey(name: 'license') License? license,
   }) = _UserModel;
 
   factory UserModel.fromJson(Map<String, dynamic> json) =>

@@ -346,6 +346,7 @@ class _BookIssueState extends State<BookIssue> {
                     CustomTextFormField(
                       textController: isbnController,
                       hintText: "Enter ISBN Manually",
+                      textInputType: TextInputType.number,
                       readOnly: false,
                       validator: (value) => value == null || value.isEmpty ? 'Please scan a book ISBN.' : null,
                       suffixIcon: IconButton(
@@ -551,6 +552,7 @@ class _BookIssueState extends State<BookIssue> {
     if (mounted) {
       final bookReturnPayload = {
         'student_id': userIdValue,
+        'lib_id': libIdValue, // Fixed: added missing lib_id
         'isbn': isbnValue,
         'created_by': userId,
         'title': bookTitleController.text,

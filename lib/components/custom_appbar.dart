@@ -103,6 +103,16 @@ class CustomAppbar extends StatelessWidget implements PreferredSizeWidget {
 
 Future<void> _logout(BuildContext context) async {
   final prefs = await SharedPreferences.getInstance();
-  await prefs.clear(); // Clear all saved preferences, including login state
+  // Remove only user-specific data
+  await prefs.remove('isLoggedIn');
+  await prefs.remove('userId');
+  await prefs.remove('username');
+  await prefs.remove('role');
+  await prefs.remove('rights');
+  await prefs.remove('location');
+  await prefs.remove('school');
+  await prefs.remove('schoolCodeNew');
+  await prefs.remove('initialSyncDone');
+  
   Navigator.pushReplacementNamed(context, RoutesName.loginScreen);
 }

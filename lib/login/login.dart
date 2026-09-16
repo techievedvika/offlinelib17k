@@ -7,8 +7,10 @@ import 'package:lib17000ft/configs/color/color.dart';
 import 'package:lib17000ft/configs/routes/routes_name.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../configs/helper/responsive_helper.dart';
+import '../core/device_id_helper.dart';
 import 'bloc/login_cubit.dart';
 import 'bloc/login_state.dart';
+import '../models/license.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -163,22 +165,51 @@ class _LoginScreenState extends State<LoginScreen> {
                           const Center(child: CircularProgressIndicator(color: AppColors.primary,)),
                         if (state is LoginFailure)
                           Center(
-                            child: Text(
-                              state.message,
-                              style: const TextStyle(
-                                  color: Colors.red,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold),
+                            child: Column(
+                              children: [
+                                Text(
+                                  state.message,
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(
+                                      color: Colors.red,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                // if (state.code == 'DEVICE_LIMIT_REACHED' && state.license != null)
+                                //   Text(
+                                //     "Max Devices: ${state.license?.maxDevices}, Registered: ${state.license?.registeredDevices}",
+                                //     style: const TextStyle(color: Colors.red, fontSize: 14),
+                                //   ),
+                                // if (state.code == 'LICENSE_EXPIRED' && state.license != null)
+                                //   Text(
+                                //     "Expired on: ${state.license?.validUntil}",
+                                //     style: const TextStyle(color: Colors.red, fontSize: 14),
+                                //   ),
+                                // if (state.code == 'LICENSE_REQUIRED')
+                                //   const Text(
+                                //     "Please contact administrator for license activation.",
+                                //     style: TextStyle(color: Colors.red, fontSize: 14),
+                                //   ),
+                                // if (state.code == 'DEVICE_INACTIVE')
+                                //   const Text(
+                                //     "This device is deactivated. Contact administrator.",
+                                //     style: TextStyle(color: Colors.red, fontSize: 14),
+                                //   ),
+                              ],
                             ),
                           ),
                         if (state is! LoginLoading)
                           CustomButton(
                             title: 'Login',
-                            onPressedButton: () {
+                            onPressedButton: () async {
                               if (loginFormKey.currentState!.validate()) {
+                                final deviceUuid = await DeviceIdHelper.getDeviceUuid();
+                                final deviceName = await DeviceIdHelper.getDeviceName();
                                 loginCubit.login(
                                   loginCubit.username,
                                   loginCubit.password,
+                                  deviceUuid,
+                                  deviceName,
                                 );
                               }
                             },
@@ -187,13 +218,30 @@ class _LoginScreenState extends State<LoginScreen> {
                           height: responsive.responsiveValue(
                               small: 10.0, medium: 20.0, large: 30.0),
                         ),
-                        // const Divider(),
-                        // TextButton(
-                        //   child: const Text("Forgot Password"),
-                        //   onPressed: (){
-                        //
-                        //   },
-                        // ),
+                        Center(
+                          child: TextButton(
+                            onPressed: () async {
+                              final prefs = await SharedPreferences.getInstance();
+                              await prefs.remove('licenseActivated');
+                              await prefs.remove('licenseKey');
+                              await prefs.remove('licenseSchoolUdise');
+                              await prefs.remove('licenseValidUntil');
+                              await prefs.remove('licenseMaxDevices');
+                              await prefs.remove('licenseRegisteredDevices');
+                              if (context.mounted) {
+                                Navigator.pushNamed(context, RoutesName.licenseActivationScreen);
+                              }
+                            },
+                            child: const Text(
+                              "Activate License",
+                              style: TextStyle(
+                                color: AppColors.secondary,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   );
@@ -209,6 +257,6 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _saveLoginState() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('isLoggedIn', true);
-
+    await prefs.setBool('initialSyncDone', false); // Mark that initial sync is needed
   }
 }

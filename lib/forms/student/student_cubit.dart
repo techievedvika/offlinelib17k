@@ -121,7 +121,7 @@ class StudentCubit extends Cubit<StudentState> {
     try {
       final online = await _isOnline();
       if (!online) {
-        final students = await _studentRepository.getStudentsOffline(school); // pass through as-is, null is fine now
+        final students = await _studentRepository.getStudentsOffline(school, adminId.toString()); // pass through as-is, null is fine now
         emit(StudentListSuccess(studentList: students, message: 'Loaded from offline cache'));
         _hasMoreData = false;
         return;

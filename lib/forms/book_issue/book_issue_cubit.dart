@@ -110,10 +110,10 @@ class BookIssueCubit extends Cubit<BookIssueState> {
         // NEW — offline path expects a Map, not multipart form data
         final data = bookIssueReturn as Map<String, dynamic>;
         value = await _bookIssueRepository.bookIssueReturnOffline(
-          isbn: data['isbn'].toString(),
-          title: data['title'].toString(),
-          rollno: data['student_id'].toString(),
-          studentLibId: data['lib_id'].toString(),
+          isbn: data['isbn']?.toString() ?? '',
+          title: data['title']?.toString() ?? '',
+          rollno: data['student_id']?.toString() ?? '',
+          studentLibId: data['lib_id']?.toString() ?? '',
           status: status,
           createdBy: int.tryParse(data['created_by']?.toString() ?? '') ?? 0,
           level: data['level']?.toString(),
@@ -212,7 +212,7 @@ class BookIssueCubit extends Cubit<BookIssueState> {
         }
       }
 
-      final offlineData = await _bookIssueRepository.getBookReturnOffline(from:from , to: to);
+      final offlineData = await _bookIssueRepository.getBookReturnOffline(adminId: adminId.toString(), from: from, to: to);
       final bookReturn = offlineData.map((s) => BookReturnModel.fromJson(s)).toList();
       emit(BookReturnListSuccess(bookReturnedList: bookReturn, message: 'Loaded from offline cache'));
       _hasMoreDataReturned = false;
@@ -251,7 +251,7 @@ class BookIssueCubit extends Cubit<BookIssueState> {
         }
       }
 
-      final offlineData = await _bookIssueRepository.getIssuedBookOffline(from:from , to: to);
+      final offlineData = await _bookIssueRepository.getIssuedBookOffline(adminId: adminId.toString(), from: from, to: to);
       final bookIssued = offlineData.map((s) => BookIssueModel.fromJson(s)).toList();
       emit(BookIssuedListSuccess(bookIssuedList: bookIssued, message: 'Loaded from offline cache'));
       _hasMoreDataIssued = false;

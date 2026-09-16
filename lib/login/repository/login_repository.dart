@@ -20,19 +20,22 @@ class LoginRepository {
     //print('Response from login API: $response $data');
 
     try {
-      if (response['status'] == 0 || response['user'] == null) {
-        // Handle the case where credentials are invalid or user is not found
-        return UserModel(
-            message: response['message'],
-            status: response['status'],
-            user: response['user']
-        );
+      // Sanitize response: PHP returns user="" when not found, but we expect null or a Map
+      if (response['user'] == "") {
+        response['user'] = null;
+      }
+      if (response['license'] == "") {
+        response['license'] = null;
+      }
+
+      UserModel userModel = UserModel.fromJson(response);
+
+      if (userModel.status == 0) {
+        return userModel;
       }
 
       // Deserialize JSON to UserModel
-      if (response['user'] != null) {
-        UserModel userModel = UserModel.fromJson(response);
-
+      if (userModel.user != null) {
         // Store the user ID in SharedPreferences
 
         PackageInfo packageInfo = await PackageInfo.fromPlatform();
@@ -51,20 +54,23 @@ class LoginRepository {
         await prefs.setString('role', userModel.user!.role.toString());
         await prefs.setString('rights', userModel.user!.rights.toString());
 
-        final schoolCodeNew = response['user']['school_code_new']?.toString();
-        if (schoolCodeNew != null && schoolCodeNew.isNotEmpty && schoolCodeNew != 'null') {
-          await prefs.setString('schoolCodeNew', schoolCodeNew);
+        if (userModel.user!.schoolCodeNew != null) {
+          await prefs.setString('schoolCodeNew', userModel.user!.schoolCodeNew!);
+        }
+
+        // Store License info
+        if (userModel.license != null) {
+          await prefs.setBool('licenseActivated', true);
+          await prefs.setString('licenseKey', userModel.license!.licenseKey ?? '');
+          await prefs.setString('licenseSchoolUdise', userModel.license!.schoolUdise ?? '');
+          await prefs.setString('licenseValidUntil', userModel.license!.validUntil ?? '');
+          await prefs.setInt('licenseMaxDevices', userModel.license!.maxDevices ?? 0);
+          await prefs.setInt('licenseRegisteredDevices', userModel.license!.registeredDevices ?? 0);
         }
 
 
-        // NEW — kick off the scoped bulk pull for offline use.
-        // Fire-and-forget so login isn't blocked waiting on the full pull;
-        // SyncBannerWidget shows progress once home screen loads.
-        getIt<SyncEngine>().runInitialSync(
-          createdBy: userModel.user!.id.toString(),
-          school: userModel.user!.school.toString(),
-          role: userModel.user!.role.toString(),
-        ).catchError((e) => print('Initial sync failed (expected until backend endpoint exists): $e'));
+        // Note: runInitialSync is now handled in DashBoard with a flag check 
+        // to ensure it only runs on fresh login, not every app open.
 
 
         return userModel;

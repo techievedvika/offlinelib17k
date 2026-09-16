@@ -196,7 +196,7 @@ class BookIssueRepository {
   }
 
   // NEW — "All Issued Books": every issue event ever (open or already returned)
-  Future<List<Map<String, dynamic>>> getIssuedBookOffline({String? from, String? to}) async {
+  Future<List<Map<String, dynamic>>> getIssuedBookOffline({String? adminId, String? from, String? to}) async {
 
     final now = DateTime.now();
     final rangeStart = DateTime.tryParse(from ?? '') ?? DateTime(now.year, 1, 1);
@@ -204,7 +204,10 @@ class BookIssueRepository {
 
     // final allIssues = await _db.select(_db.bookIssues).get();
     final allIssues = await (_db.select(_db.bookIssues)
-      ..where((t) => t.createdAt.isBiggerOrEqualValue(rangeStart) & t.createdAt.isSmallerOrEqualValue(rangeEnd)))
+      ..where((t) =>
+      t.createdAt.isBiggerOrEqualValue(rangeStart) &
+      t.createdAt.isSmallerOrEqualValue(rangeEnd) &
+      (adminId != null ? t.createdBy.equals(int.tryParse(adminId) ?? 0) : const Constant(true))))
         .get();
     final students = await _db.select(_db.students).get();
     final books = await _db.select(_db.books).get();
@@ -248,13 +251,15 @@ class BookIssueRepository {
   }
 
 // NEW — "All Pending Returns": only currently OPEN loans (uniqid-aware, matches the fix from before)
-  Future<List<Map<String, dynamic>>> getBookReturnOffline({String? from, String? to}) async {
+  Future<List<Map<String, dynamic>>> getBookReturnOffline({String? adminId, String? from, String? to}) async {
 
     // final now = DateTime.now();
     // final rangeStart = DateTime.tryParse(from ?? '') ?? DateTime(now.year, 1, 1);
     // final rangeEnd = DateTime.tryParse(to ?? '') ?? now;
 
-    final allIssues = await _db.select(_db.bookIssues).get();
+    final allIssues = await (_db.select(_db.bookIssues)
+      ..where((t) => adminId != null ? t.createdBy.equals(int.tryParse(adminId) ?? 0) : const Constant(true)))
+        .get();
     // final allIssues = await (_db.select(_db.bookIssues)
     //   ..where((t) => t.createdAt.isBiggerOrEqualValue(rangeStart) & t.createdAt.isSmallerOrEqualValue(rangeEnd)))
     //     .get();
@@ -360,11 +365,13 @@ class BookIssueRepository {
     String? localCoverPagePath,
   }) async {
     final now = DateTime.now();
+    final cleanIsbn = isbn.trim();
+    final cleanLibId = studentLibId.trim();
 
-    final existingBook = await (_db.select(_db.books)..where((t) => t.isbn.equals(isbn))).getSingleOrNull();
+    final existingBook = await (_db.select(_db.books)..where((t) => t.isbn.equals(cleanIsbn))).getSingleOrNull();
     if (existingBook == null) {
       await _db.into(_db.books).insertOnConflictUpdate(BooksCompanion.insert(
-        isbn: isbn,
+        isbn: cleanIsbn,
         title: title,
         publisher: const Value('Unknown'),
         author: const Value('Unknown'),
@@ -389,33 +396,22 @@ class BookIssueRepository {
       if (localCoverPagePath != null) {
         await _db.into(_db.pendingUploads).insert(PendingUploadsCompanion.insert(
           entityType: 'book',
-          entityKey: isbn,
+          entityKey: cleanIsbn,
           fieldName: 'cover_page',
           localFilePath: localCoverPagePath,
         ));
       }
     }
 
-    // final openLoan = await _findOpenLoan(isbn, rollno);
-    final openLoan = await _findOpenLoan(isbn, studentLibId);
+    final openLoan = await _findOpenLoan(cleanIsbn, cleanLibId);
 
     if (status == 'Returned') {
       if (openLoan == null) {
         return {"error": 1, "message": "No Issued Book Found"};
       }
-      // await _insertIssueRow(
-      //   uniqid: openLoan.uniqid,
-      //   isbn: isbn,
-      //   title: title,
-      //   rollno: rollno,
-      //   grade: openLoan.studentGrade,
-      //   status: 'Returned',
-      //   createdBy: createdBy,
-      //   now: now,
-      // );
       await _insertIssueRow(
-        uniqid: openLoan.uniqid, isbn: isbn, title: title,
-        studentLibId: studentLibId, studentRollno: openLoan.studentRollno,
+        uniqid: openLoan.uniqid, isbn: cleanIsbn, title: title,
+        studentLibId: cleanLibId, studentRollno: openLoan.studentRollno,
         grade: openLoan.studentGrade, status: 'Returned', createdBy: createdBy, now: now,
       );
       return {"error": 0, "message": "Success"};
@@ -423,24 +419,14 @@ class BookIssueRepository {
       if (openLoan != null) {
         return {"error": 1, "message": "Book Already Issued"};
       }
-      final student = await (_db.select(_db.students)..where((t) => t.rollno.equals(rollno))).getSingleOrNull();
+      final student = await (_db.select(_db.students)..where((t) => t.libId.equals(cleanLibId))).getSingleOrNull();
       if (student == null) {
         return {"error": 1, "message": "Student not found"};
       }
       final uniqid = const Uuid().v4();
-      // await _insertIssueRow(
-      //   uniqid: uniqid,
-      //   isbn: isbn,
-      //   title: title,
-      //   rollno: rollno,
-      //   grade: student.studentClass,
-      //   status: 'Issued',
-      //   createdBy: createdBy,
-      //   now: now,
-      // );
       await _insertIssueRow(
-        uniqid: uniqid, isbn: isbn, title: title,
-        studentLibId: studentLibId, studentRollno: student.rollno,
+        uniqid: uniqid, isbn: cleanIsbn, title: title,
+        studentLibId: cleanLibId, studentRollno: student.rollno,
         grade: student.studentClass, status: 'Issued', createdBy: createdBy, now: now,
       );
       return {"error": 0, "message": "Success"};
@@ -464,22 +450,26 @@ class BookIssueRepository {
     );
   }
 
-  Future<BookIssue?> _findOpenLoan(String isbn, String rollno) async {
-    final returnedUniqids = await (_db.selectOnly(_db.bookIssues)
+  Future<BookIssue?> _findOpenLoan(String isbn, String studentLibId) async {
+    final returnedRows = await (_db.selectOnly(_db.bookIssues)
       ..addColumns([_db.bookIssues.uniqid])
-      ..where(_db.bookIssues.status.equals('Returned')))
-        .map((row) => row.read(_db.bookIssues.uniqid)!)
+      ..where(_db.bookIssues.status.equals('Returned') &
+             _db.bookIssues.bookIsbn.equals(isbn) &
+             _db.bookIssues.studentLibId.equals(studentLibId)))
+        .map((row) => row.read(_db.bookIssues.uniqid))
         .get();
+
+    final returnedUniqids = returnedRows.whereType<String>().toList();
 
     final query = _db.select(_db.bookIssues)
       ..where((t) =>
       t.bookIsbn.equals(isbn) &
-      t.studentRollno.equals(rollno) &
+      t.studentLibId.equals(studentLibId) &
       t.status.equals('Issued') &
-      t.uniqid.isNotIn(returnedUniqids))
+      (returnedUniqids.isEmpty ? const Constant(true) : t.uniqid.isNotIn(returnedUniqids)))
       ..orderBy([(t) => OrderingTerm.asc(t.createdAt)]);
 
-    return query.getSingleOrNull();
+    return query.get().then((rows) => rows.isNotEmpty ? rows.first : null);
   }
 
   // Future<void> _insertIssueRow({
@@ -546,10 +536,18 @@ class BookIssueRepository {
       entityKey: '$uniqid-$status',
       operation: 'create',
       payloadJson: jsonEncode({
-        'uniqid': uniqid, 'isbn': isbn, 'title': title,
-        'lib_id': studentLibId, // CHANGED — was 'student_id': rollno
-        'student_grade': grade, 'status': status, 'created_by': createdBy,
-        'created_at': now.toIso8601String(), 'updated_at': now.toIso8601String(),
+        'uniqid': uniqid,
+        'uuid': uniqid,
+        'book_id': isbn,
+        'book_name': title,
+        'student_id': studentRollno,
+        'lib_id': studentLibId,
+        'student_grade': grade,
+        'status': status,
+        'created_by': createdBy,
+        'created_at': now.toIso8601String(),
+        'updated_at': now.toIso8601String(),
+        'submitted_at': status == 'Returned' ? now.toIso8601String() : null,
       }),
       createdAt: now,
     ));

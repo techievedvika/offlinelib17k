@@ -5,6 +5,7 @@ import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
 
+import '../../components/custom_appbar.dart';
 import '../../components/custom_button.dart';
 import '../../components/custom_image_picker.dart';
 import '../../components/custom_labeltext.dart';
@@ -140,8 +141,12 @@ class _AddBookScreenState extends State<AddBookScreen> {
     final size = MediaQuery.sizeOf(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Add Book"),
+      // appBar: AppBar(
+      //   title: const Text("Add Book"),
+      // ),
+      appBar: const CustomAppbar(
+        title: "Add Book",
+        backbutton: true,
       ),
 
       body: SingleChildScrollView(

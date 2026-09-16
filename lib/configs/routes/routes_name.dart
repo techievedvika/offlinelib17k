@@ -18,4 +18,6 @@ class RoutesName {
   static const String libActivityList = '/lib_activity_list';
   static const String bookAdd = '/bookAdd';
   static const String offlineTest = '/offlineTest';
+  // routes_name.dart
+  static const String licenseActivationScreen = '/license-activation';
 }

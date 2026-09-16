@@ -151,7 +151,17 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _logout() async {
     final prefs = await SharedPreferences.getInstance();
+    // Remove only user-specific data
     await prefs.remove('isLoggedIn');
+    await prefs.remove('userId');
+    await prefs.remove('username');
+    await prefs.remove('role');
+    await prefs.remove('rights');
+    await prefs.remove('location');
+    await prefs.remove('school');
+    await prefs.remove('schoolCodeNew');
+    await prefs.remove('initialSyncDone');
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Navigator.pushReplacementNamed(context, RoutesName.loginScreen);
     });

@@ -278,6 +278,7 @@ class _BookReturnState extends State<BookReturn> {
         'author': offlineData['author']!,
         'isbn': offlineData['isbn']!,
         'publisher': offlineData['publisher']!,
+        'language': offlineData['language']!,
         'cover_page': offlineData['cover_page']!,
       };
     }
@@ -437,6 +438,7 @@ class _BookReturnState extends State<BookReturn> {
                       textController: isbnController,
                       hintText: "Enter ISBN Manually",
                       readOnly: false,
+                      textInputType: TextInputType.number,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Please scan a book ISBN.';

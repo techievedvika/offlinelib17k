@@ -152,6 +152,7 @@ class SyncEngine {
       switch (entity) {
         case 'student':
           await db.into(db.students).insertOnConflictUpdate(StudentsCompanion.insert(
+            id: Value(_asInt(item['id'])),
             uuid: item['uuid'] ?? '',
             libId: item['lib_id'] ?? '', // NEW
             apaarId: Value(item['apaarId']),
@@ -171,6 +172,7 @@ class SyncEngine {
           break;
         case 'book':
           await db.into(db.books).insertOnConflictUpdate(BooksCompanion.insert(
+            id: Value(_asInt(item['id'])),
             isbn: item['isbn'] ?? '',
             title: item['title'] ?? '',
             publisher: Value(item['publisher']),
@@ -187,6 +189,7 @@ class SyncEngine {
         case 'issue':
           await db.into(db.bookIssues).insert(
             BookIssuesCompanion.insert(
+              id: Value(_asInt(item['id'])),
               uniqid: item['uniqid'] ?? '',
               uuid: item['uuid'] ?? item['uniqid'] ?? '',
               bookIsbn: item['book_id'] ?? '',
@@ -203,11 +206,13 @@ class SyncEngine {
             ),
             onConflict: DoUpdate(
                   (old) => BookIssuesCompanion.custom(
+                id: Constant(_asInt(item['id'])),
                 uniqid: Constant(item['uniqid'] ?? ''),
                 uuid: Constant(item['uuid'] ?? item['uniqid'] ?? ''),
                 bookIsbn: Constant(item['book_id'] ?? ''),
                 bookName: Constant(item['book_name'] ?? ''),
                 studentRollno: Constant(item['student_id'] ?? ''),
+                studentLibId: Constant(item['lib_id'] ?? ''),
                 studentGrade: Constant(item['student_grade'] ?? ''),
                 status: Constant(item['status'] ?? 'Issued'),
                 createdAt: Constant(DateTime.tryParse(item['created_at'] ?? '') ?? DateTime.now()),
@@ -222,6 +227,7 @@ class SyncEngine {
           break;
         case 'activity_log':
           await db.into(db.activityLogs).insertOnConflictUpdate(ActivityLogsCompanion.insert(
+            id: Value(_asInt(item['id'])),
             localId: item['id']?.toString() ?? DateTime.now().microsecondsSinceEpoch.toString(),
             date: DateTime.tryParse(item['date'] ?? '') ?? DateTime.now(),
             activityName: item['activity_name'] ?? '',

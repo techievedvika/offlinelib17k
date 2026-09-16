@@ -457,7 +457,19 @@ class _CustomDrawerState extends State<CustomDrawer> {
 
   Future<void> _logout() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.clear();
+    // await prefs.clear(); // Removed as it cleared license info
+    
+    // Remove only user-specific data
+    await prefs.remove('isLoggedIn');
+    await prefs.remove('userId');
+    await prefs.remove('username');
+    await prefs.remove('role');
+    await prefs.remove('rights');
+    await prefs.remove('location');
+    await prefs.remove('school');
+    await prefs.remove('schoolCodeNew');
+    await prefs.remove('initialSyncDone');
+    
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Navigator.pushNamedAndRemoveUntil(
         context, 

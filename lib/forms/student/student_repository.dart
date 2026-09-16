@@ -783,10 +783,13 @@ class StudentRepository {
     return {"error": 0, "message": "Student saved offline, will sync when online"};
   }
 
-  Future<List<StudentModel>> getStudentsOffline([String? school]) async {
+  Future<List<StudentModel>> getStudentsOffline([String? school, String? adminId]) async {
     final query = _db.select(_db.students)..where((t) => t.status.equals('1'));
     if (school != null && school.trim().isNotEmpty) {
       query.where((t) => t.school.equals(school));
+    }
+    if (adminId != null && adminId.trim().isNotEmpty) {
+      query.where((t) => t.createdBy.equals(int.tryParse(adminId) ?? 0));
     }
     final rows = await query.get();
     return rows.map((r) => StudentModel(

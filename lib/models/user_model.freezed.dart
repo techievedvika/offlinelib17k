@@ -24,8 +24,13 @@ mixin _$UserModel {
   String get message => throw _privateConstructorUsedError;
   @JsonKey(name: 'status')
   int get status => throw _privateConstructorUsedError;
+  @JsonKey(name: 'code')
+  String? get code => throw _privateConstructorUsedError;
   @JsonKey(name: 'user')
-  User? get user => throw _privateConstructorUsedError;
+  User? get user =>
+      throw _privateConstructorUsedError; // User is now optional (nullable)
+  @JsonKey(name: 'license')
+  License? get license => throw _privateConstructorUsedError;
 
   /// Serializes this UserModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -45,9 +50,12 @@ abstract class $UserModelCopyWith<$Res> {
   $Res call(
       {@JsonKey(name: 'message') String message,
       @JsonKey(name: 'status') int status,
-      @JsonKey(name: 'user') User? user});
+      @JsonKey(name: 'code') String? code,
+      @JsonKey(name: 'user') User? user,
+      @JsonKey(name: 'license') License? license});
 
   $UserCopyWith<$Res>? get user;
+  $LicenseCopyWith<$Res>? get license;
 }
 
 /// @nodoc
@@ -67,7 +75,9 @@ class _$UserModelCopyWithImpl<$Res, $Val extends UserModel>
   $Res call({
     Object? message = null,
     Object? status = null,
+    Object? code = freezed,
     Object? user = freezed,
+    Object? license = freezed,
   }) {
     return _then(_value.copyWith(
       message: null == message
@@ -78,10 +88,18 @@ class _$UserModelCopyWithImpl<$Res, $Val extends UserModel>
           ? _value.status
           : status // ignore: cast_nullable_to_non_nullable
               as int,
+      code: freezed == code
+          ? _value.code
+          : code // ignore: cast_nullable_to_non_nullable
+              as String?,
       user: freezed == user
           ? _value.user
           : user // ignore: cast_nullable_to_non_nullable
               as User?,
+      license: freezed == license
+          ? _value.license
+          : license // ignore: cast_nullable_to_non_nullable
+              as License?,
     ) as $Val);
   }
 
@@ -98,6 +116,20 @@ class _$UserModelCopyWithImpl<$Res, $Val extends UserModel>
       return _then(_value.copyWith(user: value) as $Val);
     });
   }
+
+  /// Create a copy of UserModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $LicenseCopyWith<$Res>? get license {
+    if (_value.license == null) {
+      return null;
+    }
+
+    return $LicenseCopyWith<$Res>(_value.license!, (value) {
+      return _then(_value.copyWith(license: value) as $Val);
+    });
+  }
 }
 
 /// @nodoc
@@ -111,10 +143,14 @@ abstract class _$$UserModelImplCopyWith<$Res>
   $Res call(
       {@JsonKey(name: 'message') String message,
       @JsonKey(name: 'status') int status,
-      @JsonKey(name: 'user') User? user});
+      @JsonKey(name: 'code') String? code,
+      @JsonKey(name: 'user') User? user,
+      @JsonKey(name: 'license') License? license});
 
   @override
   $UserCopyWith<$Res>? get user;
+  @override
+  $LicenseCopyWith<$Res>? get license;
 }
 
 /// @nodoc
@@ -132,7 +168,9 @@ class __$$UserModelImplCopyWithImpl<$Res>
   $Res call({
     Object? message = null,
     Object? status = null,
+    Object? code = freezed,
     Object? user = freezed,
+    Object? license = freezed,
   }) {
     return _then(_$UserModelImpl(
       message: null == message
@@ -143,10 +181,18 @@ class __$$UserModelImplCopyWithImpl<$Res>
           ? _value.status
           : status // ignore: cast_nullable_to_non_nullable
               as int,
+      code: freezed == code
+          ? _value.code
+          : code // ignore: cast_nullable_to_non_nullable
+              as String?,
       user: freezed == user
           ? _value.user
           : user // ignore: cast_nullable_to_non_nullable
               as User?,
+      license: freezed == license
+          ? _value.license
+          : license // ignore: cast_nullable_to_non_nullable
+              as License?,
     ));
   }
 }
@@ -157,7 +203,9 @@ class _$UserModelImpl implements _UserModel {
   _$UserModelImpl(
       {@JsonKey(name: 'message') required this.message,
       @JsonKey(name: 'status') required this.status,
-      @JsonKey(name: 'user') this.user});
+      @JsonKey(name: 'code') this.code,
+      @JsonKey(name: 'user') this.user,
+      @JsonKey(name: 'license') this.license});
 
   factory _$UserModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$UserModelImplFromJson(json);
@@ -169,12 +217,19 @@ class _$UserModelImpl implements _UserModel {
   @JsonKey(name: 'status')
   final int status;
   @override
+  @JsonKey(name: 'code')
+  final String? code;
+  @override
   @JsonKey(name: 'user')
   final User? user;
+// User is now optional (nullable)
+  @override
+  @JsonKey(name: 'license')
+  final License? license;
 
   @override
   String toString() {
-    return 'UserModel(message: $message, status: $status, user: $user)';
+    return 'UserModel(message: $message, status: $status, code: $code, user: $user, license: $license)';
   }
 
   @override
@@ -184,12 +239,15 @@ class _$UserModelImpl implements _UserModel {
             other is _$UserModelImpl &&
             (identical(other.message, message) || other.message == message) &&
             (identical(other.status, status) || other.status == status) &&
-            (identical(other.user, user) || other.user == user));
+            (identical(other.code, code) || other.code == code) &&
+            (identical(other.user, user) || other.user == user) &&
+            (identical(other.license, license) || other.license == license));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, message, status, user);
+  int get hashCode =>
+      Object.hash(runtimeType, message, status, code, user, license);
 
   /// Create a copy of UserModel
   /// with the given fields replaced by the non-null parameter values.
@@ -211,7 +269,9 @@ abstract class _UserModel implements UserModel {
   factory _UserModel(
       {@JsonKey(name: 'message') required final String message,
       @JsonKey(name: 'status') required final int status,
-      @JsonKey(name: 'user') final User? user}) = _$UserModelImpl;
+      @JsonKey(name: 'code') final String? code,
+      @JsonKey(name: 'user') final User? user,
+      @JsonKey(name: 'license') final License? license}) = _$UserModelImpl;
 
   factory _UserModel.fromJson(Map<String, dynamic> json) =
       _$UserModelImpl.fromJson;
@@ -223,8 +283,14 @@ abstract class _UserModel implements UserModel {
   @JsonKey(name: 'status')
   int get status;
   @override
+  @JsonKey(name: 'code')
+  String? get code;
+  @override
   @JsonKey(name: 'user')
-  User? get user;
+  User? get user; // User is now optional (nullable)
+  @override
+  @JsonKey(name: 'license')
+  License? get license;
 
   /// Create a copy of UserModel
   /// with the given fields replaced by the non-null parameter values.

@@ -261,12 +261,11 @@ class NetworkServicesApi implements BaseApiServices {
         return jsonResponse;
 
       case 400:
+      case 401:
+      case 403:
       case 404:
       case 409:
         return jsonResponse;
-
-      case 401:
-        throw UnauthorizedException(jsonResponse['message'] ?? "Unauthorized");
 
       case 500:
         throw PlatformException(jsonResponse['message'] ?? "Internal Server Error");

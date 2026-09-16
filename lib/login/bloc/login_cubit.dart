@@ -3,6 +3,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:lib17000ft/login/bloc/login_state.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../core/device_id_helper.dart';
 import '../repository/login_repository.dart';
 
 class LoginCubit extends Cubit<LoginState> {
@@ -46,21 +47,54 @@ Future<void> getToken() async {
 
   
 
-   void login(String username,String password ) async {
-   emit(LoginLoading());
+   void login(String username, String password, String deviceUuid, String deviceName) async {
+    emit(LoginLoading());
 
     try {
-      final value = await _loginRepository.loginApi({"username": username, "password": password});
-      if (value!.status == 0) {
-       emit(LoginFailure(value.message));
-      } else if(value.status == 1) {
-       emit(LoginSuccess(value.message));
+      final value = await _loginRepository.loginApi({
+        "username": username,
+        "password": password,
+        "device_uuid": deviceUuid,
+        "device_name": deviceName,
+      });
+
+      if (value != null) {
+        if (value.status == 1) {
+          // Success
+          userId = value.user?.id.toString();
+          emit(LoginSuccess(value.message));
+        } else {
+          // Handled failures from Laravel (status 0)
+          // Includes codes: LICENSE_REQUIRED, LICENSE_EXPIRED, DEVICE_INACTIVE, DEVICE_LIMIT_REACHED
+          emit(LoginFailure(
+            value.message,
+            code: value.code,
+            license: value.license,
+          ));
+        }
+      } else {
+        emit(LoginFailure('Invalid response from server'));
       }
     } catch (error) {
-      print('this is error $error');
-    emit(LoginFailure('Something went wrong'));
+      print('Login error: $error');
+      
+      String errorMessage = 'Something went wrong';
+      String? errorCode;
+      
+      if (error.toString().contains('No Internet Connection')) {
+        errorMessage = 'No Internet Connection. Please check your network.';
+        errorCode = 'NO_INTERNET';
+      } else if (error.toString().contains('Request Timed Out')) {
+        errorMessage = 'Request timed out. Please try again.';
+        errorCode = 'TIMEOUT';
+      } else {
+        errorMessage = error.toString().replaceFirst('Custom Error: ', '');
+      }
+      
+      emit(LoginFailure(errorMessage, code: errorCode));
     }
   }
+
 
   
 }

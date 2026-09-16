@@ -181,14 +181,18 @@ Future<DashModel?> fetchDashData(
   //   );
   // }
 
-  Future<DashModel> fetchDashDataOffline({String? from, String? to}) async {
+  Future<DashModel> fetchDashDataOffline({String? adminId, String? from, String? to}) async {
     final now = DateTime.now();
     final rangeStart = from != null ? DateTime.tryParse(from) ?? DateTime(now.year, 1, 1) : DateTime(now.year, 1, 1);
     final rangeEnd = to != null ? DateTime.tryParse(to) ?? now : now;
 
-    final students = await (_db.select(_db.students)..where((t) => t.status.equals('1'))).get();
+    final students = await (_db.select(_db.students)
+      ..where((t) => t.status.equals('1') & (adminId != null ? t.createdBy.equals(int.tryParse(adminId) ?? 0) : const Constant(true))))
+        .get();
     final books = await _db.select(_db.books).get();
-    final allIssuesAllTime = await _db.select(_db.bookIssues).get();
+    final allIssuesAllTime = await (_db.select(_db.bookIssues)
+      ..where((t) => adminId != null ? t.createdBy.equals(int.tryParse(adminId) ?? 0) : const Constant(true)))
+        .get();
 
     final issuedInRange = allIssuesAllTime.where((i) =>
     i.status == 'Issued' &&
@@ -303,7 +307,8 @@ Future<DashModel?> fetchDashData(
 
     return rows.map((r) => {
       'id': r.id ?? r.localId,
-      'date': r.date.toIso8601String(),
+      // 'date': r.date.toIso8601String(),
+      'date': r.date,
       'activity_name': r.activityName,
       'activity_description': r.activityDescription,
       'book_details': r.bookDetails,
