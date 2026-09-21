@@ -12,7 +12,7 @@ class ConductedByInput extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        LabelText(label: "Activity Conducted by"),
+        LabelText(label: "Activity Conducted by",astrick: true,),
         const SizedBox(height: 10),
         CustomTextFormField(
           hintText: 'Activity Conducted by',

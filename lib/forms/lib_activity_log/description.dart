@@ -12,7 +12,7 @@ class DescriptionInput extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        LabelText(label: "Activity Description"),
+        LabelText(label: "Activity Description",astrick: true,),
         const SizedBox(height: 10),
         CustomTextFormField(
           hintText: 'Activity Description',

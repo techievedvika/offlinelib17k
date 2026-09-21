@@ -16,7 +16,7 @@ class BookScannerSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        LabelText(label: "Activity Scan Book"),
+        LabelText(label: "Activity Scan Book",astrick: true,),
         const SizedBox(height: 10),
         CustomButton(
           title: 'Scan ISBN Barcode',

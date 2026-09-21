@@ -52,7 +52,7 @@ class TotalParticipantsInput extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        LabelText(label: "Activity Participants Breakdown"),
+        LabelText(label: "Activity Participants Breakdown",astrick: true,),
         const SizedBox(height: 10),
         Table(
           border: TableBorder.all(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(4)),

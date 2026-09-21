@@ -220,7 +220,7 @@ class _UploadActivityImgState extends State<UploadActivityImg> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        LabelText(label: "Activity Photos"),
+        LabelText(label: "Activity Photos",astrick: true,),
         const SizedBox(height: 10),
         Container(
           width: double.infinity,

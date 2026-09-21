@@ -206,7 +206,7 @@ class _AddBookScreenState extends State<AddBookScreen> {
               ),
               // if(isbnController.text.isEmpty)
               // SizedBox(height: size.height* 0.03,child:  LabelText(label: 'OR')),
-              LabelText(label: 'ISBN'),
+              LabelText(label: 'ISBN',astrick: true,),
               const SizedBox(height: 10),
               CustomTextFormField(
                 textController: isbnController,
@@ -227,7 +227,7 @@ class _AddBookScreenState extends State<AddBookScreen> {
 
               const SizedBox(height: 10),
 
-              LabelText(label: 'Title'),
+              LabelText(label: 'Title',astrick: true,),
               const SizedBox(height: 10),
               CustomTextFormField(
                 textController: titleController,
@@ -238,7 +238,7 @@ class _AddBookScreenState extends State<AddBookScreen> {
 
               const SizedBox(height: 10),
 
-              LabelText(label: 'Publisher'),
+              LabelText(label: 'Publisher',astrick: true,),
               const SizedBox(height: 10),
               CustomTextFormField(
                 textController: publisherController,
@@ -249,7 +249,7 @@ class _AddBookScreenState extends State<AddBookScreen> {
 
               const SizedBox(height: 10),
 
-              LabelText(label: 'Author'),
+              LabelText(label: 'Author',astrick: true,),
               const SizedBox(height: 10),
               CustomTextFormField(
                 textController: authorController,
@@ -260,7 +260,7 @@ class _AddBookScreenState extends State<AddBookScreen> {
 
               const SizedBox(height: 10),
 
-              LabelText(label: 'Language'),
+              LabelText(label: 'Language',astrick: true,),
               const SizedBox(height: 10),
               CustomTextFormField(
                 textController: languageController,
@@ -277,7 +277,7 @@ class _AddBookScreenState extends State<AddBookScreen> {
                 textController: genreController,
                 hintText: "Enter Genre",
                 readOnly: false,
-                validator: (value) => value == null || value.isEmpty ? 'Please Enter Genre.' : null,
+                //validator: (value) => value == null || value.isEmpty ? 'Please Enter Genre.' : null,
               ),
 
               const SizedBox(height: 10),

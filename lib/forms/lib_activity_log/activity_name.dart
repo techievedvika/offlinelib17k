@@ -12,7 +12,7 @@ class ActivityNameInput extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        LabelText(label: "Activity Name"),
+        LabelText(label: "Activity Name",astrick: true,),
         const SizedBox(height: 10),
         CustomTextFormField(
           hintText: 'Activity Name',

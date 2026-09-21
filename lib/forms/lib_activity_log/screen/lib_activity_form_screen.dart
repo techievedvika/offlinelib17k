@@ -830,12 +830,13 @@ class _LibActivityFormState extends State<LibActivityForm> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            LabelText(label: "Activity Date"),
+            LabelText(label: "Activity Date",astrick: true,),
             const SizedBox(height: 10),
             CustomTextFormField(
               readOnly: true,
               //labelText: 'Activity Date',
               hintText: 'Activity Date',
+
               textController: TextEditingController(
                 text: _selectedDate != null
                     ? DateFormat('yyyy-MM-dd').format(_selectedDate!)

@@ -24,7 +24,7 @@ class GradesSelection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        LabelText(label: 'Participating Grades'),
+        LabelText(label: 'Participating Grades',astrick: true,),
         const SizedBox(height: 10),
         if (isLoading)
           const Center(child: CircularProgressIndicator())
