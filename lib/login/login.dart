@@ -67,6 +67,7 @@ class _LoginScreenState extends State<LoginScreen> {
         child: Padding(
           padding: const EdgeInsets.only(top: 50.0),
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               //  const CurvedContainer(),
               const SizedBox(
@@ -240,6 +241,31 @@ class _LoginScreenState extends State<LoginScreen> {
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
+                          ),
+                        ),
+                        Center(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Text(
+                                'New user ?',
+                              ),
+                              TextButton(
+                                onPressed: () async {
+                                  if (context.mounted) {
+                                    Navigator.pushReplacementNamed(context, RoutesName.librarianRegistrationScreen);
+                                  }
+                                },
+                                child: const Text(
+                                  "Register",
+                                  style: TextStyle(
+                                    color: Colors.blue,
+                                    // fontSize: 16,
+                                    // fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],

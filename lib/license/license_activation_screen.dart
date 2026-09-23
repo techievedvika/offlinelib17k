@@ -1,9 +1,10 @@
 // lib/license/license_activation_screen.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:lib17000ft/components/component.dart';
+import 'package:lib17000ft/license/qr_scanner.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../components/custom_appbar.dart';
-import '../configs/color/color.dart';
 import '../configs/routes/routes_name.dart';
 import 'license_repository.dart';
 
@@ -28,6 +29,43 @@ class _LicenseActivationScreenState extends State<LicenseActivationScreen> {
   void initState() {
     super.initState();
     _checkActivationStatus();
+  }
+
+  Future<void> scanLicenseQr() async {
+    try {
+      final result = await Navigator.push<String>(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const LicenseQrScannerPage(),
+        ),
+      );
+
+      if (result != null && result.trim().isNotEmpty) {
+        setState(() {
+          _licenseKeyController.text = result.trim();
+        });
+        return;
+      }
+    } catch (e) {
+      debugPrint("MobileScanner error: $e");
+    }
+
+    // Fallback scanner using FlutterBarcodeScanner if primary scanner is bypassed
+    try {
+      String barcode = await FlutterBarcodeScanner.scanBarcode(
+        '#ff6666',
+        'Cancel',
+        true,
+        ScanMode.QR,
+      );
+      if (barcode != '-1' && barcode.trim().isNotEmpty && mounted) {
+        setState(() {
+          _licenseKeyController.text = barcode.trim();
+        });
+      }
+    } catch (e) {
+      debugPrint("FlutterBarcodeScanner error: $e");
+    }
   }
 
   Future<void> _checkActivationStatus() async {
@@ -69,7 +107,7 @@ class _LicenseActivationScreenState extends State<LicenseActivationScreen> {
       }
     } catch (e) {
       setState(() => _errorMessage = 'Activation error: $e');
-      print("Error : $e");
+      debugPrint("Error : $e");
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -141,6 +179,10 @@ class _LicenseActivationScreenState extends State<LicenseActivationScreen> {
                         CustomTextFormField(
                           textController: _licenseKeyController,
                           hintText: "Enter License Key",
+                          suffixIcon: IconButton(
+                            onPressed: scanLicenseQr,
+                            icon: const Icon(Icons.qr_code_scanner),
+                          ),
                           validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
                         ),
                         if (_errorMessage != null) ...[

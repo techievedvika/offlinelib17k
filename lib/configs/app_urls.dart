@@ -36,6 +36,7 @@ class AppUrls {
   // static String baseUrl = "https://library.17000ft.org/api/library/";
   static String loginApi = "${AppUrls.baseUrl}login";
   static String activateLicenseApi = "${AppUrls.baseUrl}activateLicense";
+  static String registerLibrarianApi = "${AppUrls.baseUrl}register_librarian";
   //This is for demo only for now
   static String passResetApi = "${AppUrls.baseUrl}reset_password";
   static String dashboardApi = "${AppUrls.baseUrl}get_dashboard_data";
@@ -44,6 +45,7 @@ class AppUrls {
   static String allStudentsApi = "${AppUrls.baseUrl}get_students";
   static String getReturnedBookApi = "${AppUrls.baseUrl}get_return_book";
   static String getIssuedBookApi = "${AppUrls.baseUrl}get_issued_book";
+  static String getSchoolDetail = "${AppUrls.baseUrl}getSchoolDetails";
   static String bookAdd = "${AppUrls.baseUrl}insert_book";
 
   static String getBlockApi = "${AppUrls.baseUrl}filters?getBlock";

@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -7,13 +9,14 @@ import 'package:http/http.dart' as http;
 
 import '../../components/custom_appbar.dart';
 import '../../components/custom_button.dart';
-import '../../components/custom_image_picker.dart';
 import '../../components/custom_labeltext.dart';
 import '../../components/custom_radio.dart';
 import '../../components/custom_textField.dart';
 import '../../components/info_dialog.dart';
+import '../../configs/app_urls.dart';
 import '../../configs/color/color.dart';
 import '../book_issue/book_issue_cubit.dart';
+import '../book_issue/book_issue_repository.dart';
 import '../book_issue/book_issue_state.dart';
 import '../lib_activity_log/widget/ocr_reader_button.dart';
 
@@ -38,10 +41,13 @@ class _AddBookScreenState extends State<AddBookScreen> {
   final TextEditingController codeController = TextEditingController();
 
   final _radioKey = GlobalKey<ResettableRadioState>();
+  final _idKey = GlobalKey<ResettableRadioState>();
   String? growValue;
+  String? selectedValue;
+  bool isBook17k = false;
 
   bool isScanning = false;
-  File? bookImage;
+  // File? bookImage;
 
   @override
   void dispose() {
@@ -99,15 +105,124 @@ class _AddBookScreenState extends State<AddBookScreen> {
         return;
       }
       isbnController.text = isbn;
+      await fetchAndShowBookDetails(isbn);
 
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error fetching book details: $e")),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error fetching book details: $e")),
+        );
+      }
     } finally {
       if (mounted) setState(() => isScanning = false);
     }
   }
+
+  Future<void> fetchAndShowBookDetails(String isbn) async {
+    if (isbn.trim().isEmpty) return;
+
+    setState(() => isScanning = true);
+
+    try {
+      final connectivityResult = await Connectivity().checkConnectivity();
+      final online = connectivityResult.isNotEmpty && !connectivityResult.contains(ConnectivityResult.none);
+
+      Map<String, String> bookDetails = {};
+      String source = '';
+
+      if (online) {
+        try {
+          final url = Uri.parse(AppUrls.getBookApi);
+          final response = await http.post(url, body: {"isbn": isbn}).timeout(const Duration(seconds: 15));
+
+          if (response.statusCode == 200) {
+            final data = json.decode(response.body);
+            if (data['book'] != null && data['book'] is List && (data['book'] as List).isNotEmpty) {
+              final book = data['book'][0];
+              bookDetails = {
+                'title': book['title']?.toString() ?? '',
+                'author': book['author']?.toString() ?? '',
+                'publisher': book['publisher']?.toString() ?? '',
+                'language': book['language']?.toString() ?? '',
+                'genre': book['gener']?.toString() ?? book['genre']?.toString() ?? '',
+                'level': book['level']?.toString() ?? '',
+              };
+              source = 'Online';
+            }
+          }
+        } catch (e) {
+          debugPrint('Online book lookup failed, falling back to offline cache: $e');
+        }
+      }
+
+      if (bookDetails.isEmpty) {
+        final offlineData = await BookIssueRepository().getBookDetailsMapOffline(isbn);
+        if (offlineData['title'] != null && offlineData['title'] != 'Unknown' && offlineData['title']!.isNotEmpty) {
+          bookDetails = {
+            'title': offlineData['title'] ?? '',
+            'author': offlineData['author'] ?? '',
+            'publisher': offlineData['publisher'] ?? '',
+            'language': offlineData['language'] ?? '',
+            'genre': offlineData['genre'] ?? offlineData['gener'] ?? '',
+            'level': offlineData['level'] ?? '',
+          };
+          source = 'Offline';
+        }
+      }
+
+      if (!mounted) return;
+
+      if (bookDetails.isNotEmpty) {
+        await showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: const Text('Book Already Exists'),
+              content: Text(
+                'This book already exists in the database.\n\n'
+                    'Title: ${bookDetails['title'] ?? ''}\n'
+                    'Author: ${bookDetails['author'] ?? ''}\n'
+                    'Publisher: ${bookDetails['publisher'] ?? ''}\n'
+                    'Language: ${bookDetails['language'] ?? ''}\n'
+                    'Genre: ${bookDetails['genre'] ?? ''}\n'
+                    'Level: ${bookDetails['level'] ?? ''}\n\n'
+                    // 'Source: $source',
+              ),
+              actions: [
+                CustomButton(
+                  onPressedButton: () {
+                    Navigator.of(context).pop(); // Close dialog
+                    Navigator.of(context).pop(); // Go back to previous screen
+                  },
+                  title: 'OK',
+                ),
+              ],
+            );
+          },
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'No book details found online or offline for this ISBN.',
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error fetching book details: $e')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => isScanning = false);
+      }
+    }
+  }
+
+
 
 
   Widget buildTextField({
@@ -190,7 +305,7 @@ class _AddBookScreenState extends State<AddBookScreen> {
 
                       if (isbn.isEmpty) return;
 
-                      setState(() => isScanning = true); // Visual feedback
+                      await fetchAndShowBookDetails(isbn);
                     },
                   ),
                   IconButton(
@@ -217,7 +332,7 @@ class _AddBookScreenState extends State<AddBookScreen> {
                   onPressed: isScanning ? null : () async {
                     if (isbnController.text.isEmpty) return;
 
-                    setState(() => isScanning = true); // Visual feedback
+                    await fetchAndShowBookDetails(isbnController.text.trim());
                   },
                   icon: isScanning
                       ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
@@ -290,8 +405,21 @@ class _AddBookScreenState extends State<AddBookScreen> {
               //   readOnly: false,
               //   validator: (value) => value == null || value.isEmpty ? 'Please Enter Level.' : null,
               // ),
-              const SizedBox(height: 20),
+              LabelText(label: '17000ft Book ?', astrick: true),
+              ResettableRadio(
+                key: _idKey,
+                selectedOption: selectedValue,
+                options: const ['Yes','No'],
+                layout: RadioLayout.grid,
+                gridCount: 2,
+                onChanged: (value) => setState(() => selectedValue = value),
+                validator: (value) => selectedValue == null ? 'Please select an option.' : null,
+                //isEnabled: growValue == null || growValue!.isEmpty,
+              ),
+              const SizedBox(height: 10),
+              if(selectedValue == 'Yes')
               LabelText(label: 'G-R-O-W level ', astrick: true),
+              if(selectedValue == 'Yes')
               ResettableRadio(
                 key: _radioKey,
                 selectedOption: growValue,
@@ -349,9 +477,9 @@ class _AddBookScreenState extends State<AddBookScreen> {
                     codeController.clear();
                     coverPageController.clear();
 
-                    setState(() {
-                      bookImage = null;
-                    });
+                    // setState(() {
+                    //   bookImage = null;
+                    // });
                   } else if (state is BookIssueFailure) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
@@ -387,8 +515,8 @@ class _AddBookScreenState extends State<AddBookScreen> {
                             'publisher': publisherController.text.trim(),
                             'title': titleController.text.trim(),
                             'level': levelController.text.trim(),
-                            'language': languageController.text.trim(),
-                            'cover_page': bookImage?.path ?? '',
+                            'language': selectedValue == "Yes" ? languageController.text.trim() : 'Other',
+                            'cover_page': '',
                             'code': 'NA',
                           };
 

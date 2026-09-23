@@ -15,6 +15,7 @@ import '../../forms/lib_activity_log/screen/lib_activity_form_screen.dart';
 import '../../forms/lib_activity_log/screen/lib_activity_list.dart';
 import '../../forms/student/student_edit.dart';
 import '../../forms/student/student_registration.dart';
+import '../../librarian/librarian_registration_screen.dart';
 import '../../license/license_activation_screen.dart';
 import '../../login/login.dart';
 import '../../models/student_registration/student_model.dart';
@@ -81,6 +82,8 @@ class Routes {
         return MaterialPageRoute(builder: (context) => const AddBookScreen());
       case '/license-activation':
         return MaterialPageRoute(builder: (_) => const LicenseActivationScreen());
+      case '/librarian-registration':
+        return MaterialPageRoute(builder: (_) => const LibrarianRegistrationScreen());
       default:
         return MaterialPageRoute(
           builder: (context) => const Scaffold(
