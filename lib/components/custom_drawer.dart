@@ -94,28 +94,28 @@ class _CustomDrawerState extends State<CustomDrawer> {
                   ]),
 
 
-                    // _buildDrawerSection('Book Management', [
-                    //   rights!.contains("5") ?       _buildDrawerItem(
-                    //     icon: FontAwesomeIcons.book,
-                    //     title: 'Issue Book',
-                    //     route: RoutesName.bookIssue,
-                    //   ) : const SizedBox(),
-                    //   rights!.contains("5") ?       _buildDrawerItem(
-                    //     icon: FontAwesomeIcons.bookBookmark,
-                    //     title: 'Return Book',
-                    //     route: RoutesName.bookReturn,
-                    //   ) : const SizedBox(),
-                    //   rights!.contains("4") ?     _buildDrawerItem(
-                    //     icon: FontAwesomeIcons.bookOpen,
-                    //     title: 'All Issued Books',
-                    //     route: RoutesName.allbookIssue,
-                    //   ) : const SizedBox(),
-                    //   rights!.contains("4") ?    _buildDrawerItem(
-                    //     icon: Icons.pending,
-                    //     title: 'Pending Returns',
-                    //     route: RoutesName.allbookReturn,
-                    //   ) : const SizedBox(),
-                    // ]),
+                    _buildDrawerSection('Book Management', [
+                      rights!.contains("5") ?       _buildDrawerItem(
+                        icon: FontAwesomeIcons.book,
+                        title: 'Issue Book',
+                        route: RoutesName.allStudent,
+                      ) : const SizedBox(),
+                      rights!.contains("5") ?       _buildDrawerItem(
+                        icon: FontAwesomeIcons.bookBookmark,
+                        title: 'Return Book',
+                        route: RoutesName.allbookReturn,
+                      ) : const SizedBox(),
+                      // rights!.contains("4") ?     _buildDrawerItem(
+                      //   icon: FontAwesomeIcons.bookOpen,
+                      //   title: 'All Issued Books',
+                      //   route: RoutesName.allbookIssue,
+                      // ) : const SizedBox(),
+                      // rights!.contains("4") ?    _buildDrawerItem(
+                      //   icon: Icons.pending,
+                      //   title: 'Pending Returns',
+                      //   route: RoutesName.allbookReturn,
+                      // ) : const SizedBox(),
+                    ]),
 
                     _buildDrawerSection('Student Management', [
                       rights!.contains("6") ?   _buildDrawerItem(

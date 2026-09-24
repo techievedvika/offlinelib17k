@@ -15,6 +15,10 @@ _$LicenseImpl _$$LicenseImplFromJson(Map<String, dynamic> json) =>
       registeredDevices: (json['registered_devices'] as num?)?.toInt(),
       validFrom: json['valid_from'] as String?,
       validUntil: json['valid_until'] as String?,
+      lotCode: json['lot_code'] as String?,
+      lotName: json['lot_name'] as String?,
+      lotStatus: (json['lot_status'] as num?)?.toInt(),
+      allowImageUpload: (json['allow_image_upload'] as num?)?.toInt(),
     );
 
 Map<String, dynamic> _$$LicenseImplToJson(_$LicenseImpl instance) =>
@@ -26,4 +30,8 @@ Map<String, dynamic> _$$LicenseImplToJson(_$LicenseImpl instance) =>
       'registered_devices': instance.registeredDevices,
       'valid_from': instance.validFrom,
       'valid_until': instance.validUntil,
+      'lot_code': instance.lotCode,
+      'lot_name': instance.lotName,
+      'lot_status': instance.lotStatus,
+      'allow_image_upload': instance.allowImageUpload,
     };

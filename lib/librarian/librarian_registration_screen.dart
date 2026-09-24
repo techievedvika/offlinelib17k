@@ -33,6 +33,60 @@ class _LibrarianRegistrationScreenState extends State<LibrarianRegistrationScree
   String? _schoolName;
   String? _udiseErrorMessage;
 
+  Future<void> _showSchoolNotFoundDialog([String? message]) async {
+    if (!mounted) return;
+    await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Row(
+            children: [
+              Icon(Icons.school_outlined, color: AppColors.error),
+              SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'School Not Found',
+                  style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.secondary),
+                ),
+              ),
+            ],
+          ),
+          content: Text.rich(
+            TextSpan(
+              style: const TextStyle(color: AppColors.onSurface),
+              children: [
+                TextSpan(
+                  text: message ?? 'School details are not available in database. Please contact team to add school first.',
+                ),
+                const TextSpan(
+                  text: '\n\nContact\n',
+                  style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.secondary),
+                ),
+                const TextSpan(
+                  text: 'team@vedvika.com\n',
+                  style: TextStyle(color: AppColors.tertiary, fontWeight: FontWeight.w600),
+                ),
+                const TextSpan(text: '0124 4255966'),
+              ],
+            ),
+          ),
+          actions: [
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: AppColors.onPrimary,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Future<bool> _checkUdiseCode(String udiseCode) async {
     final code = udiseCode.trim();
     if (code.isEmpty) {
@@ -113,14 +167,21 @@ class _LibrarianRegistrationScreenState extends State<LibrarianRegistrationScree
           _schoolName = null;
           _udiseErrorMessage = msg;
         });
+        if (mounted) {
+          await _showSchoolNotFoundDialog(msg);
+        }
         return false;
       }
     } catch (e) {
+      final errorMsg = 'Error checking UDISE Code: $e';
       setState(() {
         _isUdiseValid = false;
         _schoolName = null;
-        _udiseErrorMessage = 'Error checking UDISE Code: $e';
+        _udiseErrorMessage = errorMsg;
       });
+      if (mounted) {
+        await _showSchoolNotFoundDialog(errorMsg);
+      }
       return false;
     } finally {
       if (mounted) {
@@ -238,6 +299,7 @@ class _LibrarianRegistrationScreenState extends State<LibrarianRegistrationScree
                   textInputType: TextInputType.phone,
                   labelText: 'Number',
                   hintText: 'Enter Mobile Number',
+                  maxlength: 10,
                   validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
                 ),
                 SizedBox(
@@ -331,7 +393,7 @@ class _LibrarianRegistrationScreenState extends State<LibrarianRegistrationScree
                 ),
                 CustomTextFormField(
                   textController: _passwordController,
-                  obscureText: true,
+                  obscureText: passwordVisible,
                   labelText: 'Password',
                   hintText: 'Enter Password',
                   suffixIcon: IconButton(
@@ -393,7 +455,7 @@ class _LibrarianRegistrationScreenState extends State<LibrarianRegistrationScree
                       TextButton(
                         onPressed: () async {
                           if (context.mounted) {
-                            Navigator.pushReplacementNamed(context, RoutesName.loginScreen);
+                            Navigator.pushReplacementNamed(context, RoutesName.licenseActivationScreen);
                           }
                         },
                         child: const Text(

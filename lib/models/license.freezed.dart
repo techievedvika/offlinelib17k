@@ -34,6 +34,14 @@ mixin _$License {
   String? get validFrom => throw _privateConstructorUsedError;
   @JsonKey(name: 'valid_until')
   String? get validUntil => throw _privateConstructorUsedError;
+  @JsonKey(name: 'lot_code')
+  String? get lotCode => throw _privateConstructorUsedError;
+  @JsonKey(name: 'lot_name')
+  String? get lotName => throw _privateConstructorUsedError;
+  @JsonKey(name: 'lot_status')
+  int? get lotStatus => throw _privateConstructorUsedError;
+  @JsonKey(name: 'allow_image_upload')
+  int? get allowImageUpload => throw _privateConstructorUsedError;
 
   /// Serializes this License to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -56,7 +64,11 @@ abstract class $LicenseCopyWith<$Res> {
       @JsonKey(name: 'max_devices') int? maxDevices,
       @JsonKey(name: 'registered_devices') int? registeredDevices,
       @JsonKey(name: 'valid_from') String? validFrom,
-      @JsonKey(name: 'valid_until') String? validUntil});
+      @JsonKey(name: 'valid_until') String? validUntil,
+      @JsonKey(name: 'lot_code') String? lotCode,
+      @JsonKey(name: 'lot_name') String? lotName,
+      @JsonKey(name: 'lot_status') int? lotStatus,
+      @JsonKey(name: 'allow_image_upload') int? allowImageUpload});
 }
 
 /// @nodoc
@@ -81,6 +93,10 @@ class _$LicenseCopyWithImpl<$Res, $Val extends License>
     Object? registeredDevices = freezed,
     Object? validFrom = freezed,
     Object? validUntil = freezed,
+    Object? lotCode = freezed,
+    Object? lotName = freezed,
+    Object? lotStatus = freezed,
+    Object? allowImageUpload = freezed,
   }) {
     return _then(_value.copyWith(
       licenseKey: freezed == licenseKey
@@ -111,6 +127,22 @@ class _$LicenseCopyWithImpl<$Res, $Val extends License>
           ? _value.validUntil
           : validUntil // ignore: cast_nullable_to_non_nullable
               as String?,
+      lotCode: freezed == lotCode
+          ? _value.lotCode
+          : lotCode // ignore: cast_nullable_to_non_nullable
+              as String?,
+      lotName: freezed == lotName
+          ? _value.lotName
+          : lotName // ignore: cast_nullable_to_non_nullable
+              as String?,
+      lotStatus: freezed == lotStatus
+          ? _value.lotStatus
+          : lotStatus // ignore: cast_nullable_to_non_nullable
+              as int?,
+      allowImageUpload: freezed == allowImageUpload
+          ? _value.allowImageUpload
+          : allowImageUpload // ignore: cast_nullable_to_non_nullable
+              as int?,
     ) as $Val);
   }
 }
@@ -129,7 +161,11 @@ abstract class _$$LicenseImplCopyWith<$Res> implements $LicenseCopyWith<$Res> {
       @JsonKey(name: 'max_devices') int? maxDevices,
       @JsonKey(name: 'registered_devices') int? registeredDevices,
       @JsonKey(name: 'valid_from') String? validFrom,
-      @JsonKey(name: 'valid_until') String? validUntil});
+      @JsonKey(name: 'valid_until') String? validUntil,
+      @JsonKey(name: 'lot_code') String? lotCode,
+      @JsonKey(name: 'lot_name') String? lotName,
+      @JsonKey(name: 'lot_status') int? lotStatus,
+      @JsonKey(name: 'allow_image_upload') int? allowImageUpload});
 }
 
 /// @nodoc
@@ -152,6 +188,10 @@ class __$$LicenseImplCopyWithImpl<$Res>
     Object? registeredDevices = freezed,
     Object? validFrom = freezed,
     Object? validUntil = freezed,
+    Object? lotCode = freezed,
+    Object? lotName = freezed,
+    Object? lotStatus = freezed,
+    Object? allowImageUpload = freezed,
   }) {
     return _then(_$LicenseImpl(
       licenseKey: freezed == licenseKey
@@ -182,6 +222,22 @@ class __$$LicenseImplCopyWithImpl<$Res>
           ? _value.validUntil
           : validUntil // ignore: cast_nullable_to_non_nullable
               as String?,
+      lotCode: freezed == lotCode
+          ? _value.lotCode
+          : lotCode // ignore: cast_nullable_to_non_nullable
+              as String?,
+      lotName: freezed == lotName
+          ? _value.lotName
+          : lotName // ignore: cast_nullable_to_non_nullable
+              as String?,
+      lotStatus: freezed == lotStatus
+          ? _value.lotStatus
+          : lotStatus // ignore: cast_nullable_to_non_nullable
+              as int?,
+      allowImageUpload: freezed == allowImageUpload
+          ? _value.allowImageUpload
+          : allowImageUpload // ignore: cast_nullable_to_non_nullable
+              as int?,
     ));
   }
 }
@@ -196,7 +252,11 @@ class _$LicenseImpl implements _License {
       @JsonKey(name: 'max_devices') this.maxDevices,
       @JsonKey(name: 'registered_devices') this.registeredDevices,
       @JsonKey(name: 'valid_from') this.validFrom,
-      @JsonKey(name: 'valid_until') this.validUntil});
+      @JsonKey(name: 'valid_until') this.validUntil,
+      @JsonKey(name: 'lot_code') this.lotCode,
+      @JsonKey(name: 'lot_name') this.lotName,
+      @JsonKey(name: 'lot_status') this.lotStatus,
+      @JsonKey(name: 'allow_image_upload') this.allowImageUpload});
 
   factory _$LicenseImpl.fromJson(Map<String, dynamic> json) =>
       _$$LicenseImplFromJson(json);
@@ -222,10 +282,22 @@ class _$LicenseImpl implements _License {
   @override
   @JsonKey(name: 'valid_until')
   final String? validUntil;
+  @override
+  @JsonKey(name: 'lot_code')
+  final String? lotCode;
+  @override
+  @JsonKey(name: 'lot_name')
+  final String? lotName;
+  @override
+  @JsonKey(name: 'lot_status')
+  final int? lotStatus;
+  @override
+  @JsonKey(name: 'allow_image_upload')
+  final int? allowImageUpload;
 
   @override
   String toString() {
-    return 'License(licenseKey: $licenseKey, school: $school, schoolUdise: $schoolUdise, maxDevices: $maxDevices, registeredDevices: $registeredDevices, validFrom: $validFrom, validUntil: $validUntil)';
+    return 'License(licenseKey: $licenseKey, school: $school, schoolUdise: $schoolUdise, maxDevices: $maxDevices, registeredDevices: $registeredDevices, validFrom: $validFrom, validUntil: $validUntil, lotCode: $lotCode, lotName: $lotName, lotStatus: $lotStatus, allowImageUpload: $allowImageUpload)';
   }
 
   @override
@@ -245,13 +317,30 @@ class _$LicenseImpl implements _License {
             (identical(other.validFrom, validFrom) ||
                 other.validFrom == validFrom) &&
             (identical(other.validUntil, validUntil) ||
-                other.validUntil == validUntil));
+                other.validUntil == validUntil) &&
+            (identical(other.lotCode, lotCode) || other.lotCode == lotCode) &&
+            (identical(other.lotName, lotName) || other.lotName == lotName) &&
+            (identical(other.lotStatus, lotStatus) ||
+                other.lotStatus == lotStatus) &&
+            (identical(other.allowImageUpload, allowImageUpload) ||
+                other.allowImageUpload == allowImageUpload));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, licenseKey, school, schoolUdise,
-      maxDevices, registeredDevices, validFrom, validUntil);
+  int get hashCode => Object.hash(
+      runtimeType,
+      licenseKey,
+      school,
+      schoolUdise,
+      maxDevices,
+      registeredDevices,
+      validFrom,
+      validUntil,
+      lotCode,
+      lotName,
+      lotStatus,
+      allowImageUpload);
 
   /// Create a copy of License
   /// with the given fields replaced by the non-null parameter values.
@@ -271,13 +360,18 @@ class _$LicenseImpl implements _License {
 
 abstract class _License implements License {
   factory _License(
-      {@JsonKey(name: 'license_key') final String? licenseKey,
-      @JsonKey(name: 'school') final String? school,
-      @JsonKey(name: 'school_udise') final String? schoolUdise,
-      @JsonKey(name: 'max_devices') final int? maxDevices,
-      @JsonKey(name: 'registered_devices') final int? registeredDevices,
-      @JsonKey(name: 'valid_from') final String? validFrom,
-      @JsonKey(name: 'valid_until') final String? validUntil}) = _$LicenseImpl;
+          {@JsonKey(name: 'license_key') final String? licenseKey,
+          @JsonKey(name: 'school') final String? school,
+          @JsonKey(name: 'school_udise') final String? schoolUdise,
+          @JsonKey(name: 'max_devices') final int? maxDevices,
+          @JsonKey(name: 'registered_devices') final int? registeredDevices,
+          @JsonKey(name: 'valid_from') final String? validFrom,
+          @JsonKey(name: 'valid_until') final String? validUntil,
+          @JsonKey(name: 'lot_code') final String? lotCode,
+          @JsonKey(name: 'lot_name') final String? lotName,
+          @JsonKey(name: 'lot_status') final int? lotStatus,
+          @JsonKey(name: 'allow_image_upload') final int? allowImageUpload}) =
+      _$LicenseImpl;
 
   factory _License.fromJson(Map<String, dynamic> json) = _$LicenseImpl.fromJson;
 
@@ -302,6 +396,18 @@ abstract class _License implements License {
   @override
   @JsonKey(name: 'valid_until')
   String? get validUntil;
+  @override
+  @JsonKey(name: 'lot_code')
+  String? get lotCode;
+  @override
+  @JsonKey(name: 'lot_name')
+  String? get lotName;
+  @override
+  @JsonKey(name: 'lot_status')
+  int? get lotStatus;
+  @override
+  @JsonKey(name: 'allow_image_upload')
+  int? get allowImageUpload;
 
   /// Create a copy of License
   /// with the given fields replaced by the non-null parameter values.

@@ -1,6 +1,7 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:lib17000ft/components/custom_button.dart';
 import 'package:lib17000ft/components/custom_textField.dart';
 import 'package:lib17000ft/configs/color/color.dart';
@@ -23,7 +24,7 @@ class _LoginScreenState extends State<LoginScreen> {
   late TextEditingController usernameController;
   late TextEditingController passwordController;
   final GlobalKey<FormState> loginFormKey = GlobalKey<FormState>();
-  bool passwordVisible = false;
+  bool passwordVisible = true;
   bool? login;
 
   @override
@@ -61,6 +62,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     final responsive = Responsive(context);
     final loginCubit = BlocProvider.of<LoginCubit>(context);
+    final size = MediaQuery.sizeOf(context);
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 238, 222, 192),
       body: SingleChildScrollView(
@@ -176,36 +178,32 @@ class _LoginScreenState extends State<LoginScreen> {
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold),
                                 ),
-                                // if (state.code == 'DEVICE_LIMIT_REACHED' && state.license != null)
-                                //   Text(
-                                //     "Max Devices: ${state.license?.maxDevices}, Registered: ${state.license?.registeredDevices}",
-                                //     style: const TextStyle(color: Colors.red, fontSize: 14),
-                                //   ),
-                                // if (state.code == 'LICENSE_EXPIRED' && state.license != null)
-                                //   Text(
-                                //     "Expired on: ${state.license?.validUntil}",
-                                //     style: const TextStyle(color: Colors.red, fontSize: 14),
-                                //   ),
-                                // if (state.code == 'LICENSE_REQUIRED')
-                                //   const Text(
-                                //     "Please contact administrator for license activation.",
-                                //     style: TextStyle(color: Colors.red, fontSize: 14),
-                                //   ),
-                                // if (state.code == 'DEVICE_INACTIVE')
-                                //   const Text(
-                                //     "This device is deactivated. Contact administrator.",
-                                //     style: TextStyle(color: Colors.red, fontSize: 14),
-                                //   ),
                               ],
                             ),
                           ),
                         if (state is! LoginLoading)
-                          CustomButton(
-                            title: 'Login',
-                            onPressedButton: () async {
+                          // CustomButton(
+                          //   title: 'Login',
+                          //   onPressedButton: () async {
+                          //     if (loginFormKey.currentState!.validate()) {
+                          //       final deviceUuid = await DeviceIdHelper.getDeviceUuid();
+                          //       final deviceName = await DeviceIdHelper.getDeviceName();
+                          //       loginCubit.login(
+                          //         loginCubit.username,
+                          //         loginCubit.password,
+                          //         deviceUuid,
+                          //         deviceName,
+                          //       );
+                          //     }
+                          //   },
+                          //   width: size.width,
+                          // ),
+                          ElevatedButton(
+                            onPressed: () async {
                               if (loginFormKey.currentState!.validate()) {
                                 final deviceUuid = await DeviceIdHelper.getDeviceUuid();
                                 final deviceName = await DeviceIdHelper.getDeviceName();
+
                                 loginCubit.login(
                                   loginCubit.username,
                                   loginCubit.password,
@@ -214,60 +212,175 @@ class _LoginScreenState extends State<LoginScreen> {
                                 );
                               }
                             },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primary,
+                              padding: const EdgeInsets.symmetric(vertical: 15),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            child: Text(
+                              'Log In',
+                              style: GoogleFonts.openSans(
+                                textStyle: TextStyle(
+                                  fontSize: responsive.responsiveTextSize(16, 18, 20),
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
                           ),
+                        SizedBox(height: size.height * 0.02),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Divider(
+                                thickness: 2,
+                                color: Colors.grey.shade400,
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 12),
+                              child: Text(
+                                'OR',
+                                style: TextStyle(
+                                  color: Colors.grey.shade400,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: Divider(
+                                thickness: 2,
+                                color: Colors.grey.shade400,
+                              ),
+                            ),
+                          ],
+                        ),
+
                         SizedBox(
                           height: responsive.responsiveValue(
                               small: 10.0, medium: 20.0, large: 30.0),
                         ),
-                        Center(
-                          child: TextButton(
-                            onPressed: () async {
-                              final prefs = await SharedPreferences.getInstance();
-                              await prefs.remove('licenseActivated');
-                              await prefs.remove('licenseKey');
-                              await prefs.remove('licenseSchoolUdise');
-                              await prefs.remove('licenseValidUntil');
-                              await prefs.remove('licenseMaxDevices');
-                              await prefs.remove('licenseRegisteredDevices');
-                              if (context.mounted) {
-                                Navigator.pushNamed(context, RoutesName.licenseActivationScreen);
-                              }
-                            },
-                            child: const Text(
-                              "Activate License",
-                              style: TextStyle(
-                                color: AppColors.secondary,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ),
-                        Center(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Text(
-                                'New user ?',
-                              ),
-                              TextButton(
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            ElevatedButton(
                                 onPressed: () async {
+                                  final prefs = await SharedPreferences.getInstance();
+                                  await prefs.remove('licenseActivated');
+                                  await prefs.remove('licenseKey');
+                                  await prefs.remove('licenseSchoolUdise');
+                                  await prefs.remove('licenseValidUntil');
+                                  await prefs.remove('licenseMaxDevices');
+                                  await prefs.remove('licenseRegisteredDevices');
+                                  await prefs.remove('imageAllowed');
                                   if (context.mounted) {
-                                    Navigator.pushReplacementNamed(context, RoutesName.librarianRegistrationScreen);
+                                    Navigator.pushNamed(context, RoutesName.licenseActivationScreen);
                                   }
                                 },
-                                child: const Text(
-                                  "Register",
-                                  style: TextStyle(
-                                    color: Colors.blue,
-                                    // fontSize: 16,
-                                    // fontWeight: FontWeight.bold,
-                                  ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.primary,
+                                  padding: EdgeInsets.symmetric(vertical: 15,horizontal: size.height * 0.055),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                                 ),
-                              ),
-                            ],
-                          ),
+                                child:Text('Activate License',
+                                  style: GoogleFonts.openSans(
+                                    textStyle: TextStyle(
+                                      fontSize: responsive.responsiveTextSize(16, 18, 20),
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                )
+                            ),
+                            // SizedBox(
+                            //   child: Text(
+                            //     'OR',
+                            //     style: TextStyle(
+                            //       color: Colors.grey.shade400,
+                            //       fontSize: 12,
+                            //       fontWeight: FontWeight.bold,
+                            //     ),
+                            //   )
+                            // ),
+
+                            ElevatedButton(
+                                onPressed: (){
+                                  Navigator.pushNamedAndRemoveUntil(
+                                    context,
+                                    RoutesName.librarianRegistrationScreen,
+                                        (route) => false,
+                                  );
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.primary,
+                                  padding: EdgeInsets.symmetric(vertical: 15,horizontal: size.height * 0.09),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                ),
+                                child: Text('Register',
+                                  style: GoogleFonts.openSans(
+                                    textStyle: TextStyle(
+                                      fontSize: responsive.responsiveTextSize(16, 18, 20),
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                )
+                            ),
+                          ],
                         ),
+                        // Center(
+                        //   child: TextButton(
+                        //     onPressed: () async {
+                        //       final prefs = await SharedPreferences.getInstance();
+                        //       await prefs.remove('licenseActivated');
+                        //       await prefs.remove('licenseKey');
+                        //       await prefs.remove('licenseSchoolUdise');
+                        //       await prefs.remove('licenseValidUntil');
+                        //       await prefs.remove('licenseMaxDevices');
+                        //       await prefs.remove('licenseRegisteredDevices');
+                        //       await prefs.remove('imageAllowed');
+                        //       if (context.mounted) {
+                        //         Navigator.pushNamed(context, RoutesName.licenseActivationScreen);
+                        //       }
+                        //     },
+                        //     child: const Text(
+                        //       "Activate License",
+                        //       style: TextStyle(
+                        //         color: AppColors.secondary,
+                        //         fontSize: 16,
+                        //         fontWeight: FontWeight.bold,
+                        //       ),
+                        //     ),
+                        //   ),
+                        // ),
+                        // Center(
+                        //   child: Row(
+                        //     mainAxisAlignment: MainAxisAlignment.center,
+                        //     children: [
+                        //       const Text(
+                        //         'New user ?',
+                        //       ),
+                        //       TextButton(
+                        //         onPressed: () async {
+                        //           if (context.mounted) {
+                        //             Navigator.pushReplacementNamed(context, RoutesName.librarianRegistrationScreen);
+                        //           }
+                        //         },
+                        //         child: const Text(
+                        //           "Register",
+                        //           style: TextStyle(
+                        //             color: Colors.blue,
+                        //             // fontSize: 16,
+                        //             // fontWeight: FontWeight.bold,
+                        //           ),
+                        //         ),
+                        //       ),
+                        //     ],
+                        //   ),
+                        // ),
                       ],
                     ),
                   );

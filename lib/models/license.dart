@@ -15,6 +15,10 @@ class License with _$License {
     @JsonKey(name: 'registered_devices') int? registeredDevices,
     @JsonKey(name: 'valid_from') String? validFrom,
     @JsonKey(name: 'valid_until') String? validUntil,
+    @JsonKey(name: 'lot_code') String? lotCode,
+    @JsonKey(name: 'lot_name') String? lotName,
+    @JsonKey(name: 'lot_status') int? lotStatus,
+    @JsonKey(name: 'allow_image_upload') int? allowImageUpload,
   }) = _License;
 
   factory License.fromJson(Map<String, dynamic> json) => _$LicenseFromJson(json);

@@ -117,6 +117,7 @@ class _LibActivityFormState extends State<LibActivityForm> {
   String _conductedBy = '';
   List<String> _availableGrades = [];
   bool _isLoadingGrades = true;
+  int _imageAllowed = 0;
 
   final TextEditingController _isbnController = TextEditingController();
 
@@ -133,10 +134,19 @@ class _LibActivityFormState extends State<LibActivityForm> {
 
   Future<void> _loadUserData() async {
     final prefs = await SharedPreferences.getInstance();
+    final imageAllowedVal = prefs.get('imageAllowed');
+    int imageAllowed = 0;
+    if (imageAllowedVal is int) {
+      imageAllowed = imageAllowedVal;
+    } else if (imageAllowedVal is String) {
+      imageAllowed = int.tryParse(imageAllowedVal) ?? 0;
+    }
+
     if (mounted) {
       setState(() {
         _userId = prefs.getString('userId');
         _school = prefs.getString('school');
+        _imageAllowed = imageAllowed;
       });
     }
   }
@@ -634,7 +644,7 @@ class _LibActivityFormState extends State<LibActivityForm> {
       errorMessage = 'Description cannot be empty.';
     } else if (_description.trim().length < 25) {
       errorMessage = 'Description must be at least 25 characters.';
-    } else if (selectedImages.isEmpty) {
+    } else if (_imageAllowed == 1 && selectedImages.isEmpty) {
       errorMessage = 'Please upload at least one image.';
     } else if (_books.isEmpty) {
       errorMessage = 'Please scan at least one book.';
@@ -980,20 +990,22 @@ class _LibActivityFormState extends State<LibActivityForm> {
             ConductedByInput(onChanged: (value) => _conductedBy = value),
             const SizedBox(height: 22),
             DescriptionInput(onChanged: (value) => _description = value),
-            const SizedBox(height: 22),
-            UploadActivityImg(
-              selectedImages: selectedImages,
-              // onImagesSelected: (images) {
-              //   setState(() {
-              //     selectedImages.addAll(images);
-              //   });
-              // },
-              onImagesSelected: (updatedImages) {
-                setState(() {
-                  selectedImages = updatedImages;
-                });
-              },
-            ),
+            if (_imageAllowed == 1) ...[
+              const SizedBox(height: 22),
+              UploadActivityImg(
+                selectedImages: selectedImages,
+                // onImagesSelected: (images) {
+                //   setState(() {
+                //     selectedImages.addAll(images);
+                //   });
+                // },
+                onImagesSelected: (updatedImages) {
+                  setState(() {
+                    selectedImages = updatedImages;
+                  });
+                },
+              ),
+            ],
             const SizedBox(height: 32),
             SafeArea(
               child:SubmitButton(onPressed: _submitForm),

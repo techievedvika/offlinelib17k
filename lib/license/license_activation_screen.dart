@@ -201,12 +201,87 @@ class _LicenseActivationScreenState extends State<LicenseActivationScreen> {
                               ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                               : const Text('Activate', style: TextStyle(color: Colors.white, fontSize: 16)),
                         ),
-                        SizedBox(height: size.height * 0.04),
+                        SizedBox(height: size.height * 0.01),
                         const Text(
                           'This device needs to be activated once before use.',
                           textAlign: TextAlign.center,
                           style: TextStyle(fontSize: 14, color: Colors.black, fontWeight: FontWeight.bold),
                         ),
+                        SizedBox(height: size.height * 0.02),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Divider(
+                                thickness: 2,
+                                color: Colors.grey.shade300,
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 12),
+                              child: Text(
+                                'OR',
+                                style: TextStyle(
+                                  color: Colors.grey.shade400,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: Divider(
+                                thickness: 2,
+                                color: Colors.grey.shade300,
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: size.height * 0.02),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            ElevatedButton(
+                              onPressed: (){
+                                Navigator.pushNamedAndRemoveUntil(
+                                  context,
+                                  RoutesName.loginScreen,
+                                      (route) => false,
+                                );
+                              },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.primary,
+                                  padding: EdgeInsets.symmetric(vertical: 15,horizontal: size.height * 0.1),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                ),
+                              child: const Text('Login',style: TextStyle(color: Colors.white, fontSize: 16))
+                            ),
+                            // SizedBox(
+                            //   child: Text(
+                            //     'OR',
+                            //     style: TextStyle(
+                            //       color: Colors.grey.shade400,
+                            //       fontSize: 12,
+                            //       fontWeight: FontWeight.bold,
+                            //     ),
+                            //   )
+                            // ),
+
+                            ElevatedButton(
+                              onPressed: (){
+                                Navigator.pushNamedAndRemoveUntil(
+                                  context,
+                                  RoutesName.librarianRegistrationScreen,
+                                      (route) => false,
+                                );
+                              },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.primary,
+                                  padding: EdgeInsets.symmetric(vertical: 15,horizontal: size.height * 0.1),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                ),
+                              child: const Text('Register',style: TextStyle(color: Colors.white, fontSize: 16))
+                            ),
+                          ],
+                        )
                       ],
                     ),
                   ),

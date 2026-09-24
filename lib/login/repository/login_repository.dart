@@ -47,6 +47,7 @@ class LoginRepository {
         SharedPreferences prefs = await SharedPreferences.getInstance();
 
         await prefs.setString('currentVersion', currentVersion);
+        await prefs.setBool('librarianRegistered', true);
         await prefs.setString('userId', userModel.user!.id.toString());
         await prefs.setString('location', userModel.user!.location.toString());
         await prefs.setString('school', userModel.user!.school.toString());
@@ -66,6 +67,7 @@ class LoginRepository {
           await prefs.setString('licenseValidUntil', userModel.license!.validUntil ?? '');
           await prefs.setInt('licenseMaxDevices', userModel.license!.maxDevices ?? 0);
           await prefs.setInt('licenseRegisteredDevices', userModel.license!.registeredDevices ?? 0);
+          await prefs.setInt('imageAllowed', userModel.license!.allowImageUpload ?? 0);
         }
 
 
