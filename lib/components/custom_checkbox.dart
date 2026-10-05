@@ -47,6 +47,7 @@ class CustomCheckbox extends FormField<List<String>> {
                 checkColor: AppColors.onPrimary,
                 activeColor: AppColors.primary,
                 contentPadding: EdgeInsets.zero, // Compact for grid
+                controlAffinity: ListTileControlAffinity.leading,
                 title: Text(
                   option,
                   style: AppStyles.bodyText(field.context, AppColors.onSurface),

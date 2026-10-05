@@ -39,6 +39,7 @@ class GradesSelection extends StatelessWidget {
             options: availableGrades,
             selectedOptions: selectedGrades,
             layout: CheckboxLayout.grid,
+
             gridCount: 2,
             onChanged: (selection) {
               if (selection != null) {

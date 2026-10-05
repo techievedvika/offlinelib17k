@@ -590,6 +590,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lib17000ft/components/component.dart';
 import 'package:lib17000ft/forms/dashboard/dash_cubit.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../components/app_feedback.dart';
 import '../../components/custom_appbar.dart';
 import '../../models/student_registration/student_model.dart';
 import 'student_cubit.dart';
@@ -712,14 +713,39 @@ class _StudentRegistrationState extends State<StudentRegistration> {
 
   void _register() async {
     if (_formKey.currentState!.validate()) {
+      final messenger = ScaffoldMessenger.of(context);
+      final cubit = context.read<StudentCubit>();
+
+      final online = await _isOnline();
+      if (!mounted) return;
+      if (!online) {
+        AppFeedback.showError(
+          context,
+          title: 'Internet Connection Required',
+          message: 'Please check your internet connection.',
+        );
+        // messenger.showSnackBar(
+        //   const SnackBar(
+        //     content: Text('Internet connection is required for student registration.'),
+        //     backgroundColor: AppColors.primary,
+        //   ),
+        // );
+        return;
+      }
+
       final prefs = await SharedPreferences.getInstance();
       final school = prefs.getString('school') ?? '';
       final schoolCodeNew = prefs.getString('schoolCodeNew') ?? '';
 
-      final online = await _isOnline();
+      final libCode = await cubit.getStudentId(udiseCode!);
+      if (!mounted) return;
+
+      /*
+      // Offline registration (commented out for future use)
       final libCode = online
           ? await context.read<StudentCubit>().getStudentId(udiseCode!)
           : await context.read<StudentCubit>().getOfflineStudentId();
+      */
 
       final Map<String, dynamic> data = {
         'name': _nameController.text.trim(),
@@ -735,7 +761,7 @@ class _StudentRegistrationState extends State<StudentRegistration> {
         'lib_code': libCode,
       };
 
-      context.read<StudentCubit>().registerStudent(data);
+      cubit.registerStudent(data);
     }
   }
 
@@ -824,13 +850,35 @@ class _StudentRegistrationState extends State<StudentRegistration> {
                           ResettableRadio(
                             key: _idRadioKey,
                             options: const ['Yes', 'No'],
-                            onChanged: (value) async{
+                            onChanged: (value) async {
                               if (value == 'No') {
+                                final cubit = context.read<StudentCubit>();
+                                final messenger = ScaffoldMessenger.of(context);
                                 final online = await _isOnline();
-                                online ?
-                                context.read<StudentCubit>().getStudentId(udiseCode!)
-                                    : context.read<StudentCubit>().getOfflineStudentId();
+                                if (!mounted) return;
+                                if (online) {
+                                  cubit.getStudentId(udiseCode!);
+                                } else {
+                                  AppFeedback.showError(
+                                    context,
+                                    title: 'Internet Connection Required',
+                                    message: 'Internet connection is required to fetch Student ID.',
 
+                                  );
+                                  // messenger.showSnackBar(
+                                  //   const SnackBar(
+                                  //     content: Text('Internet connection is required to fetch Student ID.'),
+                                  //     backgroundColor: AppColors.primary,
+                                  //   ),
+                                  // );
+                                }
+
+                                /*
+                                // Offline student ID generation (commented out for future use)
+                                online
+                                    ? context.read<StudentCubit>().getStudentId(udiseCode!)
+                                    : context.read<StudentCubit>().getOfflineStudentId();
+                                */
                               }
                               setState(() {
                                 idValue = value;

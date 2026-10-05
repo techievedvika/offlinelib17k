@@ -277,7 +277,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   await prefs.remove('licenseRegisteredDevices');
                                   await prefs.remove('imageAllowed');
                                   if (context.mounted) {
-                                    Navigator.pushNamed(context, RoutesName.licenseActivationScreen);
+                                    Navigator.pushReplacementNamed(context, RoutesName.licenseActivationScreen);
                                   }
                                 },
                                 style: ElevatedButton.styleFrom(

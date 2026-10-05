@@ -60,6 +60,9 @@ class _BookIssueState extends State<BookIssue> {
   String? libIdValue;
   String? userIdValue;
   bool bookInDb = true;
+  bool lanAvailable = false;
+  bool authAvailable = false;
+  bool titleAvailable = false;
 
   File? bookImage;
 
@@ -129,6 +132,15 @@ class _BookIssueState extends State<BookIssue> {
             authorController.text = bookDetails['publisher'] ?? 'No Publisher';
             languageController.text = bookDetails['language'] ?? 'Unknown';
             growValue = bookDetails['level'];
+            if(bookTitleController.text == 'Unknown'){
+              bookTitleController.clear();
+            }
+            if(authorController.text == 'Unknown'){
+              authorController.clear();
+            }
+            if(languageController.text == 'Unknown'){
+              languageController.clear();
+            }
           });
         } else {
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(

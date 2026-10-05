@@ -286,25 +286,26 @@ class _LibrarianRegistrationScreenState extends State<LibrarianRegistrationScree
                 ),
                 CustomTextFormField(
                   textController: _nameController,
-                  labelText: 'Name',
+                  labelText: 'Your Full Name',
                   hintText: 'Enter Name',
                   validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
                 ),
                 SizedBox(
                   height: responsive.responsiveValue(
-                      small: 20.0, medium: 30.0, large: 10.0),
+                      small: 15.0, medium: 25.0, large: 10.0),
                 ),
                 CustomTextFormField(
                   textController: _numberController,
                   textInputType: TextInputType.phone,
-                  labelText: 'Number',
+                  labelText: 'Mobile Number',
                   hintText: 'Enter Mobile Number',
                   maxlength: 10,
+                  prefixText: '+91 ',
                   validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
                 ),
                 SizedBox(
                   height: responsive.responsiveValue(
-                      small: 20.0, medium: 30.0, large: 10.0),
+                      small: 10.0, medium: 15.0, large: 10.0),
                 ),
                 CustomTextFormField(
                   textController: _schoolIdController,
@@ -314,6 +315,7 @@ class _LibrarianRegistrationScreenState extends State<LibrarianRegistrationScree
                   maxlength: 11,
                   validator: (v) {
                     if (v == null || v.trim().isEmpty) return 'Required';
+                    if(v.length != 11) return "UDISE Code must be 11 characters long";
                     if (_isUdiseValid == false) {
                       return _udiseErrorMessage ?? 'UDISE Code is not available in database';
                     }
@@ -336,7 +338,7 @@ class _LibrarianRegistrationScreenState extends State<LibrarianRegistrationScree
                   },
                 ),
                 if (_isCheckingSchool) ...[
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 2),
                   const Row(
                     children: [
                       SizedBox(
@@ -349,7 +351,7 @@ class _LibrarianRegistrationScreenState extends State<LibrarianRegistrationScree
                     ],
                   ),
                 ] else if (_schoolName != null) ...[
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 2),
                   Row(
                     children: [
                       const Icon(Icons.check_circle, color: Colors.green, size: 16),
@@ -363,7 +365,7 @@ class _LibrarianRegistrationScreenState extends State<LibrarianRegistrationScree
                     ],
                   ),
                 ] else if (_udiseErrorMessage != null) ...[
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 2),
                   Row(
                     children: [
                       const Icon(Icons.error, color: Colors.red, size: 16),
@@ -379,7 +381,7 @@ class _LibrarianRegistrationScreenState extends State<LibrarianRegistrationScree
                 ],
                 SizedBox(
                   height: responsive.responsiveValue(
-                      small: 20.0, medium: 30.0, large: 10.0),
+                      small: 10.0, medium: 15.0, large: 10.0),
                 ),
                 CustomTextFormField(
                   textController: _usernameController,
@@ -389,7 +391,7 @@ class _LibrarianRegistrationScreenState extends State<LibrarianRegistrationScree
                 ),
                 SizedBox(
                   height: responsive.responsiveValue(
-                      small: 20.0, medium: 30.0, large: 10.0),
+                      small: 10.0, medium: 15.0, large: 10.0),
                 ),
                 CustomTextFormField(
                   textController: _passwordController,
@@ -406,11 +408,11 @@ class _LibrarianRegistrationScreenState extends State<LibrarianRegistrationScree
                       });
                     },
                   ),
-                  validator: (v) => v == null || v.length < 6 ? 'At least 6 characters' : null,
+                  validator: (v) => v == null || v.length < 8 ? 'At least 8 characters' : null,
                 ),
                 SizedBox(
                   height: responsive.responsiveValue(
-                      small: 20.0, medium: 30.0, large: 10.0),
+                      small: 10.0, medium: 15.0, large: 10.0),
                 ),
                 CustomTextFormField(
                   textController: _confirmPasswordController,

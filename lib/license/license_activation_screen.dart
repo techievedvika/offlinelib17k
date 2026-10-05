@@ -23,7 +23,7 @@ class _LicenseActivationScreenState extends State<LicenseActivationScreen> {
   final _repository = LicenseRepository();
   bool _isLoading = false;
   String? _errorMessage;
-  bool passwordVisible = false;
+  bool passwordVisible = true;
 
   @override
   void initState() {

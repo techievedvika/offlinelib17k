@@ -390,7 +390,7 @@ class _AddBookScreenState extends State<AddBookScreen> {
               const SizedBox(height: 10),
               CustomTextFormField(
                 textController: genreController,
-                hintText: "Enter Genre",
+                hintText: "Enter Genre (Optional)",
                 readOnly: false,
                 //validator: (value) => value == null || value.isEmpty ? 'Please Enter Genre.' : null,
               ),
@@ -423,7 +423,7 @@ class _AddBookScreenState extends State<AddBookScreen> {
               ResettableRadio(
                 key: _radioKey,
                 selectedOption: growValue,
-                options: const ['Green', 'Red', 'Orange','White', 'Other'],
+                options: const ['Green', 'Red', 'Orange','White'],
                 layout: RadioLayout.grid,
                 gridCount: 3,
                 onChanged: (value) => setState(() => growValue = value),
@@ -507,26 +507,30 @@ class _AddBookScreenState extends State<AddBookScreen> {
                     height: 50,
                     child: CustomButton(
                       onPressedButton: () {
-                        if (_formKey.currentState!.validate()) {
-                          final bookAddPayload = {
-                            'isbn': isbnController.text.trim(),
-                            'author': authorController.text.trim(),
-                            'gener': genreController.text.trim(),
-                            'publisher': publisherController.text.trim(),
-                            'title': titleController.text.trim(),
-                            'level': levelController.text.trim(),
-                            'language': selectedValue == "Yes" ? languageController.text.trim() : 'Other',
-                            'cover_page': '',
-                            'code': 'NA',
-                          };
+                        // if (_formKey.currentState!.validate()) {
+                        //
+                        // }
+                        final bookAddPayload = {
+                          'isbn': isbnController.text.trim(),
+                          'author': authorController.text.trim(),
+                          // 'gener': genreController.text.trim(),
+                          'gener': genreController.text.trim().isEmpty
+                              ? 'Unknown'
+                              : genreController.text.trim(),
+                          'publisher': publisherController.text.trim(),
+                          'title': titleController.text.trim(),
+                          'language': languageController.text.trim(),
+                          'level': selectedValue == "Yes" ? levelController.text.trim() : 'Other',
+                          'cover_page': '',
+                          'code': 'NA',
+                        };
 
-                          debugPrint('Book Add Payload: $bookAddPayload');
+                        debugPrint('Book Add Payload: $bookAddPayload');
 
-                          context.read<BookIssueCubit>().insertBook(
+                        context.read<BookIssueCubit>().insertBook(
 
-                            bookAddPayload,
-                          );
-                        }
+                          bookAddPayload,
+                        );
                       },
                       title: "Add Book",
                     ),

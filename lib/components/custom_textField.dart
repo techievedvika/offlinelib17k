@@ -8,6 +8,7 @@ class CustomTextFormField extends StatelessWidget {
   final String? hintText;
   final String? labelText;
   final IconButton? suffixIcon;
+  final String? prefixText;
   final bool? obscureText;
   final bool? readOnly;
   final TextInputType? textInputType;
@@ -25,6 +26,7 @@ class CustomTextFormField extends StatelessWidget {
     super.key,
     this.textController,
     this.prefixIcon,
+    this.prefixText,
     this.hintText,
     this.maxlength,
     this.labelText,
@@ -70,6 +72,7 @@ class CustomTextFormField extends StatelessWidget {
         suffixIcon: suffixIcon,
         prefixIconColor: AppColors.tertiary,
         suffixIconColor: AppColors.tertiary,
+        prefixText: prefixText,
         label: labelText != null
             ? Text(
                 labelText!,

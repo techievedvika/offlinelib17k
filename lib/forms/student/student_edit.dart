@@ -10,6 +10,7 @@ import '../../components/custom_labeltext.dart';
 import '../../components/custom_textField.dart';
 import '../../configs/color/color.dart';
 import '../../models/student_registration/student_model.dart';
+import '../lib_activity_log/description.dart';
 
 class EditStudentScreen extends StatefulWidget {
   final StudentModel? student;
@@ -39,6 +40,8 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
   List<String> _gradeOptions = [];
   bool _isLoadingGrades = true;
   String? status;
+  bool? _isOther ;
+  String? _reason;
 
   final List<String> idOptions = ["Apaar ID", "PEN ID", "Student ID"];
   String? selectedValue;
@@ -192,7 +195,8 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
         uniqueId: finalUnique,
         school: schoolController.text.trim(),
         status: statusIndex,
-        reason: status == "Active" ? "" : reasonController.text.trim(),
+        // reason: status == "Active" ? "" : reasonController.text.trim(),
+        reason: status == "Active" ? "" : _reason,
       );
 
       print("Student Details: $updatedStudent");
@@ -551,6 +555,12 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
                   onChanged: (value) {
                     setState(() {
                       reasonController.text = value!;
+                      _reason = value;
+                      if(value == 'Other'){
+                        _isOther = true;
+                      }else{
+                        _isOther = false;
+                      }
                     });
                   },
                   validator: (value) {
@@ -562,6 +572,28 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
                   },
                 ),
                 const SizedBox(height: 20),
+                if(_isOther == true)
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      LabelText(label: "Other Reason",astrick: true,),
+                      const SizedBox(height: 10),
+                      CustomTextFormField(
+                        // textController: reasonController,
+                        // hintText: 'Other Reason',
+                        onChanged: (value){
+                          _reason = value;
+                        },
+                        maxlines: 4,
+                        validator: (v) {
+                          if (v == null || v.trim().isEmpty) {
+                            return 'Please enter a Reason';
+                          }
+                          return null;
+                        },
+                      ),
+                    ],
+                  ),
 
                 // Use BlocBuilder here if you want to show a loading spinner on the button
                 //if(widget.skipOption != true)
