@@ -440,7 +440,7 @@ class _BookIssueState extends State<BookIssue> {
                       validator: (value) => value == 'Unknown' || value!.isEmpty ? 'Please enter book language.' : null,
                     ),
                     const SizedBox(height: 10),
-                    LabelText(label: 'Book Publisher'),
+                    LabelText(label: 'Book Publisher', astrick: true,),
                     const SizedBox(height: 10),
                     CustomTextFormField(
                       //hintText: authorController.text,

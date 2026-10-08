@@ -95,8 +95,16 @@ class _LicenseActivationScreenState extends State<LicenseActivationScreen> {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setBool('licenseActivated', true);
         await prefs.setString('licenseKey', _licenseKeyController.text.trim());
-        await prefs.setString('licenseSchoolUdise', result['license']['school_udise']?.toString() ?? '');
-        await prefs.setString('licenseValidUntil', result['license']['valid_until']?.toString() ?? '');
+        await prefs.setString('licenseSchoolUdise', result['license']?['school_udise']?.toString() ?? '');
+        await prefs.setString('licenseValidUntil', result['license']?['valid_until']?.toString() ?? '');
+        if (result['license'] != null) {
+          if (result['license']['registered_devices'] != null) {
+            await prefs.setInt('licenseRegisteredDevices', int.tryParse(result['license']['registered_devices'].toString()) ?? 0);
+          }
+          if (result['license']['max_devices'] != null) {
+            await prefs.setInt('licenseMaxDevices', int.tryParse(result['license']['max_devices'].toString()) ?? 0);
+          }
+        }
 
         if (mounted) {
           // CHANGED — simple navigation to normal login, no prefill/auto-submit
@@ -116,6 +124,7 @@ class _LicenseActivationScreenState extends State<LicenseActivationScreen> {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
+    final responsive = Responsive(context);
     return Scaffold(
       // appBar: AppBar(title: const Text('Activate License')),
       appBar: const CustomAppbar(
@@ -236,52 +245,86 @@ class _LicenseActivationScreenState extends State<LicenseActivationScreen> {
                           ],
                         ),
                         SizedBox(height: size.height * 0.02),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            ElevatedButton(
-                              onPressed: (){
-                                Navigator.pushNamedAndRemoveUntil(
-                                  context,
-                                  RoutesName.loginScreen,
-                                      (route) => false,
-                                );
-                              },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.primary,
-                                  padding: EdgeInsets.symmetric(vertical: 15,horizontal: size.height * 0.1),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                ),
-                              child: const Text('Login',style: TextStyle(color: Colors.white, fontSize: 16))
-                            ),
-                            // SizedBox(
-                            //   child: Text(
-                            //     'OR',
-                            //     style: TextStyle(
-                            //       color: Colors.grey.shade400,
-                            //       fontSize: 12,
-                            //       fontWeight: FontWeight.bold,
-                            //     ),
-                            //   )
-                            // ),
-
-                            ElevatedButton(
-                              onPressed: (){
-                                Navigator.pushNamedAndRemoveUntil(
-                                  context,
-                                  RoutesName.librarianRegistrationScreen,
-                                      (route) => false,
-                                );
-                              },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.primary,
-                                  padding: EdgeInsets.symmetric(vertical: 15,horizontal: size.height * 0.1),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                ),
-                              child: const Text('Register',style: TextStyle(color: Colors.white, fontSize: 16))
-                            ),
-                          ],
-                        )
+                        responsive.isSmallScreen()
+                            ? Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      Navigator.pushNamedAndRemoveUntil(
+                                        context,
+                                        RoutesName.loginScreen,
+                                        (route) => false,
+                                      );
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: AppColors.primary,
+                                      padding: const EdgeInsets.symmetric(vertical: 15),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                    ),
+                                    child: const Text('Login', style: TextStyle(color: Colors.white, fontSize: 16)),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      Navigator.pushNamedAndRemoveUntil(
+                                        context,
+                                        RoutesName.librarianRegistrationScreen,
+                                        (route) => false,
+                                      );
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: AppColors.primary,
+                                      padding: const EdgeInsets.symmetric(vertical: 15),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                    ),
+                                    child: const Text('Register', style: TextStyle(color: Colors.white, fontSize: 16)),
+                                  ),
+                                ],
+                              )
+                            : Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      Navigator.pushNamedAndRemoveUntil(
+                                        context,
+                                        RoutesName.loginScreen,
+                                        (route) => false,
+                                      );
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: AppColors.primary,
+                                      padding: EdgeInsets.symmetric(vertical: 15, horizontal: size.height * 0.1),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                    ),
+                                    child: const Text('Login', style: TextStyle(color: Colors.white, fontSize: 16)),
+                                  ),
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      Navigator.pushNamedAndRemoveUntil(
+                                        context,
+                                        RoutesName.librarianRegistrationScreen,
+                                        (route) => false,
+                                      );
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: AppColors.primary,
+                                      padding: EdgeInsets.symmetric(vertical: 15, horizontal: size.height * 0.1),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                    ),
+                                    child: const Text('Register', style: TextStyle(color: Colors.white, fontSize: 16)),
+                                  ),
+                                ],
+                              )
                       ],
                     ),
                   ),

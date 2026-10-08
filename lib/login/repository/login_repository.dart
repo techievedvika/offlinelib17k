@@ -13,6 +13,15 @@ import '../../core/sync/sync_engine.dart';
 class LoginRepository {
   final _api = NetworkServicesApi();
 
+  // Helper to fetch license device count from SharedPreferences
+  Future<Map<String, int?>> getLicenseDeviceCount() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return {
+      'registered': prefs.getInt('licenseRegisteredDevices'),
+      'max': prefs.getInt('licenseMaxDevices'),
+    };
+  }
+
   //login method
   Future<UserModel?> loginApi(dynamic data) async {
     //final response = await _api.postApi(AppUrls.loginapi, data);
@@ -30,6 +39,31 @@ class LoginRepository {
 
       UserModel userModel = UserModel.fromJson(response);
 
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+
+      // Store License info whenever present
+      if (userModel.license != null) {
+        await prefs.setBool('licenseActivated', true);
+        if (userModel.license!.licenseKey != null) {
+          await prefs.setString('licenseKey', userModel.license!.licenseKey!);
+        }
+        if (userModel.license!.schoolUdise != null) {
+          await prefs.setString('licenseSchoolUdise', userModel.license!.schoolUdise!);
+        }
+        if (userModel.license!.validUntil != null) {
+          await prefs.setString('licenseValidUntil', userModel.license!.validUntil!);
+        }
+        if (userModel.license!.maxDevices != null) {
+          await prefs.setInt('licenseMaxDevices', userModel.license!.maxDevices!);
+        }
+        if (userModel.license!.registeredDevices != null) {
+          await prefs.setInt('licenseRegisteredDevices', userModel.license!.registeredDevices!);
+        }
+        if (userModel.license!.allowImageUpload != null) {
+          await prefs.setInt('imageAllowed', userModel.license!.allowImageUpload!);
+        }
+      }
+
       if (userModel.status == 0) {
         return userModel;
       }
@@ -44,8 +78,6 @@ class LoginRepository {
 
         final currentVersion = "$version+$buildNumber";
 
-        SharedPreferences prefs = await SharedPreferences.getInstance();
-
         await prefs.setString('currentVersion', currentVersion);
         await prefs.setBool('librarianRegistered', true);
         await prefs.setString('userId', userModel.user!.id.toString());
@@ -57,17 +89,6 @@ class LoginRepository {
 
         if (userModel.user!.schoolCodeNew != null) {
           await prefs.setString('schoolCodeNew', userModel.user!.schoolCodeNew!);
-        }
-
-        // Store License info
-        if (userModel.license != null) {
-          await prefs.setBool('licenseActivated', true);
-          await prefs.setString('licenseKey', userModel.license!.licenseKey ?? '');
-          await prefs.setString('licenseSchoolUdise', userModel.license!.schoolUdise ?? '');
-          await prefs.setString('licenseValidUntil', userModel.license!.validUntil ?? '');
-          await prefs.setInt('licenseMaxDevices', userModel.license!.maxDevices ?? 0);
-          await prefs.setInt('licenseRegisteredDevices', userModel.license!.registeredDevices ?? 0);
-          await prefs.setInt('imageAllowed', userModel.license!.allowImageUpload ?? 0);
         }
 
 

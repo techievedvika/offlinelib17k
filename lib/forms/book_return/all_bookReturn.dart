@@ -515,20 +515,20 @@ class _AllBookReturnListState extends State<AllBookReturnList> {
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if(isSuperAdmin == false)
-              FilterDropdown(
-                  value: filterState.selectedSchool,
-                  hint: 'Select School',
-                  items: (userSchool!= null ? [userSchool!] : []),
-                  onChanged: (value) {
-                    context.read<FilterCubit>().updateSelectedSchool(value!);
-                    context.read<FilterCubit>().selectSchool(value);
-                    setState(() {
-                      school = value;
-                    });
-                    setModalState(() {});
-                  },
-                  isMobile: isMobile),
+            // if(isSuperAdmin == true)
+            //   FilterDropdown(
+            //       value: filterState.selectedSchool,
+            //       hint: 'Select School',
+            //       items: (userSchool!= null ? [userSchool!] : []),
+            //       onChanged: (value) {
+            //         context.read<FilterCubit>().updateSelectedSchool(value!);
+            //         context.read<FilterCubit>().selectSchool(value);
+            //         setState(() {
+            //           school = value;
+            //         });
+            //         setModalState(() {});
+            //       },
+            //       isMobile: isMobile),
             if(isSuperAdmin == true)
             FilterDropdown(
                 value: filterState.selectedState,

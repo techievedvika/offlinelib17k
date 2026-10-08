@@ -584,7 +584,7 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
                         onChanged: (value){
                           _reason = value;
                         },
-                        maxlines: 4,
+                        // maxlines: 4,
                         validator: (v) {
                           if (v == null || v.trim().isEmpty) {
                             return 'Please enter a Reason';
@@ -592,6 +592,7 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
                           return null;
                         },
                       ),
+                      const SizedBox(height: 20),
                     ],
                   ),
 

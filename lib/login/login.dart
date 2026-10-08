@@ -1,6 +1,7 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lib17000ft/components/custom_button.dart';
 import 'package:lib17000ft/components/custom_textField.dart';
@@ -12,6 +13,7 @@ import '../core/device_id_helper.dart';
 import 'bloc/login_cubit.dart';
 import 'bloc/login_state.dart';
 import '../models/license.dart';
+import 'repository/login_repository.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -26,6 +28,9 @@ class _LoginScreenState extends State<LoginScreen> {
   final GlobalKey<FormState> loginFormKey = GlobalKey<FormState>();
   bool passwordVisible = true;
   bool? login;
+  int? registeredDevices;
+  int? maxDevices;
+  final LoginRepository _loginRepository = LoginRepository();
 
   @override
   void initState() {
@@ -34,6 +39,28 @@ class _LoginScreenState extends State<LoginScreen> {
     passwordController = TextEditingController();
 
     _checkLoginState(); // Check login state on init
+  }
+
+  Future<void> _loadLicenseDevicesAndToast() async {
+    final devices = await _loginRepository.getLicenseDeviceCount();
+    final reg = devices['registered'];
+    final max = devices['max'];
+    if (mounted) {
+      if (reg != null && max != null) {
+        setState(() {
+          registeredDevices = reg;
+          maxDevices = max;
+        });
+        Fluttertoast.showToast(
+          msg: "Registered Devices: $reg/$max",
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.BOTTOM,
+          backgroundColor: AppColors.primary,
+          textColor: Colors.black,
+          fontSize: 16.0,
+        );
+      }
+    }
   }
 
   @override
@@ -83,13 +110,27 @@ class _LoginScreenState extends State<LoginScreen> {
                     small: 200.0, medium: 330.0, large: 250.0),
               ),
               Padding(
-                padding: const EdgeInsets.only(left: 40, top: 0),
-                child: Align(
-                  alignment: Alignment.topLeft,
-                  child: Text(
-                    'Login',
-                    style: AppStyles.heading1(context, AppColors.secondary),
-                  ),
+                padding: const EdgeInsets.only(left: 40, right: 40, top: 0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Login',
+                      style: AppStyles.heading1(context, AppColors.secondary),
+                    ),
+                    if (registeredDevices != null && maxDevices != null)
+                      Text(
+                        'Registered Devices: $registeredDevices/$maxDevices',
+                        style: GoogleFonts.openSans(
+                          textStyle: TextStyle(
+                            fontSize: responsive.responsiveTextSize(12, 14, 16),
+                            color: AppColors.secondary,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
               SizedBox(
@@ -103,9 +144,35 @@ class _LoginScreenState extends State<LoginScreen> {
                   if (state is LoginSuccess) {
                     _saveLoginState();
                     loginCubit.getToken();
+                    _loadLicenseDevicesAndToast();
                    
                     Navigator.pushReplacementNamed(
                         context, RoutesName.dashboard);
+                  }
+
+                  if (state is LoginFailure) {
+                    if (state.license != null) {
+                      final reg = state.license?.registeredDevices;
+                      final max = state.license?.maxDevices;
+                      if (reg != null && max != null) {
+                        setState(() {
+                          registeredDevices = reg;
+                          maxDevices = max;
+                        });
+                        Fluttertoast.showToast(
+                          msg: "Registered Devices: $reg/$max",
+                          toastLength: Toast.LENGTH_LONG,
+                          gravity: ToastGravity.BOTTOM,
+                          backgroundColor: AppColors.primary,
+                          textColor: Colors.black,
+                          fontSize: 16.0,
+                        );
+                      } else {
+                        _loadLicenseDevicesAndToast();
+                      }
+                    } else {
+                      _loadLicenseDevicesAndToast();
+                    }
                   }
 
                   if (state is LoginLoading) {
@@ -263,74 +330,123 @@ class _LoginScreenState extends State<LoginScreen> {
                           height: responsive.responsiveValue(
                               small: 10.0, medium: 20.0, large: 30.0),
                         ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            ElevatedButton(
-                                onPressed: () async {
-                                  final prefs = await SharedPreferences.getInstance();
-                                  await prefs.remove('licenseActivated');
-                                  await prefs.remove('licenseKey');
-                                  await prefs.remove('licenseSchoolUdise');
-                                  await prefs.remove('licenseValidUntil');
-                                  await prefs.remove('licenseMaxDevices');
-                                  await prefs.remove('licenseRegisteredDevices');
-                                  await prefs.remove('imageAllowed');
-                                  if (context.mounted) {
-                                    Navigator.pushReplacementNamed(context, RoutesName.licenseActivationScreen);
-                                  }
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.primary,
-                                  padding: EdgeInsets.symmetric(vertical: 15,horizontal: size.height * 0.055),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                ),
-                                child:Text('Activate License',
-                                  style: GoogleFonts.openSans(
-                                    textStyle: TextStyle(
-                                      fontSize: responsive.responsiveTextSize(16, 18, 20),
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                        responsive.isSmallScreen()
+                            ? Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  ElevatedButton(
+                                      onPressed: () async {
+                                        final prefs = await SharedPreferences.getInstance();
+                                        await prefs.remove('licenseActivated');
+                                        await prefs.remove('licenseKey');
+                                        await prefs.remove('licenseSchoolUdise');
+                                        await prefs.remove('licenseValidUntil');
+                                        await prefs.remove('licenseMaxDevices');
+                                        await prefs.remove('licenseRegisteredDevices');
+                                        await prefs.remove('imageAllowed');
+                                        if (context.mounted) {
+                                          Navigator.pushReplacementNamed(context, RoutesName.licenseActivationScreen);
+                                        }
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: AppColors.primary,
+                                        padding: const EdgeInsets.symmetric(vertical: 15),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                      ),
+                                      child: Text('Activate License',
+                                        style: GoogleFonts.openSans(
+                                          textStyle: TextStyle(
+                                            fontSize: responsive.responsiveTextSize(16, 18, 20),
+                                            color: Colors.black,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      )
                                   ),
-                                )
-                            ),
-                            // SizedBox(
-                            //   child: Text(
-                            //     'OR',
-                            //     style: TextStyle(
-                            //       color: Colors.grey.shade400,
-                            //       fontSize: 12,
-                            //       fontWeight: FontWeight.bold,
-                            //     ),
-                            //   )
-                            // ),
+                                  const SizedBox(height: 15),
+                                  ElevatedButton(
+                                      onPressed: (){
+                                        Navigator.pushNamedAndRemoveUntil(
+                                          context,
+                                          RoutesName.librarianRegistrationScreen,
+                                              (route) => false,
+                                        );
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: AppColors.primary,
+                                        padding: const EdgeInsets.symmetric(vertical: 15),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                      ),
+                                      child: Text('Register',
+                                        style: GoogleFonts.openSans(
+                                          textStyle: TextStyle(
+                                            fontSize: responsive.responsiveTextSize(16, 18, 20),
+                                            color: Colors.black,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      )
+                                  ),
+                                ],
+                              )
+                            : Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  ElevatedButton(
+                                      onPressed: () async {
+                                        final prefs = await SharedPreferences.getInstance();
+                                        await prefs.remove('licenseActivated');
+                                        await prefs.remove('licenseKey');
+                                        await prefs.remove('licenseSchoolUdise');
+                                        await prefs.remove('licenseValidUntil');
+                                        await prefs.remove('licenseMaxDevices');
+                                        await prefs.remove('licenseRegisteredDevices');
+                                        await prefs.remove('imageAllowed');
+                                        if (context.mounted) {
+                                          Navigator.pushReplacementNamed(context, RoutesName.licenseActivationScreen);
+                                        }
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: AppColors.primary,
+                                        padding: EdgeInsets.symmetric(vertical: 15,horizontal: size.height * 0.055),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                      ),
+                                      child: Text('Activate License',
+                                        style: GoogleFonts.openSans(
+                                          textStyle: TextStyle(
+                                            fontSize: responsive.responsiveTextSize(16, 18, 20),
+                                            color: Colors.black,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      )
+                                  ),
 
-                            ElevatedButton(
-                                onPressed: (){
-                                  Navigator.pushNamedAndRemoveUntil(
-                                    context,
-                                    RoutesName.librarianRegistrationScreen,
-                                        (route) => false,
-                                  );
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.primary,
-                                  padding: EdgeInsets.symmetric(vertical: 15,horizontal: size.height * 0.09),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                ),
-                                child: Text('Register',
-                                  style: GoogleFonts.openSans(
-                                    textStyle: TextStyle(
-                                      fontSize: responsive.responsiveTextSize(16, 18, 20),
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                                  ElevatedButton(
+                                      onPressed: (){
+                                        Navigator.pushNamedAndRemoveUntil(
+                                          context,
+                                          RoutesName.librarianRegistrationScreen,
+                                              (route) => false,
+                                        );
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: AppColors.primary,
+                                        padding: EdgeInsets.symmetric(vertical: 15,horizontal: size.height * 0.09),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                      ),
+                                      child: Text('Register',
+                                        style: GoogleFonts.openSans(
+                                          textStyle: TextStyle(
+                                            fontSize: responsive.responsiveTextSize(16, 18, 20),
+                                            color: Colors.black,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      )
                                   ),
-                                )
-                            ),
-                          ],
-                        ),
+                                ],
+                              ),
                         // Center(
                         //   child: TextButton(
                         //     onPressed: () async {
