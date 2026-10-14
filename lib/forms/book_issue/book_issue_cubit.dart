@@ -184,8 +184,13 @@ class BookIssueCubit extends Cubit<BookIssueState> {
     required dynamic adminId, String? stateName, String? district, String? block,
     String? school, String? from, String? to, String? level, String? language,
   }) async {
-    if (_isLoadingReturned || !_hasMoreDataReturned) return;
+    // if (_isLoadingReturned || !_hasMoreDataReturned) return;
+    // _isLoadingReturned = true;
+    // emit(BookIssueLoading());
+    if (_isLoadingReturned) return;
     _isLoadingReturned = true;
+    _pageReturned = 1; // fresh load every call
+    _hasMoreDataReturned = true;
     emit(BookIssueLoading());
 
     try {
@@ -201,6 +206,7 @@ class BookIssueCubit extends Cubit<BookIssueState> {
             } else {
               List<BookReturnModel> bookReturn =
               (value['data'] as List).map((s) => BookReturnModel.fromJson(s)).toList();
+              print("Book Return Fetech : $bookReturn");
               _hasMoreDataReturned = value['data'].length > 0;
               if (_hasMoreDataReturned) _pageReturned++;
               emit(BookReturnListSuccess(bookReturnedList: bookReturn, message: value['message'].toString()));
@@ -227,8 +233,13 @@ class BookIssueCubit extends Cubit<BookIssueState> {
     required dynamic adminId, String? stateName, String? district, String? block,
     String? school, String? from, String? to, String? level, String? language,
   }) async {
+    // if (_isLoadingIssued) return;
+    // _isLoadingIssued = true;
+    // emit(BookIssueLoading());
     if (_isLoadingIssued) return;
     _isLoadingIssued = true;
+    _pageIssued = 1; // fresh load every call
+    _hasMoreDataIssued = true;
     emit(BookIssueLoading());
 
     try {

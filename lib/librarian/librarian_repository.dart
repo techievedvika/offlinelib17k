@@ -11,10 +11,12 @@ class LibrarianRepository {
     required String schoolId,
     required String username,
     required String password,
+    required String designation,
   }) async {
     return await _api.postApi(AppUrls.registerLibrarianApi, {
       'name': name,
-      'number': number,
+      'mobile_number': number,
+      'designation': designation,
       'school_id': schoolId,
       'username': username,
       'password': password,

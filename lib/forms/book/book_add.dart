@@ -118,81 +118,180 @@ class _AddBookScreenState extends State<AddBookScreen> {
     }
   }
 
+  // Future<void> fetchAndShowBookDetails(String isbn) async {
+  //   if (isbn.trim().isEmpty) return;
+  //
+  //   setState(() => isScanning = true);
+  //
+  //   try {
+  //     final connectivityResult = await Connectivity().checkConnectivity();
+  //     final online = connectivityResult.isNotEmpty && !connectivityResult.contains(ConnectivityResult.none);
+  //
+  //     Map<String, String> bookDetails = {};
+  //     String source = '';
+  //
+  //     if (online) {
+  //       try {
+  //         final url = Uri.parse(AppUrls.getBookApi);
+  //         final response = await http.post(url, body: {"isbn": isbn}).timeout(const Duration(seconds: 15));
+  //
+  //         if (response.statusCode == 200) {
+  //           final data = json.decode(response.body);
+  //           if (data['book'] != null && data['book'] is List && (data['book'] as List).isNotEmpty) {
+  //             final book = data['book'][0];
+  //             bookDetails = {
+  //               'title': book['title']?.toString() ?? '',
+  //               'author': book['author']?.toString() ?? '',
+  //               'publisher': book['publisher']?.toString() ?? '',
+  //               'language': book['language']?.toString() ?? '',
+  //               'genre': book['gener']?.toString() ?? book['genre']?.toString() ?? '',
+  //               'level': book['level']?.toString() ?? '',
+  //             };
+  //             source = 'Online';
+  //           }
+  //         }
+  //       } catch (e) {
+  //         debugPrint('Online book lookup failed, falling back to offline cache: $e');
+  //       }
+  //     }
+  //
+  //     if (bookDetails.isEmpty) {
+  //       final offlineData = await BookIssueRepository().getBookDetailsMapOffline(isbn);
+  //       if (offlineData['title'] != null && offlineData['title'] != 'Unknown' && offlineData['title']!.isNotEmpty) {
+  //         bookDetails = {
+  //           'title': offlineData['title'] ?? '',
+  //           'author': offlineData['author'] ?? '',
+  //           'publisher': offlineData['publisher'] ?? '',
+  //           'language': offlineData['language'] ?? '',
+  //           'genre': offlineData['genre'] ?? offlineData['gener'] ?? '',
+  //           'level': offlineData['level'] ?? '',
+  //         };
+  //         source = 'Offline';
+  //       }
+  //     }
+  //
+  //     if (!mounted) return;
+  //
+  //     if (bookDetails.isNotEmpty) {
+  //       await showDialog(
+  //         context: context,
+  //         builder: (context) {
+  //           return AlertDialog(
+  //             title: const Text('Book Already Exists'),
+  //             content: Text(
+  //               'This book already exists in the database.\n\n'
+  //                   'Title: ${bookDetails['title'] ?? ''}\n'
+  //                   'Author: ${bookDetails['author'] ?? ''}\n'
+  //                   'Publisher: ${bookDetails['publisher'] ?? ''}\n'
+  //                   'Language: ${bookDetails['language'] ?? ''}\n'
+  //                   'Genre: ${bookDetails['genre'] ?? ''}\n'
+  //                   'Level: ${bookDetails['level'] ?? ''}\n\n'
+  //                   // 'Source: $source',
+  //             ),
+  //             actions: [
+  //               CustomButton(
+  //                 onPressedButton: () {
+  //                   Navigator.of(context).pop(); // Close dialog
+  //                   Navigator.of(context).pop(); // Go back to previous screen
+  //                 },
+  //                 title: 'OK',
+  //               ),
+  //             ],
+  //           );
+  //         },
+  //       );
+  //     } else {
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         const SnackBar(
+  //           content: Text(
+  //             'No book details found online or offline for this ISBN.',
+  //           ),
+  //         ),
+  //       );
+  //     }
+  //   } catch (e) {
+  //     if (mounted) {
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         SnackBar(content: Text('Error fetching book details: $e')),
+  //       );
+  //     }
+  //   } finally {
+  //     if (mounted) {
+  //       setState(() => isScanning = false);
+  //     }
+  //   }
+  // }
+
+
   Future<void> fetchAndShowBookDetails(String isbn) async {
     if (isbn.trim().isEmpty) return;
 
     setState(() => isScanning = true);
 
     try {
-      final connectivityResult = await Connectivity().checkConnectivity();
-      final online = connectivityResult.isNotEmpty && !connectivityResult.contains(ConnectivityResult.none);
+      bool isbnExists = false;
 
-      Map<String, String> bookDetails = {};
-      String source = '';
+      // Check online first
+      try {
+        final connectivityResult =
+        await Connectivity().checkConnectivity();
 
-      if (online) {
-        try {
-          final url = Uri.parse(AppUrls.getBookApi);
-          final response = await http.post(url, body: {"isbn": isbn}).timeout(const Duration(seconds: 15));
+        final online = connectivityResult.isNotEmpty &&
+            !connectivityResult.contains(ConnectivityResult.none);
+
+        if (online) {
+          final response = await http
+              .post(
+            Uri.parse(AppUrls.getBookApi),
+            body: {'isbn': isbn.trim()},
+          )
+              .timeout(const Duration(seconds: 15));
 
           if (response.statusCode == 200) {
             final data = json.decode(response.body);
-            if (data['book'] != null && data['book'] is List && (data['book'] as List).isNotEmpty) {
-              final book = data['book'][0];
-              bookDetails = {
-                'title': book['title']?.toString() ?? '',
-                'author': book['author']?.toString() ?? '',
-                'publisher': book['publisher']?.toString() ?? '',
-                'language': book['language']?.toString() ?? '',
-                'genre': book['gener']?.toString() ?? book['genre']?.toString() ?? '',
-                'level': book['level']?.toString() ?? '',
-              };
-              source = 'Online';
+
+            if (data['book'] is List &&
+                (data['book'] as List).isNotEmpty) {
+              isbnExists = true;
             }
           }
-        } catch (e) {
-          debugPrint('Online book lookup failed, falling back to offline cache: $e');
         }
+      } catch (e) {
+        debugPrint('Online ISBN check failed: $e');
       }
 
-      if (bookDetails.isEmpty) {
-        final offlineData = await BookIssueRepository().getBookDetailsMapOffline(isbn);
-        if (offlineData['title'] != null && offlineData['title'] != 'Unknown' && offlineData['title']!.isNotEmpty) {
-          bookDetails = {
-            'title': offlineData['title'] ?? '',
-            'author': offlineData['author'] ?? '',
-            'publisher': offlineData['publisher'] ?? '',
-            'language': offlineData['language'] ?? '',
-            'genre': offlineData['genre'] ?? offlineData['gener'] ?? '',
-            'level': offlineData['level'] ?? '',
-          };
-          source = 'Offline';
+      // If not found online, check the offline database
+      if (!isbnExists) {
+        final offlineData =
+        await BookIssueRepository()
+            .getBookDetailsMapOffline(isbn.trim());
+
+        final title = offlineData['title'];
+
+        if (title != null &&
+            title.trim().isNotEmpty &&
+            title != 'Unknown') {
+          isbnExists = true;
         }
       }
 
       if (!mounted) return;
 
-      if (bookDetails.isNotEmpty) {
+      if (isbnExists) {
         await showDialog(
           context: context,
-          builder: (context) {
+          builder: (dialogContext) {
             return AlertDialog(
               title: const Text('Book Already Exists'),
               content: Text(
-                'This book already exists in the database.\n\n'
-                    'Title: ${bookDetails['title'] ?? ''}\n'
-                    'Author: ${bookDetails['author'] ?? ''}\n'
-                    'Publisher: ${bookDetails['publisher'] ?? ''}\n'
-                    'Language: ${bookDetails['language'] ?? ''}\n'
-                    'Genre: ${bookDetails['genre'] ?? ''}\n'
-                    'Level: ${bookDetails['level'] ?? ''}\n\n'
-                    // 'Source: $source',
+                'A book with ISBN ${isbn.trim()} '
+                    'already exists in the database.',
               ),
               actions: [
                 CustomButton(
                   onPressedButton: () {
-                    Navigator.of(context).pop(); // Close dialog
-                    Navigator.of(context).pop(); // Go back to previous screen
+                    Navigator.of(dialogContext).pop();
+                    Navigator.of(context).pop();
                   },
                   title: 'OK',
                 ),
@@ -204,7 +303,7 @@ class _AddBookScreenState extends State<AddBookScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
-              'No book details found online or offline for this ISBN.',
+              'No book found for this ISBN.',
             ),
           ),
         );
@@ -212,7 +311,9 @@ class _AddBookScreenState extends State<AddBookScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error fetching book details: $e')),
+          SnackBar(
+            content: Text('Error checking ISBN: $e'),
+          ),
         );
       }
     } finally {
@@ -221,6 +322,7 @@ class _AddBookScreenState extends State<AddBookScreen> {
       }
     }
   }
+
 
 
 

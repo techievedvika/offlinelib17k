@@ -18,6 +18,7 @@ import 'package:lib17000ft/forms/dashboard/dash_cubit.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../components/app_feedback.dart';
 import '../../components/custom_image_picker.dart';
 import '../../components/info_dialog.dart';
 import '../../components/school_tag.dart';
@@ -102,9 +103,12 @@ class _BookIssueState extends State<BookIssue> {
       print("Student Details: $studentDetails");
     } catch (e) {
       debugPrint("Error parsing student data: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Failed to parse student information")),
-      );
+      if (mounted) {
+        AppFeedback.showError(
+          context,
+          message: "Failed to parse student information",
+        );
+      }
     }
   }
 
@@ -117,9 +121,10 @@ class _BookIssueState extends State<BookIssue> {
       if (isbn == '-1' || !mounted) return;
 
       if (!(RegExp(r'^\d{10}$').hasMatch(isbn) || (RegExp(r'^97[89]\d{10}$').hasMatch(isbn)))) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text('Invalid ISBN scanned. Please scan a valid ISBN.'),
-            backgroundColor: AppColors.error));
+        AppFeedback.showError(
+          context,
+          message: 'Invalid ISBN scanned. Please scan a valid ISBN.',
+        );
         return;
       }
       isbnController.text = isbn;
@@ -149,9 +154,12 @@ class _BookIssueState extends State<BookIssue> {
         }
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error fetching book details: $e")),
-      );
+      if (mounted) {
+        AppFeedback.showError(
+          context,
+          message: "Error fetching book details: $e",
+        );
+      }
     } finally {
       if (mounted) setState(() => isScanning = false);
     }
@@ -331,8 +339,9 @@ class _BookIssueState extends State<BookIssue> {
                               }
                             } catch (e) {
                               if (mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text("Search failed: $e")),
+                                AppFeedback.showError(
+                                  context,
+                                  message: "Search failed: $e",
                                 );
                               }
                             } finally {
@@ -393,9 +402,12 @@ class _BookIssueState extends State<BookIssue> {
                               }
                             }
                           } catch (e) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text("Search failed: $e",style: const TextStyle(color: AppColors.tertiary))),
-                            );
+                            if (mounted) {
+                              AppFeedback.showError(
+                                context,
+                                message: "Search failed: $e",
+                              );
+                            }
                           } finally {
                             if (mounted) setState(() => isScanning = false);
                           }
@@ -449,20 +461,24 @@ class _BookIssueState extends State<BookIssue> {
                     ),
 
 
-
-                    const SizedBox(height: 20),
-                    LabelText(label: 'G-R-O-W level ', astrick: true),
-                    ResettableRadio(
-                      key: _radioKey,
-                      selectedOption: growValue,
-                        options: const ['Green', 'Red', 'Orange','White', 'Other'],
-                      layout: RadioLayout.grid,
-                      gridCount: 3,
-                      onChanged: (value) => setState(() => growValue = value),
-                      validator: (value) => growValue == null ? 'Please select an option.' : null,
-                      //isEnabled: growValue == null || growValue!.isEmpty,
-                      isEnabled: bookInDb != true,
-                    ),
+                    if (growValue != 'Other')
+                      Column(
+                        children: [
+                          const SizedBox(height: 20),
+                          LabelText(label: 'G-R-O-W level ', astrick: true),
+                          ResettableRadio(
+                            key: _radioKey,
+                            selectedOption: growValue,
+                            options: const ['Green', 'Red', 'Orange','White', 'Other'],
+                            layout: RadioLayout.grid,
+                            gridCount: 3,
+                            onChanged: (value) => setState(() => growValue = value),
+                            validator: (value) => growValue == null ? 'Please select an option.' : null,
+                            //isEnabled: growValue == null || growValue!.isEmpty,
+                            isEnabled: bookInDb != true,
+                          ),
+                        ],
+                      ),
 
 
                     const SizedBox(height: 20),
@@ -500,8 +516,9 @@ class _BookIssueState extends State<BookIssue> {
                             resetForm();
                           }
                         } else if (state is BookIssueFailure) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(state.message), backgroundColor: AppColors.error),
+                          AppFeedback.showError(
+                            context,
+                            message: state.message,
                           );
                         }
                       },

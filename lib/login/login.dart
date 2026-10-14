@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lib17000ft/components/app_feedback.dart';
 import 'package:lib17000ft/components/custom_button.dart';
 import 'package:lib17000ft/components/custom_textField.dart';
 import 'package:lib17000ft/configs/color/color.dart';
@@ -119,17 +120,17 @@ class _LoginScreenState extends State<LoginScreen> {
                       'Login',
                       style: AppStyles.heading1(context, AppColors.secondary),
                     ),
-                    if (registeredDevices != null && maxDevices != null)
-                      Text(
-                        'Registered Devices: $registeredDevices/$maxDevices',
-                        style: GoogleFonts.openSans(
-                          textStyle: TextStyle(
-                            fontSize: responsive.responsiveTextSize(12, 14, 16),
-                            color: AppColors.secondary,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
+                    // if (registeredDevices != null && maxDevices != null)
+                    //   Text(
+                    //     'Registered Devices: $registeredDevices/$maxDevices',
+                    //     style: GoogleFonts.openSans(
+                    //       textStyle: TextStyle(
+                    //         fontSize: responsive.responsiveTextSize(12, 14, 16),
+                    //         color: AppColors.secondary,
+                    //         fontWeight: FontWeight.bold,
+                    //       ),
+                    //     ),
+                    //   ),
                   ],
                 ),
               ),
@@ -151,6 +152,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   }
 
                   if (state is LoginFailure) {
+                    AppFeedback.showError(context, message: state.message);
                     if (state.license != null) {
                       final reg = state.license?.registeredDevices;
                       final max = state.license?.maxDevices;
@@ -237,6 +239,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           Center(
                             child: Column(
                               children: [
+                                // AppFeedback.showError(context, message: state.message),
                                 Text(
                                   state.message,
                                   textAlign: TextAlign.center,
@@ -248,6 +251,40 @@ class _LoginScreenState extends State<LoginScreen> {
                               ],
                             ),
                           ),
+                        // BlocListener<LoginCubit, LoginState>(
+                        //   listenWhen: (previous, current) {
+                        //     return current is LoginFailure &&
+                        //         (previous is! LoginFailure ||
+                        //             previous.message != current.message);
+                        //   },
+                        //   listener: (context, state) {
+                        //     if (state is LoginFailure) {
+                        //       AppFeedback.showError(
+                        //         context,
+                        //         message: state.message,
+                        //       );
+                        //     }
+                        //   },
+                        //   child: BlocBuilder<LoginCubit, LoginState>(
+                        //     builder: (context, state) {
+                        //       if (state is LoginFailure) {
+                        //         return Center(
+                        //           child: Text(
+                        //             state.message,
+                        //             textAlign: TextAlign.center,
+                        //             style: const TextStyle(
+                        //               color: Colors.red,
+                        //               fontSize: 16,
+                        //               fontWeight: FontWeight.bold,
+                        //             ),
+                        //           ),
+                        //         );
+                        //       }
+                        //
+                        //       return const SizedBox.shrink();
+                        //     },
+                        //   ),
+                        // ),
                         if (state is! LoginLoading)
                           // CustomButton(
                           //   title: 'Login',
@@ -330,123 +367,203 @@ class _LoginScreenState extends State<LoginScreen> {
                           height: responsive.responsiveValue(
                               small: 10.0, medium: 20.0, large: 30.0),
                         ),
-                        responsive.isSmallScreen()
-                            ? Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  ElevatedButton(
-                                      onPressed: () async {
-                                        final prefs = await SharedPreferences.getInstance();
-                                        await prefs.remove('licenseActivated');
-                                        await prefs.remove('licenseKey');
-                                        await prefs.remove('licenseSchoolUdise');
-                                        await prefs.remove('licenseValidUntil');
-                                        await prefs.remove('licenseMaxDevices');
-                                        await prefs.remove('licenseRegisteredDevices');
-                                        await prefs.remove('imageAllowed');
-                                        if (context.mounted) {
-                                          Navigator.pushReplacementNamed(context, RoutesName.licenseActivationScreen);
-                                        }
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: AppColors.primary,
-                                        padding: const EdgeInsets.symmetric(vertical: 15),
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                      ),
-                                      child: Text('Activate License',
-                                        style: GoogleFonts.openSans(
-                                          textStyle: TextStyle(
-                                            fontSize: responsive.responsiveTextSize(16, 18, 20),
-                                            color: Colors.black,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      )
-                                  ),
-                                  const SizedBox(height: 15),
-                                  ElevatedButton(
-                                      onPressed: (){
-                                        Navigator.pushNamedAndRemoveUntil(
-                                          context,
-                                          RoutesName.librarianRegistrationScreen,
-                                              (route) => false,
-                                        );
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: AppColors.primary,
-                                        padding: const EdgeInsets.symmetric(vertical: 15),
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                      ),
-                                      child: Text('Register',
-                                        style: GoogleFonts.openSans(
-                                          textStyle: TextStyle(
-                                            fontSize: responsive.responsiveTextSize(16, 18, 20),
-                                            color: Colors.black,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      )
-                                  ),
-                                ],
-                              )
-                            : Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  ElevatedButton(
-                                      onPressed: () async {
-                                        final prefs = await SharedPreferences.getInstance();
-                                        await prefs.remove('licenseActivated');
-                                        await prefs.remove('licenseKey');
-                                        await prefs.remove('licenseSchoolUdise');
-                                        await prefs.remove('licenseValidUntil');
-                                        await prefs.remove('licenseMaxDevices');
-                                        await prefs.remove('licenseRegisteredDevices');
-                                        await prefs.remove('imageAllowed');
-                                        if (context.mounted) {
-                                          Navigator.pushReplacementNamed(context, RoutesName.licenseActivationScreen);
-                                        }
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: AppColors.primary,
-                                        padding: EdgeInsets.symmetric(vertical: 15,horizontal: size.height * 0.055),
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                      ),
-                                      child: Text('Activate License',
-                                        style: GoogleFonts.openSans(
-                                          textStyle: TextStyle(
-                                            fontSize: responsive.responsiveTextSize(16, 18, 20),
-                                            color: Colors.black,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      )
-                                  ),
 
-                                  ElevatedButton(
-                                      onPressed: (){
-                                        Navigator.pushNamedAndRemoveUntil(
-                                          context,
-                                          RoutesName.librarianRegistrationScreen,
-                                              (route) => false,
-                                        );
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: AppColors.primary,
-                                        padding: EdgeInsets.symmetric(vertical: 15,horizontal: size.height * 0.09),
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                      ),
-                                      child: Text('Register',
-                                        style: GoogleFonts.openSans(
-                                          textStyle: TextStyle(
-                                            fontSize: responsive.responsiveTextSize(16, 18, 20),
-                                            color: Colors.black,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      )
-                                  ),
-                                ],
+                        ElevatedButton(
+                            onPressed: (){
+                              Navigator.pushNamedAndRemoveUntil(
+                                context,
+                                RoutesName.librarianRegistrationScreen,
+                                    (route) => false,
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primary,
+                              padding: const EdgeInsets.symmetric(vertical: 15),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
                               ),
+                            ),
+                            child: Text('Register',
+                              style: GoogleFonts.openSans(
+                                textStyle: TextStyle(
+                                  fontSize: responsive.responsiveTextSize(16, 18, 20),
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            )
+                        ),
+
+                        // responsive.isSmallScreen()
+                        //     ? Column(
+                        //         crossAxisAlignment: CrossAxisAlignment.stretch,
+                        //         children: [
+                        //           // ElevatedButton(
+                        //           //     onPressed: () async {
+                        //           //       final prefs = await SharedPreferences.getInstance();
+                        //           //       await prefs.remove('licenseActivated');
+                        //           //       await prefs.remove('licenseKey');
+                        //           //       await prefs.remove('licenseSchoolUdise');
+                        //           //       await prefs.remove('licenseValidUntil');
+                        //           //       await prefs.remove('licenseMaxDevices');
+                        //           //       await prefs.remove('licenseRegisteredDevices');
+                        //           //       await prefs.remove('imageAllowed');
+                        //           //       if (context.mounted) {
+                        //           //         Navigator.pushReplacementNamed(context, RoutesName.licenseActivationScreen);
+                        //           //       }
+                        //           //     },
+                        //           //     style: ElevatedButton.styleFrom(
+                        //           //       backgroundColor: AppColors.primary,
+                        //           //       padding: const EdgeInsets.symmetric(vertical: 15),
+                        //           //       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        //           //     ),
+                        //           //     child: Text('Activate License',
+                        //           //       style: GoogleFonts.openSans(
+                        //           //         textStyle: TextStyle(
+                        //           //           fontSize: responsive.responsiveTextSize(16, 18, 20),
+                        //           //           color: Colors.black,
+                        //           //           fontWeight: FontWeight.bold,
+                        //           //         ),
+                        //           //       ),
+                        //           //     )
+                        //           // ),
+                        //           // const SizedBox(height: 15),
+                        //           // ElevatedButton(
+                        //           //     onPressed: (){
+                        //           //       Navigator.pushNamedAndRemoveUntil(
+                        //           //         context,
+                        //           //         RoutesName.librarianRegistrationScreen,
+                        //           //             (route) => false,
+                        //           //       );
+                        //           //     },
+                        //           //     style: ElevatedButton.styleFrom(
+                        //           //       backgroundColor: AppColors.primary,
+                        //           //       padding: const EdgeInsets.symmetric(vertical: 15),
+                        //           //       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        //           //     ),
+                        //           //     child: Text('Register',
+                        //           //       style: GoogleFonts.openSans(
+                        //           //         textStyle: TextStyle(
+                        //           //           fontSize: responsive.responsiveTextSize(16, 18, 20),
+                        //           //           color: Colors.black,
+                        //           //           fontWeight: FontWeight.bold,
+                        //           //         ),
+                        //           //       ),
+                        //           //     )
+                        //           // ),
+                        //           ElevatedButton(
+                        //             onPressed: (){
+                        //               Navigator.pushNamedAndRemoveUntil(
+                        //                 context,
+                        //                 RoutesName.librarianRegistrationScreen,
+                        //                     (route) => false,
+                        //               );
+                        //             },
+                        //             style: ElevatedButton.styleFrom(
+                        //               backgroundColor: AppColors.primary,
+                        //               padding: const EdgeInsets.symmetric(vertical: 15),
+                        //               shape: RoundedRectangleBorder(
+                        //                 borderRadius: BorderRadius.circular(10),
+                        //               ),
+                        //             ),
+                        //               child: Text('Register',
+                        //                 style: GoogleFonts.openSans(
+                        //                   textStyle: TextStyle(
+                        //                     fontSize: responsive.responsiveTextSize(16, 18, 20),
+                        //                     color: Colors.black,
+                        //                     fontWeight: FontWeight.bold,
+                        //                   ),
+                        //                 ),
+                        //               )
+                        //           ),
+                        //         ],
+                        //       )
+                        //     : Row(
+                        //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        //         children: [
+                        //           // ElevatedButton(
+                        //           //     onPressed: () async {
+                        //           //       final prefs = await SharedPreferences.getInstance();
+                        //           //       await prefs.remove('licenseActivated');
+                        //           //       await prefs.remove('licenseKey');
+                        //           //       await prefs.remove('licenseSchoolUdise');
+                        //           //       await prefs.remove('licenseValidUntil');
+                        //           //       await prefs.remove('licenseMaxDevices');
+                        //           //       await prefs.remove('licenseRegisteredDevices');
+                        //           //       await prefs.remove('imageAllowed');
+                        //           //       if (context.mounted) {
+                        //           //         Navigator.pushReplacementNamed(context, RoutesName.licenseActivationScreen);
+                        //           //       }
+                        //           //     },
+                        //           //     style: ElevatedButton.styleFrom(
+                        //           //       backgroundColor: AppColors.primary,
+                        //           //       padding: EdgeInsets.symmetric(vertical: 15,horizontal: size.height * 0.055),
+                        //           //       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        //           //     ),
+                        //           //     child: Text('Activate License',
+                        //           //       style: GoogleFonts.openSans(
+                        //           //         textStyle: TextStyle(
+                        //           //           fontSize: responsive.responsiveTextSize(16, 18, 20),
+                        //           //           color: Colors.black,
+                        //           //           fontWeight: FontWeight.bold,
+                        //           //         ),
+                        //           //       ),
+                        //           //     )
+                        //           // ),
+                        //
+                        //           // ElevatedButton(
+                        //           //     onPressed: (){
+                        //           //       Navigator.pushNamedAndRemoveUntil(
+                        //           //         context,
+                        //           //         RoutesName.librarianRegistrationScreen,
+                        //           //             (route) => false,
+                        //           //       );
+                        //           //     },
+                        //           //     style: ElevatedButton.styleFrom(
+                        //           //       backgroundColor: AppColors.primary,
+                        //           //       padding: EdgeInsets.symmetric(vertical: 15,horizontal: size.height * 0.09),
+                        //           //       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        //           //     ),
+                        //           //     child: Text('Register',
+                        //           //       style: GoogleFonts.openSans(
+                        //           //         textStyle: TextStyle(
+                        //           //           fontSize: responsive.responsiveTextSize(16, 18, 20),
+                        //           //           color: Colors.black,
+                        //           //           fontWeight: FontWeight.bold,
+                        //           //         ),
+                        //           //       ),
+                        //           //     )
+                        //           // ),
+                        //           ElevatedButton(
+                        //               onPressed: (){
+                        //                 Navigator.pushNamedAndRemoveUntil(
+                        //                   context,
+                        //                   RoutesName.librarianRegistrationScreen,
+                        //                       (route) => false,
+                        //                 );
+                        //               },
+                        //               style: ElevatedButton.styleFrom(
+                        //                 backgroundColor: AppColors.primary,
+                        //                 padding: const EdgeInsets.symmetric(vertical: 15),
+                        //                 shape: RoundedRectangleBorder(
+                        //                   borderRadius: BorderRadius.circular(10),
+                        //                 ),
+                        //               ),
+                        //               child: Text('Register',
+                        //                 style: GoogleFonts.openSans(
+                        //                   textStyle: TextStyle(
+                        //                     fontSize: responsive.responsiveTextSize(16, 18, 20),
+                        //                     color: Colors.black,
+                        //                     fontWeight: FontWeight.bold,
+                        //                   ),
+                        //                 ),
+                        //               )
+                        //           ),
+                        //         ],
+                        //       ),
+
+
+
                         // Center(
                         //   child: TextButton(
                         //     onPressed: () async {

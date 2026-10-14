@@ -54,8 +54,8 @@ class _SplashScreenState extends State<SplashScreen>
     // Start animation
     _controller.forward().then((_) {
       if (!_disposed) {
-        //_splashServices.isLogin(context);
-        _splashServices.decideInitialRoute(context);
+        _splashServices.isLogin(context);
+        //_splashServices.decideInitialRoute(context);
       }
     });
 

@@ -545,9 +545,8 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
                 CustomDropdownFormField(
                   labelText: "Reason",
                   options: const [
-                    "Student move to Higher School",
-                    "Student leave School",
-                    "Student transferred to another school",
+                    "Student moved to another School",
+                    "Student Graduated",
                     "Other"
                   ],
                   // FIX 3: Ensure selectedOption is null if the text is empty or doesn't match list

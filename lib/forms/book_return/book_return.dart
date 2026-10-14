@@ -14,6 +14,7 @@ import 'package:lib17000ft/forms/book_issue/book_issue_state.dart';
 import 'package:lib17000ft/forms/dashboard/dash_cubit.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../components/app_feedback.dart';
 import '../../components/info_dialog.dart';
 import '../../configs/app_urls.dart';
 import '../../models/student_registration/student_model.dart';
@@ -108,6 +109,7 @@ class _BookReturnState extends State<BookReturn> {
     try {
       // Decode the JSON string into a Map
       final Map<String, dynamic> studentDetails = jsonDecode(studentData);
+      //print("Student Detail : $studentDetails");
 
       setState(() {
 
@@ -122,9 +124,12 @@ class _BookReturnState extends State<BookReturn> {
       });
     } catch (e) {
       debugPrint("Error parsing student data: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Failed to parse student information")),
-      );
+      if (mounted) {
+        AppFeedback.showError(
+          context,
+          message: "Failed to parse student information",
+        );
+      }
     }
   }
 
@@ -155,11 +160,9 @@ class _BookReturnState extends State<BookReturn> {
       if (!(RegExp(r'^\d{10}$').hasMatch(isbn) ||
           (RegExp(r'^97[89]\d{10}$').hasMatch(isbn)))) {
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Invalid ISBN scanned. Please scan a valid ISBN.'),
-            backgroundColor: AppColors.error,
-          ),
+        AppFeedback.showError(
+          context,
+          message: 'Invalid ISBN scanned. Please scan a valid ISBN.',
         );
         return;
       }
@@ -180,17 +183,16 @@ class _BookReturnState extends State<BookReturn> {
           authorController.text = bookDetails['publisher'] ?? 'No Publisher';
         });
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Book details not found. Please try another ISBN.'),
-            backgroundColor: AppColors.primary,
-          ),
+        AppFeedback.showError(
+          context,
+          message: 'Book details not found. Please try another ISBN.',
         );
       }
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error fetching book details: $e")),
+      AppFeedback.showError(
+        context,
+        message: "Error fetching book details: $e",
       );
     } finally {
       if (mounted) {
@@ -473,15 +475,19 @@ class _BookReturnState extends State<BookReturn> {
                                   authorController.text = bookDetails['publisher'] ?? bookDetails['author'] ?? 'No Publisher';
                                   //growValue = bookDetails['level'];
                                 });
-                                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                                    content: Text('Book details not found.'),
-                                    backgroundColor: AppColors.primary));
+                                AppFeedback.showError(
+                                  context,
+                                  message: 'Book details not found.',
+                                );
                               }
                             }
                           } catch (e) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text("Search failed: $e")),
-                            );
+                            if (mounted) {
+                              AppFeedback.showError(
+                                context,
+                                message: "Search failed: $e",
+                              );
+                            }
                           } finally {
                             if (mounted) setState(() => isScanning = false);
                           }
@@ -522,11 +528,9 @@ class _BookReturnState extends State<BookReturn> {
                           }
                         }
                         if (state is BookIssueFailure) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(state.message),
-                              backgroundColor: AppColors.error,
-                            ),
+                          AppFeedback.showError(
+                            context,
+                            message: state.message,
                           );
                         }
                       },

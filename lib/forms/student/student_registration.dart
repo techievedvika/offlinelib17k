@@ -827,11 +827,9 @@ class _StudentRegistrationState extends State<StudentRegistration> {
 
                     // Handle all failure states in one place for cleaner code
                     else if (state is StudentFailure) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(state.message),
-                          backgroundColor: AppColors.primary,
-                        ),
+                      AppFeedback.showError(
+                        context,
+                        message: state.message,
                       );
                     }
                   },

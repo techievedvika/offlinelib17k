@@ -18,6 +18,7 @@ import 'package:lib17000ft/forms/filters/filter_dropdown.dart';
 import 'package:lib17000ft/models/book_return_model.dart/book_return_model.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:lib17000ft/components/app_feedback.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../configs/routes/routes_name.dart';
@@ -142,33 +143,38 @@ class _AllBookReturnListState extends State<AllBookReturnList> {
                     strokeSize: 3,
                   ),
                 );
-              } else if (state is BookIssueFailure) {
-                return Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.error_outline,
-                            size: 48, color: AppColors.error),
-                        const SizedBox(height: 16),
-                        Text(
-                          state.message,
-                          style: const TextStyle(fontSize: 18),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 16),
-                        ElevatedButton(
-                          onPressed: () => context
-                              .read<BookIssueCubit>()
-                              .fetchBookReturned(adminId: userId),
-                          child: const Text('Retry'),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              } else if (state is BookReturnListSuccess) {
+              }
+              else if (state is BookIssueFailure) {
+                AppFeedback.showError(context, message: state.message);
+              }
+              // else if (state is BookIssueFailure) {
+              //   return Center(
+              //     child: Padding(
+              //       padding: const EdgeInsets.all(16.0),
+              //       child: Column(
+              //         mainAxisAlignment: MainAxisAlignment.center,
+              //         children: [
+              //           const Icon(Icons.error_outline,
+              //               size: 48, color: AppColors.error),
+              //           const SizedBox(height: 16),
+              //           Text(
+              //             state.message,
+              //             style: const TextStyle(fontSize: 18),
+              //             textAlign: TextAlign.center,
+              //           ),
+              //           const SizedBox(height: 16),
+              //           ElevatedButton(
+              //             onPressed: () => context
+              //                 .read<BookIssueCubit>()
+              //                 .fetchBookReturned(adminId: userId),
+              //             child: const Text('Retry'),
+              //           ),
+              //         ],
+              //       ),
+              //     ),
+              //   );
+              // }
+              else if (state is BookReturnListSuccess) {
                 final filteredReturnedBooks =
                     _filterBookReturned(state.bookReturnedList, _searchQuery);
 
@@ -376,6 +382,7 @@ class _AllBookReturnListState extends State<AllBookReturnList> {
                                               itemBuilder: (context, bookIndex) {
                                                 final student = booksInGrade[bookIndex];
                                                 final studentJsonData = jsonEncode(student.toJson());
+                                                //print("RAW stuendt Data : $studentJsonData");
                                                 return _buildStudentCard(student, context, studentJsonData);
                                               },
                                             ),

@@ -36,6 +36,8 @@ mixin _$BookReturnModel {
   String get apparId => throw _privateConstructorUsedError;
   @JsonKey(name: 'pen_id')
   String? get penId => throw _privateConstructorUsedError;
+  @JsonKey(name: 'lib_id')
+  String? get libId => throw _privateConstructorUsedError;
   @JsonKey(name: 'rollno')
   String get rollno => throw _privateConstructorUsedError;
   @JsonKey(name: 'created_at')
@@ -83,6 +85,7 @@ abstract class $BookReturnModelCopyWith<$Res> {
       @JsonKey(name: 'unique_id') String uniqid,
       @JsonKey(name: 'apaarId') String apparId,
       @JsonKey(name: 'pen_id') String? penId,
+      @JsonKey(name: 'lib_id') String? libId,
       @JsonKey(name: 'rollno') String rollno,
       @JsonKey(name: 'created_at') String returnedDate,
       @JsonKey(name: 'created_by') String createdBy,
@@ -118,6 +121,7 @@ class _$BookReturnModelCopyWithImpl<$Res, $Val extends BookReturnModel>
     Object? uniqid = null,
     Object? apparId = null,
     Object? penId = freezed,
+    Object? libId = freezed,
     Object? rollno = null,
     Object? returnedDate = null,
     Object? createdBy = null,
@@ -161,6 +165,10 @@ class _$BookReturnModelCopyWithImpl<$Res, $Val extends BookReturnModel>
       penId: freezed == penId
           ? _value.penId
           : penId // ignore: cast_nullable_to_non_nullable
+              as String?,
+      libId: freezed == libId
+          ? _value.libId
+          : libId // ignore: cast_nullable_to_non_nullable
               as String?,
       rollno: null == rollno
           ? _value.rollno
@@ -223,6 +231,7 @@ abstract class _$$BookReturnModelImplCopyWith<$Res>
       @JsonKey(name: 'unique_id') String uniqid,
       @JsonKey(name: 'apaarId') String apparId,
       @JsonKey(name: 'pen_id') String? penId,
+      @JsonKey(name: 'lib_id') String? libId,
       @JsonKey(name: 'rollno') String rollno,
       @JsonKey(name: 'created_at') String returnedDate,
       @JsonKey(name: 'created_by') String createdBy,
@@ -256,6 +265,7 @@ class __$$BookReturnModelImplCopyWithImpl<$Res>
     Object? uniqid = null,
     Object? apparId = null,
     Object? penId = freezed,
+    Object? libId = freezed,
     Object? rollno = null,
     Object? returnedDate = null,
     Object? createdBy = null,
@@ -299,6 +309,10 @@ class __$$BookReturnModelImplCopyWithImpl<$Res>
       penId: freezed == penId
           ? _value.penId
           : penId // ignore: cast_nullable_to_non_nullable
+              as String?,
+      libId: freezed == libId
+          ? _value.libId
+          : libId // ignore: cast_nullable_to_non_nullable
               as String?,
       rollno: null == rollno
           ? _value.rollno
@@ -356,6 +370,7 @@ class _$BookReturnModelImpl implements _BookReturnModel {
       @JsonKey(name: 'unique_id') required this.uniqid,
       @JsonKey(name: 'apaarId') required this.apparId,
       @JsonKey(name: 'pen_id') this.penId,
+      @JsonKey(name: 'lib_id') this.libId,
       @JsonKey(name: 'rollno') required this.rollno,
       @JsonKey(name: 'created_at') required this.returnedDate,
       @JsonKey(name: 'created_by') required this.createdBy,
@@ -395,6 +410,9 @@ class _$BookReturnModelImpl implements _BookReturnModel {
   @JsonKey(name: 'pen_id')
   final String? penId;
   @override
+  @JsonKey(name: 'lib_id')
+  final String? libId;
+  @override
   @JsonKey(name: 'rollno')
   final String rollno;
   @override
@@ -428,7 +446,7 @@ class _$BookReturnModelImpl implements _BookReturnModel {
 
   @override
   String toString() {
-    return 'BookReturnModel(name: $name, title: $title, school: $school, studentnclass: $studentnclass, gender: $gender, uniqid: $uniqid, apparId: $apparId, penId: $penId, rollno: $rollno, returnedDate: $returnedDate, createdBy: $createdBy, isbn: $isbn, publisher: $publisher, author: $author, language: $language, gener: $gener, level: $level, code: $code)';
+    return 'BookReturnModel(name: $name, title: $title, school: $school, studentnclass: $studentnclass, gender: $gender, uniqid: $uniqid, apparId: $apparId, penId: $penId, libId: $libId, rollno: $rollno, returnedDate: $returnedDate, createdBy: $createdBy, isbn: $isbn, publisher: $publisher, author: $author, language: $language, gener: $gener, level: $level, code: $code)';
   }
 
   @override
@@ -445,6 +463,7 @@ class _$BookReturnModelImpl implements _BookReturnModel {
             (identical(other.uniqid, uniqid) || other.uniqid == uniqid) &&
             (identical(other.apparId, apparId) || other.apparId == apparId) &&
             (identical(other.penId, penId) || other.penId == penId) &&
+            (identical(other.libId, libId) || other.libId == libId) &&
             (identical(other.rollno, rollno) || other.rollno == rollno) &&
             (identical(other.returnedDate, returnedDate) ||
                 other.returnedDate == returnedDate) &&
@@ -463,26 +482,28 @@ class _$BookReturnModelImpl implements _BookReturnModel {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      name,
-      title,
-      school,
-      studentnclass,
-      gender,
-      uniqid,
-      apparId,
-      penId,
-      rollno,
-      returnedDate,
-      createdBy,
-      isbn,
-      publisher,
-      author,
-      language,
-      gener,
-      level,
-      code);
+  int get hashCode => Object.hashAll([
+        runtimeType,
+        name,
+        title,
+        school,
+        studentnclass,
+        gender,
+        uniqid,
+        apparId,
+        penId,
+        libId,
+        rollno,
+        returnedDate,
+        createdBy,
+        isbn,
+        publisher,
+        author,
+        language,
+        gener,
+        level,
+        code
+      ]);
 
   /// Create a copy of BookReturnModel
   /// with the given fields replaced by the non-null parameter values.
@@ -511,6 +532,7 @@ abstract class _BookReturnModel implements BookReturnModel {
           @JsonKey(name: 'unique_id') required final String uniqid,
           @JsonKey(name: 'apaarId') required final String apparId,
           @JsonKey(name: 'pen_id') final String? penId,
+          @JsonKey(name: 'lib_id') final String? libId,
           @JsonKey(name: 'rollno') required final String rollno,
           @JsonKey(name: 'created_at') required final String returnedDate,
           @JsonKey(name: 'created_by') required final String createdBy,
@@ -550,6 +572,9 @@ abstract class _BookReturnModel implements BookReturnModel {
   @override
   @JsonKey(name: 'pen_id')
   String? get penId;
+  @override
+  @JsonKey(name: 'lib_id')
+  String? get libId;
   @override
   @JsonKey(name: 'rollno')
   String get rollno;

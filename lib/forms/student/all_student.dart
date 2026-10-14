@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_file_dialog/flutter_file_dialog.dart';
 import 'package:intl/intl.dart';
+import 'package:lib17000ft/components/app_feedback.dart';
 import 'package:lib17000ft/components/circular_indicator.dart';
 import 'package:lib17000ft/components/custom_appbar.dart';
 import 'package:lib17000ft/components/custom_drawer.dart';
@@ -122,7 +123,12 @@ class _AllStudentListState extends State<AllStudentList> {
           backbutton: true,
         ),
         drawer: const CustomDrawer(),
-        body: BlocBuilder<StudentCubit, StudentState>(
+        body: BlocConsumer<StudentCubit, StudentState>(
+          listener: (context, state) {
+            if (state is StudentFailure) {
+              AppFeedback.showError(context, message: state.message);
+            }
+          },
           builder: (context, state) {
             if (state is StudentLoading && !_isLoadingMore) {
               return const Center(
@@ -166,7 +172,6 @@ class _AllStudentListState extends State<AllStudentList> {
               return SafeArea(
                 child: Column(
                   children: [
-                    // 🔍 Search bar always visible
 
                     Padding(
                       padding: EdgeInsets.symmetric(
@@ -647,9 +652,7 @@ class _AllStudentListState extends State<AllStudentList> {
                     await _exportToCSV(state.studentList);
                   } catch (e) {
                     if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Export failed: $e')),
-                      );
+                      AppFeedback.showError(context, message: 'Export failed: $e');
                     }
                   }
                 },
@@ -727,11 +730,7 @@ class _AllStudentListState extends State<AllStudentList> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Export failed: $e',style: const TextStyle(color: AppColors.onError),),
-            backgroundColor: AppColors.error,
-          ),
-        );
+        AppFeedback.showError(context, message: 'Export failed: $e');
       }
     }
   }

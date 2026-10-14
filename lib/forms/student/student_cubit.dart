@@ -100,10 +100,10 @@ class StudentCubit extends Cubit<StudentState> {
           ? await _studentRepository.registerStudent(payload)
           : await _studentRepository.registerStudentOffline(payload);
 
-      if (value['error'] == 1) {
-        emit(StudentFailure(message: value['message'].toString()));
+      if (value['error'] == 1 || value['error'] == true || value['error'] == 'true' || value['status'] == 0 || value['status'] == '0') {
+        emit(StudentFailure(message: value['message']?.toString() ?? 'Failed to register student'));
       } else {
-        emit(StudentSuccess(message: value['message'].toString()));
+        emit(StudentSuccess(message: value['message']?.toString() ?? 'Student registered successfully'));
       }
     } catch (error) {
       emit(StudentFailure(message: "Registration Error: ${error.toString()}"));
@@ -114,8 +114,14 @@ class StudentCubit extends Cubit<StudentState> {
     required dynamic adminId,
     String? stateName, String? district, String? block, String? school, String? from, String? to,
   }) async {
-    if (_isLoading || !_hasMoreData) return;
+    // if (_isLoading || !_hasMoreData) return;
+    // _isLoading = true;
+    // emit(StudentLoading());
+    if (_isLoading) return;
     _isLoading = true;
+    // Every call is a fresh load (the list screens have no load-more), so reset paging.
+    _page = 1;
+    _hasMoreData = true;
     emit(StudentLoading());
 
     try {

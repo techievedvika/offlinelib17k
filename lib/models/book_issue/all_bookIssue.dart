@@ -17,6 +17,7 @@ import 'package:lib17000ft/forms/filters/filter_dropdown.dart';
 import 'package:lib17000ft/models/book_issue/book_issue_model.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:lib17000ft/components/app_feedback.dart';
 
 import '../../services/permission_storage.dart';
 
@@ -144,33 +145,38 @@ class _AllBookIssueListState extends State<AllBookIssueList> {
                   strokeSize: 3,
                 ),
               );
-            } else if (state is BookIssueFailure) {
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.error_outline,
-                          size: 48, color: AppColors.error),
-                      const SizedBox(height: 16),
-                      Text(
-                        state.message,
-                        style: const TextStyle(fontSize: 18),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: () => context
-                            .read<BookIssueCubit>()
-                            .fetchBookIssued(adminId: userId),
-                        child: const Text('Retry'),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            } else if (state is BookIssuedListSuccess) {
+            }
+            else if (state is BookIssueFailure) {
+              AppFeedback.showError(context, message: state.message);
+            }
+            // else if (state is BookIssueFailure) {
+            //   return Center(
+            //     child: Padding(
+            //       padding: const EdgeInsets.all(16.0),
+            //       child: Column(
+            //         mainAxisAlignment: MainAxisAlignment.center,
+            //         children: [
+            //           const Icon(Icons.error_outline,
+            //               size: 48, color: AppColors.error),
+            //           const SizedBox(height: 16),
+            //           Text(
+            //             state.message,
+            //             style: const TextStyle(fontSize: 18),
+            //             textAlign: TextAlign.center,
+            //           ),
+            //           const SizedBox(height: 16),
+            //           ElevatedButton(
+            //             onPressed: () => context
+            //                 .read<BookIssueCubit>()
+            //                 .fetchBookIssued(adminId: userId),
+            //             child: const Text('Retry'),
+            //           ),
+            //         ],
+            //       ),
+            //     ),
+            //   );
+            // }
+            else if (state is BookIssuedListSuccess) {
               final filteredIssuedBooks =
                   _filterBookIssued(state.bookIssuedList, _searchQuery);
 

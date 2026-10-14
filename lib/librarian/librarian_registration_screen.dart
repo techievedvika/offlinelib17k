@@ -1,6 +1,7 @@
 // lib/librarian/librarian_registration_screen.dart
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../components/app_feedback.dart';
 import '../components/custom_button.dart';
 import '../components/custom_textField.dart';
 import '../configs/color/color.dart';
@@ -19,6 +20,8 @@ class _LibrarianRegistrationScreenState extends State<LibrarianRegistrationScree
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _numberController = TextEditingController();
+  final _otpController = TextEditingController();
+  final _designationController = TextEditingController();
   final _schoolIdController = TextEditingController();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -32,6 +35,20 @@ class _LibrarianRegistrationScreenState extends State<LibrarianRegistrationScree
   bool? _isUdiseValid;
   String? _schoolName;
   String? _udiseErrorMessage;
+  bool _showOtpField = false;
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _numberController.dispose();
+    _otpController.dispose();
+    _designationController.dispose();
+    _schoolIdController.dispose();
+    _usernameController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
+  }
 
   Future<void> _showSchoolNotFoundDialog([String? message]) async {
     if (!mounted) return;
@@ -194,7 +211,11 @@ class _LibrarianRegistrationScreenState extends State<LibrarianRegistrationScree
     if (!_formKey.currentState!.validate()) return;
 
     if (_passwordController.text != _confirmPasswordController.text) {
-      setState(() => _errorMessage = 'Passwords do not match');
+      const msg = 'Passwords do not match';
+      setState(() => _errorMessage = msg);
+      if (mounted) {
+        AppFeedback.showError(context, message: msg);
+      }
       return;
     }
 
@@ -207,41 +228,53 @@ class _LibrarianRegistrationScreenState extends State<LibrarianRegistrationScree
       // Check if UDISE code is available in DB using getSchoolDetail API
       final isUdiseAvailable = await _checkUdiseCode(_schoolIdController.text.trim());
       if (!isUdiseAvailable) {
+        final msg = _udiseErrorMessage ?? 'UDISE Code is not available in database';
         setState(() {
           _isLoading = false;
-          _errorMessage = _udiseErrorMessage ?? 'UDISE Code is not available in database';
+          _errorMessage = msg;
         });
+        if (mounted) {
+          AppFeedback.showError(context, message: msg);
+        }
         return;
       }
 
       final result = await _repository.registerLibrarian(
         name: _nameController.text.trim(),
         number: _numberController.text.trim(),
+        designation: _designationController.text.trim(),
         schoolId: _schoolIdController.text.trim(),
         username: _usernameController.text.trim(),
         password: _passwordController.text,
       );
 
-      if (result['status'] == 1) {
+      final isError = result['error'] == true ||
+          result['error'] == 1 ||
+          result['error'] == 'true' ||
+          result['status'] == 0 ||
+          result['status'] == '0';
+
+      if (!isError && (result['status'] == 1 || result['error'] == false)) {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setBool('librarianRegistered', true);
 
         if (mounted) {
-          // Proceed straight to License Activation, carrying the same credentials forward
-          Navigator.pushReplacementNamed(
-            context,
-            RoutesName.licenseActivationScreen,
-            arguments: {
-              'prefillUsername': _usernameController.text.trim(),
-              'prefillPassword': _passwordController.text,
-            },
-          );
+          Navigator.pushReplacementNamed(context, RoutesName.loginScreen);
         }
       } else {
-        setState(() => _errorMessage = result['message']?.toString() ?? 'Registration failed');
+        final msg = result['message']?.toString() ?? 'Registration failed';
+        debugPrint(msg);
+        setState(() => _errorMessage = msg);
+        if (mounted) {
+          AppFeedback.showError(context, message: msg);
+        }
       }
     } catch (e) {
-      setState(() => _errorMessage = 'Error: $e');
+      final msg = 'Error: $e';
+      setState(() => _errorMessage = msg);
+      if (mounted) {
+        AppFeedback.showError(context, message: msg);
+      }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -253,9 +286,14 @@ class _LibrarianRegistrationScreenState extends State<LibrarianRegistrationScree
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 238, 222, 192),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+        padding: EdgeInsets.symmetric(
+          horizontal: responsive.responsiveValue(small: 16.0, medium: 40.0, large: 80.0),
+          vertical: responsive.responsiveValue(small: 16.0, medium: 24.0, large: 32.0),
+        ),
         child: Padding(
-          padding: const EdgeInsets.only(top: 50.0, right: 40, left: 40),
+          padding: EdgeInsets.only(
+            top: responsive.responsiveValue(small: 20.0, medium: 40.0, large: 50.0),
+          ),
           child: Form(
             key: _formKey,
             child: Column(
@@ -301,6 +339,71 @@ class _LibrarianRegistrationScreenState extends State<LibrarianRegistrationScree
                   hintText: 'Enter Mobile Number',
                   maxlength: 10,
                   prefixText: '+91 ',
+                  validator: (v) {
+                    if (v == null || v.trim().isEmpty) return 'Required';
+                    if (v.trim().length != 10) return 'Enter valid 10-digit mobile number';
+                    return null;
+                  },
+                  onChanged: (v) {
+                    final cleanV = v.trim();
+                    if (cleanV.length == 10) {
+                      if (!_showOtpField) {
+                        setState(() {
+                          _showOtpField = true;
+                        });
+                      }
+                    } else {
+                      if (_showOtpField) {
+                        setState(() {
+                          _showOtpField = false;
+                          _otpController.clear();
+                        });
+                      }
+                    }
+                  },
+                ),
+                if (_showOtpField) ...[
+                  SizedBox(
+                    height: responsive.responsiveValue(
+                        small: 15.0, medium: 25.0, large: 10.0),
+                  ),
+                  CustomTextFormField(
+                    textController: _otpController,
+                    textInputType: TextInputType.number,
+                    labelText: 'Enter OTP',
+                    hintText: 'Enter OTP',
+                    maxlength: 6,
+                    validator: (v) {
+                      if (!_showOtpField) return null;
+                      if (v == null || v.trim().isEmpty) return 'Please enter OTP';
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      const Icon(Icons.check_circle, color: Colors.green, size: 16),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          'OTP sent successfully to +91 ${_numberController.text.trim()}',
+                          style: const TextStyle(color: Colors.green, fontSize: 12, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+                SizedBox(
+                  height: responsive.responsiveValue(
+                      small: 15.0, medium: 25.0, large: 10.0),
+                ),
+                CustomTextFormField(
+                  textController: _designationController,
+                  // textInputType: TextInputType.phone,
+                  labelText: 'Designation',
+                  hintText: 'Enter Your Designation',
+                  // maxlength: 10,
+                  // prefixText: '+91 ',
                   validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
                 ),
                 SizedBox(
@@ -456,9 +559,10 @@ class _LibrarianRegistrationScreenState extends State<LibrarianRegistrationScree
                       ),
                       TextButton(
                         onPressed: () async {
-                          if (context.mounted) {
-                            Navigator.pushReplacementNamed(context, RoutesName.licenseActivationScreen);
-                          }
+                          // if (context.mounted) {
+                          //   Navigator.pushReplacementNamed(context, RoutesName.licenseActivationScreen);
+                          // }
+                          Navigator.pushReplacementNamed(context, RoutesName.loginScreen);
                         },
                         child: const Text(
                           "Login",
