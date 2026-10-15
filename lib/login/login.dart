@@ -53,7 +53,7 @@ class _LoginScreenState extends State<LoginScreen> {
           maxDevices = max;
         });
         Fluttertoast.showToast(
-          msg: "Registered Devices: $reg/$max",
+          msg: "Registered User: $reg/$max",
           toastLength: Toast.LENGTH_LONG,
           gravity: ToastGravity.BOTTOM,
           backgroundColor: AppColors.primary,

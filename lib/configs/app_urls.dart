@@ -37,6 +37,9 @@ class AppUrls {
   static String loginApi = "${AppUrls.baseUrl}login";
   static String activateLicenseApi = "${AppUrls.baseUrl}activateLicense";
   static String registerLibrarianApi = "${AppUrls.baseUrl}register_librarian";
+  static String sendRegistrationOtpApi = "${AppUrls.baseUrl}send_registration_otp";
+  static String verifyRegistrationOtpApi = "${AppUrls.baseUrl}verify_registration_otp";
+
   //This is for demo only for now
   static String passResetApi = "${AppUrls.baseUrl}reset_password";
   static String dashboardApi = "${AppUrls.baseUrl}get_dashboard_data";

@@ -7,6 +7,7 @@ import '../components/custom_textField.dart';
 import '../configs/color/color.dart';
 import '../configs/helper/responsive_helper.dart';
 import '../configs/routes/routes_name.dart';
+import 'mobile_verification_screen.dart';
 import 'librarian_repository.dart';
 
 class LibrarianRegistrationScreen extends StatefulWidget {
@@ -20,7 +21,7 @@ class _LibrarianRegistrationScreenState extends State<LibrarianRegistrationScree
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _numberController = TextEditingController();
-  final _otpController = TextEditingController();
+  // final _otpController = TextEditingController();
   final _designationController = TextEditingController();
   final _schoolIdController = TextEditingController();
   final _usernameController = TextEditingController();
@@ -35,13 +36,14 @@ class _LibrarianRegistrationScreenState extends State<LibrarianRegistrationScree
   bool? _isUdiseValid;
   String? _schoolName;
   String? _udiseErrorMessage;
-  bool _showOtpField = false;
+  // bool _showOtpField = false;
+  bool _mobileVerified = false;
 
   @override
   void dispose() {
     _nameController.dispose();
     _numberController.dispose();
-    _otpController.dispose();
+    // _otpController.dispose();
     _designationController.dispose();
     _schoolIdController.dispose();
     _usernameController.dispose();
@@ -207,6 +209,21 @@ class _LibrarianRegistrationScreenState extends State<LibrarianRegistrationScree
     }
   }
 
+  Future<void> _verifyMobile() async {
+    final verified = await Navigator.push<String>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => MobileVerificationScreen(initialNumber: _numberController.text.trim()),
+      ),
+    );
+    if (verified != null && verified.isNotEmpty && mounted) {
+      setState(() {
+        _numberController.text = verified;
+        _mobileVerified = true;
+      });
+    }
+  }
+
   Future<void> _register() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -322,94 +339,36 @@ class _LibrarianRegistrationScreenState extends State<LibrarianRegistrationScree
                   height: responsive.responsiveValue(
                       small: 20.0, medium: 30.0, large: 40.0),
                 ),
-                CustomTextFormField(
-                  textController: _nameController,
-                  labelText: 'Your Full Name',
-                  hintText: 'Enter Name',
-                  validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
-                ),
-                SizedBox(
-                  height: responsive.responsiveValue(
-                      small: 15.0, medium: 25.0, large: 10.0),
-                ),
-                CustomTextFormField(
-                  textController: _numberController,
-                  textInputType: TextInputType.phone,
-                  labelText: 'Mobile Number',
-                  hintText: 'Enter Mobile Number',
-                  maxlength: 10,
-                  prefixText: '+91 ',
-                  validator: (v) {
-                    if (v == null || v.trim().isEmpty) return 'Required';
-                    if (v.trim().length != 10) return 'Enter valid 10-digit mobile number';
-                    return null;
-                  },
-                  onChanged: (v) {
-                    final cleanV = v.trim();
-                    if (cleanV.length == 10) {
-                      if (!_showOtpField) {
-                        setState(() {
-                          _showOtpField = true;
-                        });
-                      }
-                    } else {
-                      if (_showOtpField) {
-                        setState(() {
-                          _showOtpField = false;
-                          _otpController.clear();
-                        });
-                      }
-                    }
-                  },
-                ),
-                if (_showOtpField) ...[
-                  SizedBox(
-                    height: responsive.responsiveValue(
-                        small: 15.0, medium: 25.0, large: 10.0),
-                  ),
-                  CustomTextFormField(
-                    textController: _otpController,
-                    textInputType: TextInputType.number,
-                    labelText: 'Enter OTP',
-                    hintText: 'Enter OTP',
-                    maxlength: 6,
-                    validator: (v) {
-                      if (!_showOtpField) return null;
-                      if (v == null || v.trim().isEmpty) return 'Please enter OTP';
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      const Icon(Icons.check_circle, color: Colors.green, size: 16),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: Text(
-                          'OTP sent successfully to +91 ${_numberController.text.trim()}',
-                          style: const TextStyle(color: Colors.green, fontSize: 12, fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-                SizedBox(
-                  height: responsive.responsiveValue(
-                      small: 15.0, medium: 25.0, large: 10.0),
-                ),
-                CustomTextFormField(
-                  textController: _designationController,
-                  // textInputType: TextInputType.phone,
-                  labelText: 'Designation',
-                  hintText: 'Enter Your Designation',
-                  // maxlength: 10,
-                  // prefixText: '+91 ',
-                  validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
-                ),
-                SizedBox(
-                  height: responsive.responsiveValue(
-                      small: 10.0, medium: 15.0, large: 10.0),
-                ),
+                // CustomTextFormField(
+                //   textController: _schoolIdController,
+                //   labelText: 'UDISE Code',
+                //   hintText: 'Enter school UDISE Code',
+                //   textInputType: TextInputType.number,
+                //   maxlength: 11,
+                //   validator: (v) {
+                //     if (v == null || v.trim().isEmpty) return 'Required';
+                //     if(v.length != 11) return "UDISE Code must be 11 characters long";
+                //     if (_isUdiseValid == false) {
+                //       return _udiseErrorMessage ?? 'UDISE Code is not available in database';
+                //     }
+                //     return null;
+                //   },
+                //   onChanged: (v) {
+                //     if (_isUdiseValid != null || _udiseErrorMessage != null || _schoolName != null) {
+                //       setState(() {
+                //         _isUdiseValid = null;
+                //         _schoolName = null;
+                //         _udiseErrorMessage = null;
+                //       });
+                //     }
+                //   },
+                //   onEditingComplete: () {
+                //     final code = _schoolIdController.text.trim();
+                //     if (code.isNotEmpty) {
+                //       _checkUdiseCode(code);
+                //     }
+                //   },
+                // ),
                 CustomTextFormField(
                   textController: _schoolIdController,
                   labelText: 'UDISE Code',
@@ -418,7 +377,7 @@ class _LibrarianRegistrationScreenState extends State<LibrarianRegistrationScree
                   maxlength: 11,
                   validator: (v) {
                     if (v == null || v.trim().isEmpty) return 'Required';
-                    if(v.length != 11) return "UDISE Code must be 11 characters long";
+                    if (v.length != 11) return "UDISE Code must be 11 characters long";
                     if (_isUdiseValid == false) {
                       return _udiseErrorMessage ?? 'UDISE Code is not available in database';
                     }
@@ -432,10 +391,14 @@ class _LibrarianRegistrationScreenState extends State<LibrarianRegistrationScree
                         _udiseErrorMessage = null;
                       });
                     }
+                    if (v.trim().length == 11) {
+                      FocusScope.of(context).unfocus();
+                      _checkUdiseCode(v.trim());
+                    }
                   },
                   onEditingComplete: () {
                     final code = _schoolIdController.text.trim();
-                    if (code.isNotEmpty) {
+                    if (code.isNotEmpty && !_isCheckingSchool && _isUdiseValid == null) {
                       _checkUdiseCode(code);
                     }
                   },
@@ -486,95 +449,283 @@ class _LibrarianRegistrationScreenState extends State<LibrarianRegistrationScree
                   height: responsive.responsiveValue(
                       small: 10.0, medium: 15.0, large: 10.0),
                 ),
-                CustomTextFormField(
-                  textController: _usernameController,
-                  labelText: 'Username',
-                  hintText: 'Choose a Username',
-                  validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
-                ),
-                SizedBox(
-                  height: responsive.responsiveValue(
-                      small: 10.0, medium: 15.0, large: 10.0),
-                ),
-                CustomTextFormField(
-                  textController: _passwordController,
-                  obscureText: passwordVisible,
-                  labelText: 'Password',
-                  hintText: 'Enter Password',
-                  suffixIcon: IconButton(
-                    icon: Icon(passwordVisible
-                        ? Icons.visibility_off
-                        : Icons.visibility),
-                    onPressed: () {
-                      setState(() {
-                        passwordVisible = !passwordVisible;
-                      });
-                    },
+                if (_isUdiseValid == true && !_mobileVerified) ...[
+                  SizedBox(
+                    height: responsive.responsiveValue(
+                        small: 10.0, medium: 15.0, large: 10.0),
                   ),
-                  validator: (v) => v == null || v.length < 8 ? 'At least 8 characters' : null,
-                ),
-                SizedBox(
-                  height: responsive.responsiveValue(
-                      small: 10.0, medium: 15.0, large: 10.0),
-                ),
-                CustomTextFormField(
-                  textController: _confirmPasswordController,
-                  obscureText: passwordVisible,
-                  labelText: 'Confirm Password',
-                  hintText: 'Confirm Password',
-                  suffixIcon: IconButton(
-                    icon: Icon(passwordVisible
-                        ? Icons.visibility_off
-                        : Icons.visibility),
-                    onPressed: () {
-                      setState(() {
-                        passwordVisible = !passwordVisible;
-                      });
-                    },
+                  CustomButton(
+                    onPressedButton: _verifyMobile,
+                    title: 'Verify Mobile Number',
+                    width: responsive.responsiveValue(small: 250.0, medium: 450.0, large: 360.0),
+                    padding: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: responsive.responsiveValue(
+                          small: 2.0, medium: 5.0, large: 6.0),)
+                    ),
                   ),
-                  validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
-                ),
-                if (_errorMessage != null) ...[
-                  const SizedBox(height: 12),
-                  Text(_errorMessage!, style: const TextStyle(color: Colors.red), textAlign: TextAlign.center),
                 ],
-                SizedBox(
-                  height: responsive.responsiveValue(
-                      small: 20.0, medium: 30.0, large: 10.0),
-                ),
-                CustomButton(
-                  onPressedButton: _isLoading ? null : _register,
-                  title: _isLoading ? 'Loading...' : 'Register',
-                ),
-                SizedBox(
-                  height: responsive.responsiveValue(
-                      small: 2.0, medium: 5.0, large: 5.0),
-                ),
-                Center(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text(
-                        'Already Registered?',
-                      ),
-                      TextButton(
-                        onPressed: () async {
-                          // if (context.mounted) {
-                          //   Navigator.pushReplacementNamed(context, RoutesName.licenseActivationScreen);
-                          // }
-                          Navigator.pushReplacementNamed(context, RoutesName.loginScreen);
-                        },
-                        child: const Text(
-                          "Login",
-                          style: TextStyle(
-                            color: Colors.blue,
-                            fontSize: 16,
+                if (_isUdiseValid == true && _mobileVerified) ...[
+                  SizedBox(
+                    height: responsive.responsiveValue(
+                        small: 10.0, medium: 15.0, large: 10.0),
+                  ),
+                  CustomTextFormField(
+                    textController: _numberController,
+                    labelText: 'Mobile Number (Verified)',
+                    prefixText: '+91 ',
+                    readOnly: true,
+                    maxlength: 10,
+                    suffixIcon: const IconButton(
+                      icon: Icon(Icons.verified, color: Colors.green),
+                      onPressed: null,
+                    ),
+                  ),
+                  SizedBox(
+                    height: responsive.responsiveValue(
+                        small: 10.0, medium: 15.0, large: 10.0),
+                  ),
+                  CustomTextFormField(
+                    textController: _nameController,
+                    labelText: 'Your Full Name',
+                    hintText: 'Enter Name',
+                    validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+                  ),
+                  SizedBox(
+                    height: responsive.responsiveValue(
+                        small: 10.0, medium: 15.0, large: 10.0),
+                  ),
+                  CustomTextFormField(
+                    textController: _designationController,
+                    labelText: 'Designation',
+                    hintText: 'Enter Your Designation',
+                    validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+                  ),
+                  const SizedBox(height: 15),
+                  CustomTextFormField(
+                    textController: _usernameController,
+                    labelText: 'Username',
+                    hintText: 'Choose a Username',
+                    validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+                  ),
+                  SizedBox(
+                    height: responsive.responsiveValue(
+                        small: 10.0, medium: 15.0, large: 10.0),
+                  ),
+                  CustomTextFormField(
+                    textController: _passwordController,
+                    obscureText: passwordVisible,
+                    labelText: 'Password',
+                    hintText: 'Enter Password',
+                    suffixIcon: IconButton(
+                      icon: Icon(passwordVisible
+                          ? Icons.visibility_off
+                          : Icons.visibility),
+                      onPressed: () {
+                        setState(() {
+                          passwordVisible = !passwordVisible;
+                        });
+                      },
+                    ),
+                    validator: (v) => v == null || v.length < 8 ? 'At least 8 characters' : null,
+                  ),
+                  SizedBox(
+                    height: responsive.responsiveValue(
+                        small: 10.0, medium: 15.0, large: 10.0),
+                  ),
+                  CustomTextFormField(
+                    textController: _confirmPasswordController,
+                    obscureText: passwordVisible,
+                    labelText: 'Confirm Password',
+                    hintText: 'Confirm Password',
+                    suffixIcon: IconButton(
+                      icon: Icon(passwordVisible
+                          ? Icons.visibility_off
+                          : Icons.visibility),
+                      onPressed: () {
+                        setState(() {
+                          passwordVisible = !passwordVisible;
+                        });
+                      },
+                    ),
+                    validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+                  ),
+                  if (_errorMessage != null) ...[
+                    const SizedBox(height: 12),
+                    Text(_errorMessage!, style: const TextStyle(color: Colors.red), textAlign: TextAlign.center),
+                  ],
+                  SizedBox(
+                    height: responsive.responsiveValue(
+                        small: 20.0, medium: 30.0, large: 10.0),
+                  ),
+                  CustomButton(
+                    onPressedButton: _isLoading ? null : _register,
+                    title: _isLoading ? 'Loading...' : 'Register',
+                  ),
+                  SizedBox(
+                    height: responsive.responsiveValue(
+                        small: 2.0, medium: 5.0, large: 5.0),
+                  ),
+                  Center(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text(
+                          'Already Registered?',
+                        ),
+                        TextButton(
+                          onPressed: () async {
+                            // if (context.mounted) {
+                            //   Navigator.pushReplacementNamed(context, RoutesName.licenseActivationScreen);
+                            // }
+                            Navigator.pushReplacementNamed(context, RoutesName.loginScreen);
+                          },
+                          child: const Text(
+                            "Login",
+                            style: TextStyle(
+                              color: Colors.blue,
+                              fontSize: 16,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
+                  // ... your existing Username, Password, Confirm Password fields,
+                  //     the _errorMessage Text, and the Register CustomButton go here, unchanged ...
+                ],
+                // CustomTextFormField(
+                //   textController: _nameController,
+                //   labelText: 'Your Full Name',
+                //   hintText: 'Enter Name',
+                //   validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+                // ),
+                // SizedBox(
+                //   height: responsive.responsiveValue(
+                //       small: 15.0, medium: 25.0, large: 10.0),
+                // ),
+                // CustomTextFormField(
+                //   textController: _numberController,
+                //   textInputType: TextInputType.phone,
+                //   labelText: 'Mobile Number',
+                //   hintText: 'Enter Mobile Number',
+                //   maxlength: 10,
+                //   prefixText: '+91 ',
+                //   validator: (v) {
+                //     if (v == null || v.trim().isEmpty) return 'Required';
+                //     if (v.trim().length != 10) return 'Enter valid 10-digit mobile number';
+                //     return null;
+                //   },
+                //   onChanged: (v) {
+                //
+                //   },
+                // ),
+                // SizedBox(
+                //   height: responsive.responsiveValue(
+                //       small: 15.0, medium: 25.0, large: 10.0),
+                // ),
+                // CustomTextFormField(
+                //   textController: _designationController,
+                //   // textInputType: TextInputType.phone,
+                //   labelText: 'Designation',
+                //   hintText: 'Enter Your Designation',
+                //   // maxlength: 10,
+                //   // prefixText: '+91 ',
+                //   validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+                // ),
+                // SizedBox(
+                //   height: responsive.responsiveValue(
+                //       small: 10.0, medium: 15.0, large: 10.0),
+                // ),
+
+                // CustomTextFormField(
+                //   textController: _usernameController,
+                //   labelText: 'Username',
+                //   hintText: 'Choose a Username',
+                //   validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+                // ),
+                // SizedBox(
+                //   height: responsive.responsiveValue(
+                //       small: 10.0, medium: 15.0, large: 10.0),
+                // ),
+                // CustomTextFormField(
+                //   textController: _passwordController,
+                //   obscureText: passwordVisible,
+                //   labelText: 'Password',
+                //   hintText: 'Enter Password',
+                //   suffixIcon: IconButton(
+                //     icon: Icon(passwordVisible
+                //         ? Icons.visibility_off
+                //         : Icons.visibility),
+                //     onPressed: () {
+                //       setState(() {
+                //         passwordVisible = !passwordVisible;
+                //       });
+                //     },
+                //   ),
+                //   validator: (v) => v == null || v.length < 8 ? 'At least 8 characters' : null,
+                // ),
+                // SizedBox(
+                //   height: responsive.responsiveValue(
+                //       small: 10.0, medium: 15.0, large: 10.0),
+                // ),
+                // CustomTextFormField(
+                //   textController: _confirmPasswordController,
+                //   obscureText: passwordVisible,
+                //   labelText: 'Confirm Password',
+                //   hintText: 'Confirm Password',
+                //   suffixIcon: IconButton(
+                //     icon: Icon(passwordVisible
+                //         ? Icons.visibility_off
+                //         : Icons.visibility),
+                //     onPressed: () {
+                //       setState(() {
+                //         passwordVisible = !passwordVisible;
+                //       });
+                //     },
+                //   ),
+                //   validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+                // ),
+                // if (_errorMessage != null) ...[
+                //   const SizedBox(height: 12),
+                //   Text(_errorMessage!, style: const TextStyle(color: Colors.red), textAlign: TextAlign.center),
+                // ],
+                // SizedBox(
+                //   height: responsive.responsiveValue(
+                //       small: 20.0, medium: 30.0, large: 10.0),
+                // ),
+                // CustomButton(
+                //   onPressedButton: _isLoading ? null : _register,
+                //   title: _isLoading ? 'Loading...' : 'Register',
+                // ),
+                // SizedBox(
+                //   height: responsive.responsiveValue(
+                //       small: 2.0, medium: 5.0, large: 5.0),
+                // ),
+                // Center(
+                //   child: Row(
+                //     mainAxisAlignment: MainAxisAlignment.center,
+                //     children: [
+                //       const Text(
+                //         'Already Registered?',
+                //       ),
+                //       TextButton(
+                //         onPressed: () async {
+                //           // if (context.mounted) {
+                //           //   Navigator.pushReplacementNamed(context, RoutesName.licenseActivationScreen);
+                //           // }
+                //           Navigator.pushReplacementNamed(context, RoutesName.loginScreen);
+                //         },
+                //         child: const Text(
+                //           "Login",
+                //           style: TextStyle(
+                //             color: Colors.blue,
+                //             fontSize: 16,
+                //           ),
+                //         ),
+                //       ),
+                //     ],
+                //   ),
+                // ),
               ],
             ),
           ),

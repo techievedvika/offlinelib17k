@@ -239,7 +239,7 @@ textStyle:    TextStyle(
   static TextStyle buttonText(BuildContext context,Color textColor) {
        return GoogleFonts.openSans(
    textStyle:TextStyle(
-      fontSize: responsiveFontSize(context, 16),
+      fontSize: responsiveFontSize(context, 14),
       color: textColor ??  Colors.white,
       fontWeight: FontWeight.bold,
     ));
