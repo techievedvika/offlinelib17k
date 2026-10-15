@@ -788,9 +788,10 @@ class StudentRepository {
     if (school != null && school.trim().isNotEmpty) {
       query.where((t) => t.school.equals(school));
     }
-    if (adminId != null && adminId.trim().isNotEmpty) {
-      query.where((t) => t.createdBy.equals(int.tryParse(adminId) ?? 0));
-    }
+    ///This is to get Student based on user ID
+    // if (adminId != null && adminId.trim().isNotEmpty) {
+    //   query.where((t) => t.createdBy.equals(int.tryParse(adminId) ?? 0));
+    // }
     final rows = await query.get();
     return rows.map((r) => StudentModel(
       libId: r.libId, // NEW

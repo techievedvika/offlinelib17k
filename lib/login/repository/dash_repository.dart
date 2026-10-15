@@ -186,13 +186,21 @@ Future<DashModel?> fetchDashData(
     final rangeStart = from != null ? DateTime.tryParse(from) ?? DateTime(now.year, 1, 1) : DateTime(now.year, 1, 1);
     final rangeEnd = to != null ? DateTime.tryParse(to) ?? now : now;
 
+
+    ///This is to fetch DashData based on User ID
+    // final students = await (_db.select(_db.students)
+    //   ..where((t) => t.status.equals('1') & (adminId != null ? t.createdBy.equals(int.tryParse(adminId) ?? 0) : const Constant(true))))
+    //     .get();
+    // final books = await _db.select(_db.books).get();
+    // final allIssuesAllTime = await (_db.select(_db.bookIssues)
+    //   ..where((t) => adminId != null ? t.createdBy.equals(int.tryParse(adminId) ?? 0) : const Constant(true)))
+    //     .get();
+
     final students = await (_db.select(_db.students)
-      ..where((t) => t.status.equals('1') & (adminId != null ? t.createdBy.equals(int.tryParse(adminId) ?? 0) : const Constant(true))))
+      ..where((t) => t.status.equals('1')))
         .get();
     final books = await _db.select(_db.books).get();
-    final allIssuesAllTime = await (_db.select(_db.bookIssues)
-      ..where((t) => adminId != null ? t.createdBy.equals(int.tryParse(adminId) ?? 0) : const Constant(true)))
-        .get();
+    final allIssuesAllTime = await _db.select(_db.bookIssues).get();
 
     final issuedInRange = allIssuesAllTime.where((i) =>
     i.status == 'Issued' &&
@@ -301,9 +309,13 @@ Future<DashModel?> fetchDashData(
 
   // NEW — offline activity log list
   Future<List<dynamic>> fetchFormLogsOffline(String adminId) async {
-    final rows = await (_db.select(_db.activityLogs)
-      ..where((t) => t.createdBy.equals(int.tryParse(adminId) ?? 0)))
-        .get();
+
+     ///This is to fetch data based on User ID
+    // final rows = await (_db.select(_db.activityLogs)
+    //   ..where((t) => t.createdBy.equals(int.tryParse(adminId) ?? 0)))
+    //     .get();
+
+    final rows = await _db.select(_db.activityLogs).get();
 
     return rows.map((r) => {
       'id': r.id ?? r.localId,

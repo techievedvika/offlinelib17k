@@ -203,12 +203,20 @@ class BookIssueRepository {
     final rangeEnd = DateTime.tryParse(to ?? '') ?? now;
 
     // final allIssues = await _db.select(_db.bookIssues).get();
+    ///This is to get All Issued based on User ID
+    // final allIssues = await (_db.select(_db.bookIssues)
+    //   ..where((t) =>
+    //   t.createdAt.isBiggerOrEqualValue(rangeStart) &
+    //   t.createdAt.isSmallerOrEqualValue(rangeEnd) &
+    //   (adminId != null ? t.createdBy.equals(int.tryParse(adminId) ?? 0) : const Constant(true))))
+    //     .get();
+
     final allIssues = await (_db.select(_db.bookIssues)
       ..where((t) =>
       t.createdAt.isBiggerOrEqualValue(rangeStart) &
-      t.createdAt.isSmallerOrEqualValue(rangeEnd) &
-      (adminId != null ? t.createdBy.equals(int.tryParse(adminId) ?? 0) : const Constant(true))))
+      t.createdAt.isSmallerOrEqualValue(rangeEnd)))
         .get();
+
     final students = await _db.select(_db.students).get();
     final books = await _db.select(_db.books).get();
 
@@ -257,9 +265,13 @@ class BookIssueRepository {
     // final rangeStart = DateTime.tryParse(from ?? '') ?? DateTime(now.year, 1, 1);
     // final rangeEnd = DateTime.tryParse(to ?? '') ?? now;
 
-    final allIssues = await (_db.select(_db.bookIssues)
-      ..where((t) => adminId != null ? t.createdBy.equals(int.tryParse(adminId) ?? 0) : const Constant(true)))
-        .get();
+    ///This is to get All Issued based on User ID
+    // final allIssues = await (_db.select(_db.bookIssues)
+    //   ..where((t) => adminId != null ? t.createdBy.equals(int.tryParse(adminId) ?? 0) : const Constant(true)))
+    //     .get();
+
+    final allIssues = await _db.select(_db.bookIssues).get();
+
     // final allIssues = await (_db.select(_db.bookIssues)
     //   ..where((t) => t.createdAt.isBiggerOrEqualValue(rangeStart) & t.createdAt.isSmallerOrEqualValue(rangeEnd)))
     //     .get();

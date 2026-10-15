@@ -125,10 +125,23 @@ class SyncEngine {
 
   // ---------------- PULL ----------------
 
+  // Future<void> _pull() async {
+  //   for (final entity in ['book', 'student', 'issue', 'activity_log']) {
+  //     final lastSynced = await _getLastSynced(entity);
+  //     final resp = await http.get(Uri.parse('${AppUrls.syncPull}?entity=$entity&updated_since=$lastSynced'));
+  //     final decoded = jsonDecode(resp.body);
+  //     final data = (decoded['data'] as List?) ?? [];
+  //     await _mergeIncoming(entity, data);
+  //     await _setLastSynced(entity, DateTime.now());
+  //   }
+  // }
   Future<void> _pull() async {
+    final prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getString('userId') ?? '';
     for (final entity in ['book', 'student', 'issue', 'activity_log']) {
       final lastSynced = await _getLastSynced(entity);
-      final resp = await http.get(Uri.parse('${AppUrls.syncPull}?entity=$entity&updated_since=$lastSynced'));
+      final resp = await http.get(Uri.parse(
+          '${AppUrls.syncPull}?entity=$entity&updated_since=$lastSynced&id=$userId'));
       final decoded = jsonDecode(resp.body);
       final data = (decoded['data'] as List?) ?? [];
       await _mergeIncoming(entity, data);

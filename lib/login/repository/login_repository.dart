@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../configs/app_urls.dart';
 import '../../data/network/network_api_services.dart';
 import '../../models/user_model.dart';
+import '../../core/database/tables/database.dart';
 
 import '../../core/di/service_locator.dart';
 import '../../core/sync/sync_engine.dart';
@@ -26,22 +27,31 @@ class LoginRepository {
   Future<UserModel?> loginApi(dynamic data) async {
     //final response = await _api.postApi(AppUrls.loginapi, data);
     final response = await _api.postApi(AppUrls.loginApi, data);
-    //print('Response from login API: $response $data');
+    print('Response from login API: $response $data');
 
     try {
-      // Sanitize response: PHP returns user="" when not found, but we expect null or a Map
-      if (response['user'] == "") {
-        response['user'] = null;
-      }
-      if (response['license'] == "") {
-        response['license'] = null;
+      // Sanitize response: ensure status and message exist, and convert empty strings to null
+      if (response is Map<String, dynamic>) {
+        response['status'] = response['status'] ?? 0;
+        response['message'] = response['message'] ?? 'Unexpected response from server';
+        if (response['user'] == "") {
+          response['user'] = null;
+        }
+        if (response['license'] == "") {
+          response['license'] = null;
+        }
       }
 
       UserModel userModel = UserModel.fromJson(response);
 
+      // If login failed (status == 0), return early without modifying local activation state
+      if (userModel.status == 0) {
+        return userModel;
+      }
+
       SharedPreferences prefs = await SharedPreferences.getInstance();
 
-      // Store License info whenever present
+      // Store License info on successful login (status == 1)
       if (userModel.license != null) {
         await prefs.setBool('licenseActivated', true);
         if (userModel.license!.licenseKey != null) {
@@ -62,10 +72,9 @@ class LoginRepository {
         if (userModel.license!.allowImageUpload != null) {
           await prefs.setInt('imageAllowed', userModel.license!.allowImageUpload!);
         }
-      }
-
-      if (userModel.status == 0) {
-        return userModel;
+        if (userModel.license!.schoolUdise != null) {
+          await prefs.setString('school_udise', userModel.license!.schoolUdise!);
+        }
       }
 
       // Deserialize JSON to UserModel
@@ -89,6 +98,23 @@ class LoginRepository {
 
         if (userModel.user!.schoolCodeNew != null) {
           await prefs.setString('schoolCodeNew', userModel.user!.schoolCodeNew!);
+        }
+
+        // ---- school scoping ----
+        final newUdise = (userModel.license?.schoolUdise ??
+            prefs.getString('licenseSchoolUdise') ??
+            prefs.getString('schoolCodeNew') ??
+            '')
+            .trim();
+        final previousUdise = prefs.getString('localDataSchoolUdise') ?? '';
+
+        // Different school than the data on this phone -> start clean
+        if (newUdise.isNotEmpty && previousUdise.isNotEmpty && newUdise != previousUdise) {
+          await getIt<AppDatabase>().clearAllLocalData();
+        }
+        if (newUdise.isNotEmpty) {
+          await prefs.setString('schoolUdise', newUdise);
+          await prefs.setString('localDataSchoolUdise', newUdise);
         }
 
 

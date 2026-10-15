@@ -398,6 +398,7 @@ class _LibActivityFormState extends State<LibActivityForm> {
 
   Future<void> _submitForm() async {
     // 1. Run standard form validation (for red error text under fields)
+    SharedPreferences prefs = await SharedPreferences.getInstance();
     bool isFormValid = _formKey.currentState!.validate();
 
     final selectedData = _gradeParticipants
@@ -408,6 +409,7 @@ class _LibActivityFormState extends State<LibActivityForm> {
 
     // 2. Custom Validation Logic with Toasts
     String? errorMessage;
+    String schoolUdise = prefs.getString('school_udise') ?? '';
 
     if (_selectedDate == null) {
       errorMessage = 'Please select a date.';
@@ -510,6 +512,7 @@ class _LibActivityFormState extends State<LibActivityForm> {
           request.fields.addAll({
             'created_by': _userId ?? '',
             'school': _school ?? '',
+            'school_udise': schoolUdise,
             'date': DateFormat('yyyy-MM-dd').format(_selectedDate!),
             'activity_name': _activityName,
             'activity_description': _description,

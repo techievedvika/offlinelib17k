@@ -4,7 +4,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lib17000ft/components/app_feedback.dart';
-import 'package:lib17000ft/components/custom_button.dart';
 import 'package:lib17000ft/components/custom_textField.dart';
 import 'package:lib17000ft/configs/color/color.dart';
 import 'package:lib17000ft/configs/routes/routes_name.dart';
@@ -13,7 +12,6 @@ import '../configs/helper/responsive_helper.dart';
 import '../core/device_id_helper.dart';
 import 'bloc/login_cubit.dart';
 import 'bloc/login_state.dart';
-import '../models/license.dart';
 import 'repository/login_repository.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -152,7 +150,12 @@ class _LoginScreenState extends State<LoginScreen> {
                   }
 
                   if (state is LoginFailure) {
-                    AppFeedback.showError(context, message: state.message);
+                    String displayMsg = state.message;
+                    if (state.code == 'LICENSE_EXPIRED' && state.license?.validUntil != null) {
+                      displayMsg = "${state.message}\nValid Until: ${state.license!.validUntil}";
+                      Navigator.pushReplacementNamed(context, RoutesName.loginScreen);
+                    }
+                    AppFeedback.showError(context, message: displayMsg);
                     if (state.license != null) {
                       final reg = state.license?.registeredDevices;
                       final max = state.license?.maxDevices;

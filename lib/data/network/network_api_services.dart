@@ -265,6 +265,7 @@ class NetworkServicesApi implements BaseApiServices {
       case 403:
       case 404:
       case 409:
+      case 422:
         return jsonResponse;
 
       case 500:

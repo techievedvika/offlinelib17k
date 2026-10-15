@@ -559,7 +559,9 @@ class _DashBoardState extends State<DashBoard>
                         //   //An totalBooksIssued: totalBooksIssued!,
                         // ),
                         const SizedBox(height:14),
-                        _buildFormLogsSection(isMobile),
+                        SafeArea(
+                          child :_buildFormLogsSection(isMobile),
+                        ),
                         if (_isInitialSyncing) _buildSyncOverlay(),
                       ],
                     ),

@@ -604,9 +604,12 @@ class _AddBookScreenState extends State<AddBookScreen> {
                     );
                   }
 
-                  return SizedBox(
-                    width: double.infinity,
-                    height: 50,
+                  // return SizedBox(
+                  //   width: double.infinity,
+                  //   height: 50,
+                  //   child:
+                  // );
+                  return SafeArea(
                     child: CustomButton(
                       onPressedButton: () {
                         // if (_formKey.currentState!.validate()) {

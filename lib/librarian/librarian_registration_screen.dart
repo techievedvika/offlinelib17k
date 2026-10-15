@@ -500,7 +500,10 @@ class _LibrarianRegistrationScreenState extends State<LibrarianRegistrationScree
                     hintText: 'Enter Your Designation',
                     validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
                   ),
-                  const SizedBox(height: 15),
+                  SizedBox(
+                    height: responsive.responsiveValue(
+                        small: 10.0, medium: 15.0, large: 10.0),
+                  ),
                   CustomTextFormField(
                     textController: _usernameController,
                     labelText: 'Username',
@@ -530,7 +533,7 @@ class _LibrarianRegistrationScreenState extends State<LibrarianRegistrationScree
                   ),
                   SizedBox(
                     height: responsive.responsiveValue(
-                        small: 10.0, medium: 15.0, large: 10.0),
+                        small: 10.0, medium: 15.0, large: 15.0),
                   ),
                   CustomTextFormField(
                     textController: _confirmPasswordController,
@@ -561,33 +564,37 @@ class _LibrarianRegistrationScreenState extends State<LibrarianRegistrationScree
                     onPressedButton: _isLoading ? null : _register,
                     title: _isLoading ? 'Loading...' : 'Register',
                   ),
-                  SizedBox(
-                    height: responsive.responsiveValue(
-                        small: 2.0, medium: 5.0, large: 5.0),
-                  ),
-                  Center(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text(
-                          'Already Registered?',
-                        ),
-                        TextButton(
-                          onPressed: () async {
-                            // if (context.mounted) {
-                            //   Navigator.pushReplacementNamed(context, RoutesName.licenseActivationScreen);
-                            // }
-                            Navigator.pushReplacementNamed(context, RoutesName.loginScreen);
-                          },
-                          child: const Text(
-                            "Login",
-                            style: TextStyle(
-                              color: Colors.blue,
-                              fontSize: 16,
+                  // SizedBox(
+                  //   height: responsive.responsiveValue(
+                  //       small: 2.0, medium: 5.0, large: 5.0),
+                  // ),
+                  SafeArea(
+                    top: false,
+                    child: Center(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text(
+                            'Already Registered?',
+                          ),
+                          TextButton(
+                            onPressed: () async {
+                              // if (context.mounted) {
+                              //   Navigator.pushReplacementNamed(context, RoutesName.licenseActivationScreen);
+                              // }
+                              Navigator.pushReplacementNamed(context, RoutesName.loginScreen);
+                            },
+                            child: const Text(
+                              "Login",
+                              style: TextStyle(
+                                color: Colors.blue,
+                                fontSize: 16,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                   // ... your existing Username, Password, Confirm Password fields,
