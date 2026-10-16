@@ -35,6 +35,7 @@ class AppUrls {
   static String baseUrl = "https://demo.library.17000ft.org/api/library/";
   // static String baseUrl = "https://library.17000ft.org/api/library/";
   static String loginApi = "${AppUrls.baseUrl}login";
+  static String logoutApi = "${AppUrls.baseUrl}logout";
   static String activateLicenseApi = "${AppUrls.baseUrl}activateLicense";
   static String registerLibrarianApi = "${AppUrls.baseUrl}register_librarian";
   static String sendRegistrationOtpApi = "${AppUrls.baseUrl}send_registration_otp";

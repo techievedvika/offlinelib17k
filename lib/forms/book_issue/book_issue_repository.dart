@@ -592,4 +592,12 @@ class BookIssueRepository {
     };
   }
 
+  /// True if a book with this ISBN is already in the local database (ISBN only — no title check)
+  Future<bool> bookExistsOffline(String isbn) async {
+    final row = await (_db.select(_db.books)
+      ..where((t) => t.isbn.equals(isbn.trim())))
+        .getSingleOrNull();
+    return row != null;
+  }
+
 }

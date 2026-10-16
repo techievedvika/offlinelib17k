@@ -142,8 +142,17 @@ class SyncEngine {
       final lastSynced = await _getLastSynced(entity);
       final resp = await http.get(Uri.parse(
           '${AppUrls.syncPull}?entity=$entity&updated_since=$lastSynced&id=$userId'));
+      if (resp.statusCode != 200) {
+        print('PULL $entity FAILED: ${resp.statusCode} ${resp.body}');
+        continue; // keep the old cursor so the rows are retried
+      }
       final decoded = jsonDecode(resp.body);
+      if (decoded['error'] == true) {
+        print('PULL $entity ERROR: ${decoded['message']}');
+        continue;
+      }
       final data = (decoded['data'] as List?) ?? [];
+      print('PULL $entity: ${data.length} rows');
       await _mergeIncoming(entity, data);
       await _setLastSynced(entity, DateTime.now());
     }
@@ -326,6 +335,10 @@ class SyncEngine {
       );
 
       for (final grade in List<dynamic>.from(decoded['grades'] ?? [])) {
+        print('INITIAL SYNC RECEIVED: students=${(decoded['students'] as List?)?.length} '
+            'issues=${(decoded['issues'] as List?)?.length} '
+            'logs=${(decoded['activity_logs'] as List?)?.length} '
+            'udise=${decoded['school_udise']}');
         await db.into(db.grades).insertOnConflictUpdate(
           GradesCompanion.insert(
             grade: grade.toString(),

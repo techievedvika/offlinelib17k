@@ -223,6 +223,8 @@ class _AddBookScreenState extends State<AddBookScreen> {
   // }
 
 
+
+
   Future<void> fetchAndShowBookDetails(String isbn) async {
     if (isbn.trim().isEmpty) return;
 
@@ -247,32 +249,41 @@ class _AddBookScreenState extends State<AddBookScreen> {
           )
               .timeout(const Duration(seconds: 15));
 
+          // if (response.statusCode == 200) {
+          //   final data = json.decode(response.body);
+          //
+          //   if (data['book'] is List &&
+          //       (data['book'] as List).isNotEmpty) {
+          //     isbnExists = true;
+          //   }
+          // }
           if (response.statusCode == 200) {
             final data = json.decode(response.body);
-
-            if (data['book'] is List &&
-                (data['book'] as List).isNotEmpty) {
-              isbnExists = true;
-            }
+            // ISBN only: the server says whether this exact ISBN is registered
+            isbnExists = data['exists'] ?? (data['message'] == 'Success');
           }
         }
       } catch (e) {
         debugPrint('Online ISBN check failed: $e');
       }
 
-      // If not found online, check the offline database
+      // // If not found online, check the offline database
+      // if (!isbnExists) {
+      //   final offlineData =
+      //   await BookIssueRepository()
+      //       .getBookDetailsMapOffline(isbn.trim());
+      //
+      //   final title = offlineData['title'];
+      //
+      //   if (title != null &&
+      //       title.trim().isNotEmpty &&
+      //       title != 'Unknown') {
+      //     isbnExists = true;
+      //   }
+      // }
+      // If not found online, check the local database — ISBN only
       if (!isbnExists) {
-        final offlineData =
-        await BookIssueRepository()
-            .getBookDetailsMapOffline(isbn.trim());
-
-        final title = offlineData['title'];
-
-        if (title != null &&
-            title.trim().isNotEmpty &&
-            title != 'Unknown') {
-          isbnExists = true;
-        }
+        isbnExists = await BookIssueRepository().bookExistsOffline(isbn.trim());
       }
 
       if (!mounted) return;
