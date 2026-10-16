@@ -11,6 +11,7 @@ import 'package:lib17000ft/services/push_notification_service.dart';
 import 'configs/color/color.dart';
 import 'configs/routes/routes.dart';
 import 'configs/routes/routes_name.dart';
+import 'core/auth/session_manager.dart';
 import 'core/di/service_locator.dart';
 import 'core/sync/sync_status_cubit.dart';
 import 'forms/student/student_cubit.dart';
@@ -84,6 +85,7 @@ class MyApp extends StatelessWidget {
               useMaterial3: true,
             ),
             initialRoute: RoutesName.splashScreen,
+            navigatorKey: SessionManager.navigatorKey,
             //home: IssueBookDummyScreen(),
 
             onGenerateRoute: Routes.generateRoute)

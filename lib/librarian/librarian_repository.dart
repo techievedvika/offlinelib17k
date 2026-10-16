@@ -1,6 +1,6 @@
 // lib/librarian/librarian_repository.dart
 import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:lib17000ft/core/network/authed_http.dart' as http;
 import '../configs/app_urls.dart';
 import '../data/network/network_api_services.dart';
 

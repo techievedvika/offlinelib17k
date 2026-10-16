@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:drift/drift.dart';
-import 'package:http/http.dart' as http;
+import 'package:lib17000ft/core/network/authed_http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../configs/app_urls.dart';
 import '../database/tables/database.dart';
@@ -14,6 +14,8 @@ class SyncEngine {
 
   Future<void> runSync() async {
     if (_isSyncing) return;
+    final prefs = await SharedPreferences.getInstance();
+    if ((prefs.getString('authToken') ?? '').isEmpty) return; // logged out
     _isSyncing = true;
     try {
       await _push();

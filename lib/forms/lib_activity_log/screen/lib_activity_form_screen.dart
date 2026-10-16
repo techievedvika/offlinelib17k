@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
-import 'package:http/http.dart' as http;
+import 'package:lib17000ft/core/network/authed_http.dart' as http;
 import 'package:lib17000ft/forms/lib_activity_log/submit.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;

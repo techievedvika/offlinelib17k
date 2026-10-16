@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
-import 'package:http/http.dart' as http;
+import 'package:lib17000ft/core/network/authed_http.dart' as http;
 import 'package:lib17000ft/components/component.dart';
 import 'package:lib17000ft/components/custom_appbar.dart';
 import 'dart:convert';

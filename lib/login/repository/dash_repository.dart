@@ -1,84 +1,88 @@
+import 'dart:convert';
+
 import 'package:drift/drift.dart';
 import 'package:intl/intl.dart';
+import 'package:lib17000ft/core/network/authed_http.dart' as http;
 import 'package:lib17000ft/models/dash/dash_model.dart';
 import '../../configs/app_urls.dart';
 import '../../core/database/tables/database.dart';
 import '../../core/di/service_locator.dart';
-import '../../data/network/network_api_services.dart';
 
 class DashRepository {
-  final _api = NetworkServicesApi();
   final AppDatabase _db = getIt<AppDatabase>();
 
-Future<DashModel?> fetchDashData(
-  String id,
-  String? from,
-  String? to,
-  String? stateName,
-  String? block,
-  String? school,
-) async {
-  try {
-    print(
-      'this is data by fetchdashdata $id $from $to $stateName $block $school',
-    );
-    // Initialize with required id param
-    final queryParams = <String, String>{'id': id};
+  Future<DashModel?> fetchDashData(
+    String id,
+    String? from,
+    String? to,
+    String? stateName,
+    String? block,
+    String? school,
+  ) async {
+    try {
+      print(
+        'this is data by fetchdashdata $id $from $to $stateName $block $school',
+      );
+      // Initialize with required id param
+      final queryParams = <String, String>{'id': id};
 
-    // Only add filters if both 'from' and 'to' are provided (required pair)
-    final hasDateRange = from != null && to != null;
+      // Only add filters if both 'from' and 'to' are provided (required pair)
+      final hasDateRange = from != null && to != null;
 
-    // Check if user applied any filter
-    final bool hasAnyFilter = hasDateRange ||
-        (stateName != null && stateName.isNotEmpty) ||
-        (block != null && block.isNotEmpty) ||
-        (school != null && school.isNotEmpty);
+      // Check if user applied any filter
+      final bool hasAnyFilter = hasDateRange ||
+          (stateName != null && stateName.isNotEmpty) ||
+          (block != null && block.isNotEmpty) ||
+          (school != null && school.isNotEmpty);
 
-    if (hasAnyFilter) {
-  print('filter applied');
-  if (from != null && from.isNotEmpty && to != null && to.isNotEmpty) {
-    queryParams['from'] = from;
-    queryParams['to'] = to;
+      if (hasAnyFilter) {
+        print('filter applied');
+        if (from != null && from.isNotEmpty && to != null && to.isNotEmpty) {
+          queryParams['from'] = from;
+          queryParams['to'] = to;
+        }
+        if (stateName != null && stateName.isNotEmpty) queryParams['state'] = stateName;
+        if (block != null && block.isNotEmpty) queryParams['block'] = block;
+        if (school != null && school.isNotEmpty) queryParams['school'] = school;
+      }
+
+      print('this is query params $queryParams');
+      final uri = Uri.parse(AppUrls.dashboardApi);
+      print('this is my final url for dashboard data $uri');
+
+      final response = await http.post(uri, body: queryParams);
+      print('this is response status code from dash ${response.statusCode}');
+      print('this is response body from dash ${response.body}');
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final decoded = jsonDecode(response.body);
+        if (decoded is Map<String, dynamic>) {
+          return DashModel.fromJson(decoded);
+        }
+      }
+      return null;
+    } catch (e) {
+      print('Error parsing DashModel: $e');
+      rethrow;
+    }
   }
-  if (stateName != null && stateName.isNotEmpty) queryParams['state'] = stateName;
-  if (block != null && block.isNotEmpty) queryParams['block'] = block;
-  if (school != null && school.isNotEmpty) queryParams['school'] = school;
-}
 
-
-    print('this is query params $queryParams');
-    //final uri = Uri.parse(AppUrls.dashapi).replace(queryParameters: queryParams);
-    //final uri = Uri.parse(AppUrls.testDashapi).replace(queryParameters: queryParams);
-    final uri = Uri.parse(AppUrls.dashboardApi);
-    print('this is my final url for dashboard data $uri');
-
-    //final response = await _api.getApi(uri.toString());
-    final response = await _api.postApi(uri.toString(),queryParams);
-    print('this is response from dash $response');
-
-    return DashModel.fromJson(response);
-  } catch (e) {
-    print('Error parsing DashModel: $e');
-    rethrow;
-  }
-}
-
-//To fetch lib activity log form
+  //To fetch lib activity log form
   Future<List<dynamic>?> fetchFormLogs(String adminId) async {
     try {
-
       final queryParams = <String, String>{'created_by': adminId};
-      //final url = "${AppUrls.getFormApi}?created_by=$adminId";
       final url = AppUrls.getLibFormApi;
-      // final response = await _api.getApi(url);
-      final response = await _api.postApi(url,queryParams);
 
-      print(response);
+      final response = await http.post(Uri.parse(url), body: queryParams);
 
-      // Assuming the API returns { "status": "success", "data": [...] }
-      // or directly a list. Adjust based on your actual JSON structure.
-      if (response != null && response['error'] == false) {
-        return response['data'];
+      print('fetchFormLogs response status: ${response.statusCode}');
+      print('fetchFormLogs response body: ${response.body}');
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final decoded = jsonDecode(response.body);
+        if (decoded != null && decoded['error'] == false) {
+          return decoded['data'];
+        }
       }
       return [];
     } catch (e) {

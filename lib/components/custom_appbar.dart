@@ -6,6 +6,8 @@ import 'package:lib17000ft/forms/student/student_registration.dart';
 import 'package:lib17000ft/splash/notification.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../core/auth/session_manager.dart';
+
 class CustomAppbar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   final bool? backbutton;
@@ -102,17 +104,20 @@ class CustomAppbar extends StatelessWidget implements PreferredSizeWidget {
 
 
 Future<void> _logout(BuildContext context) async {
-  final prefs = await SharedPreferences.getInstance();
-  // Remove only user-specific data
-  await prefs.remove('isLoggedIn');
-  await prefs.remove('userId');
-  await prefs.remove('username');
-  await prefs.remove('role');
-  await prefs.remove('rights');
-  await prefs.remove('location');
-  await prefs.remove('school');
-  await prefs.remove('schoolCodeNew');
-  await prefs.remove('initialSyncDone');
+
+  await SessionManager.logout();
+
+  // final prefs = await SharedPreferences.getInstance();
+  // // Remove only user-specific data
+  // await prefs.remove('isLoggedIn');
+  // await prefs.remove('userId');
+  // await prefs.remove('username');
+  // await prefs.remove('role');
+  // await prefs.remove('rights');
+  // await prefs.remove('location');
+  // await prefs.remove('school');
+  // await prefs.remove('schoolCodeNew');
+  // await prefs.remove('initialSyncDone');
   
-  Navigator.pushReplacementNamed(context, RoutesName.loginScreen);
+  // Navigator.pushReplacementNamed(context, RoutesName.loginScreen);
 }

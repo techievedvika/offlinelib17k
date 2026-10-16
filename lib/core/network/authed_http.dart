@@ -19,7 +19,23 @@ class _AuthedClient extends http.BaseClient {
     request.headers['X-Device-UUID'] = await SessionManager.deviceUuid();
     if (hasToken) request.headers['Authorization'] = 'Bearer $token';
 
+    print('==================== HTTP REQUEST ====================');
+    print('METHOD: ${request.method}');
+    print('URL: ${request.url}');
+    print('HEADERS: ${request.headers}');
+
+    if (request is http.Request) {
+      print('DATA: ${request.body}');
+    } else if (request is http.MultipartRequest) {
+      print('FIELDS: ${request.fields}');
+      if (request.files.isNotEmpty) {
+        print('FILES: ${request.files.map((f) => '${f.field}: ${f.filename}').toList()}');
+      }
+    }
+    print('======================================================');
+
     final streamed = await _inner.send(request);
+
 
     final path = request.url.path;
     final isAuthRoute = path.endsWith('/login') || path.endsWith('/logout');
@@ -36,6 +52,7 @@ class _AuthedClient extends http.BaseClient {
         headers: res.headers,
         reasonPhrase: res.reasonPhrase,
       );
+
     }
     return streamed;
   }

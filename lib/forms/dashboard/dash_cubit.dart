@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:bloc/bloc.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:http/http.dart' as http;
+import 'package:lib17000ft/core/network/authed_http.dart' as http;
 import 'package:lib17000ft/forms/dashboard/dash_state.dart';
 import 'package:lib17000ft/login/repository/dash_repository.dart';
 

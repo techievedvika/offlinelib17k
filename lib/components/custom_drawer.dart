@@ -7,6 +7,7 @@ import 'package:lib17000ft/configs/routes/routes_name.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../core/auth/session_manager.dart';
 import '../core/sync/sync_status_cubit.dart';
 
 class CustomDrawer extends StatefulWidget {
@@ -461,26 +462,29 @@ class _CustomDrawerState extends State<CustomDrawer> {
   }
 
   Future<void> _logout() async {
-    final prefs = await SharedPreferences.getInstance();
-    // await prefs.clear(); // Removed as it cleared license info
+
+    await SessionManager.logout();
+
+    // final prefs = await SharedPreferences.getInstance();
+    // // await prefs.clear(); // Removed as it cleared license info
+    //
+    // // Remove only user-specific data
+    // await prefs.remove('isLoggedIn');
+    // await prefs.remove('userId');
+    // await prefs.remove('username');
+    // await prefs.remove('role');
+    // await prefs.remove('rights');
+    // await prefs.remove('location');
+    // await prefs.remove('school');
+    // await prefs.remove('schoolCodeNew');
+    // await prefs.remove('initialSyncDone');
     
-    // Remove only user-specific data
-    await prefs.remove('isLoggedIn');
-    await prefs.remove('userId');
-    await prefs.remove('username');
-    await prefs.remove('role');
-    await prefs.remove('rights');
-    await prefs.remove('location');
-    await prefs.remove('school');
-    await prefs.remove('schoolCodeNew');
-    await prefs.remove('initialSyncDone');
-    
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Navigator.pushNamedAndRemoveUntil(
-        context, 
-        RoutesName.loginScreen, 
-        (route) => false,
-      );
-    });
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   Navigator.pushNamedAndRemoveUntil(
+    //     context,
+    //     RoutesName.loginScreen,
+    //     (route) => false,
+    //   );
+    // });
   }
 }

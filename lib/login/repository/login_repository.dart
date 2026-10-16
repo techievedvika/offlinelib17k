@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../configs/app_urls.dart';
+import '../../core/auth/session_manager.dart';
 import '../../data/network/network_api_services.dart';
 import '../../models/user_model.dart';
 import '../../core/database/tables/database.dart';
@@ -47,6 +48,12 @@ class LoginRepository {
       // If login failed (status == 0), return early without modifying local activation state
       if (userModel.status == 0) {
         return userModel;
+      }
+
+      final token = (response['token'] ?? response['access_token'])?.toString();
+      if (token != null && token.isNotEmpty) {
+        print("TOKEN --- $token");
+        await SessionManager.saveToken(token);
       }
 
       SharedPreferences prefs = await SharedPreferences.getInstance();

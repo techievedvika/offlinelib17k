@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:drift/drift.dart';
-import 'package:http/http.dart' as http;
+import 'package:lib17000ft/core/network/authed_http.dart' as http;
 import 'package:lib17000ft/configs/app_urls.dart';
 import 'package:uuid/uuid.dart';
 
