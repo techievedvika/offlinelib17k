@@ -2152,6 +2152,12 @@ class $ActivityLogsTable extends ActivityLogs
   late final GeneratedColumn<String> school = GeneratedColumn<String>(
       'school', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _schoolUdiseMeta =
+      const VerificationMeta('schoolUdise');
+  @override
+  late final GeneratedColumn<String> schoolUdise = GeneratedColumn<String>(
+      'school_udise', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _createdByMeta =
       const VerificationMeta('createdBy');
   @override
@@ -2185,6 +2191,7 @@ class $ActivityLogsTable extends ActivityLogs
         participantsNumber,
         conductedBy,
         school,
+        schoolUdise,
         createdBy,
         createdAt,
         syncStatus
@@ -2272,6 +2279,12 @@ class $ActivityLogsTable extends ActivityLogs
     } else if (isInserting) {
       context.missing(_schoolMeta);
     }
+    if (data.containsKey('school_udise')) {
+      context.handle(
+          _schoolUdiseMeta,
+          schoolUdise.isAcceptableOrUnknown(
+              data['school_udise']!, _schoolUdiseMeta));
+    }
     if (data.containsKey('created_by')) {
       context.handle(_createdByMeta,
           createdBy.isAcceptableOrUnknown(data['created_by']!, _createdByMeta));
@@ -2321,6 +2334,8 @@ class $ActivityLogsTable extends ActivityLogs
           .read(DriftSqlType.string, data['${effectivePrefix}conducted_by'])!,
       school: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}school'])!,
+      schoolUdise: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}school_udise']),
       createdBy: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}created_by'])!,
       createdAt: attachedDatabase.typeMapping
@@ -2348,6 +2363,7 @@ class ActivityLog extends DataClass implements Insertable<ActivityLog> {
   final int participantsNumber;
   final String conductedBy;
   final String school;
+  final String? schoolUdise;
   final int createdBy;
   final DateTime createdAt;
   final String syncStatus;
@@ -2363,6 +2379,7 @@ class ActivityLog extends DataClass implements Insertable<ActivityLog> {
       required this.participantsNumber,
       required this.conductedBy,
       required this.school,
+      this.schoolUdise,
       required this.createdBy,
       required this.createdAt,
       required this.syncStatus});
@@ -2384,6 +2401,9 @@ class ActivityLog extends DataClass implements Insertable<ActivityLog> {
     map['participants_number'] = Variable<int>(participantsNumber);
     map['conducted_by'] = Variable<String>(conductedBy);
     map['school'] = Variable<String>(school);
+    if (!nullToAbsent || schoolUdise != null) {
+      map['school_udise'] = Variable<String>(schoolUdise);
+    }
     map['created_by'] = Variable<int>(createdBy);
     map['created_at'] = Variable<DateTime>(createdAt);
     map['sync_status'] = Variable<String>(syncStatus);
@@ -2404,6 +2424,9 @@ class ActivityLog extends DataClass implements Insertable<ActivityLog> {
       participantsNumber: Value(participantsNumber),
       conductedBy: Value(conductedBy),
       school: Value(school),
+      schoolUdise: schoolUdise == null && nullToAbsent
+          ? const Value.absent()
+          : Value(schoolUdise),
       createdBy: Value(createdBy),
       createdAt: Value(createdAt),
       syncStatus: Value(syncStatus),
@@ -2427,6 +2450,7 @@ class ActivityLog extends DataClass implements Insertable<ActivityLog> {
       participantsNumber: serializer.fromJson<int>(json['participantsNumber']),
       conductedBy: serializer.fromJson<String>(json['conductedBy']),
       school: serializer.fromJson<String>(json['school']),
+      schoolUdise: serializer.fromJson<String?>(json['schoolUdise']),
       createdBy: serializer.fromJson<int>(json['createdBy']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       syncStatus: serializer.fromJson<String>(json['syncStatus']),
@@ -2447,6 +2471,7 @@ class ActivityLog extends DataClass implements Insertable<ActivityLog> {
       'participantsNumber': serializer.toJson<int>(participantsNumber),
       'conductedBy': serializer.toJson<String>(conductedBy),
       'school': serializer.toJson<String>(school),
+      'schoolUdise': serializer.toJson<String?>(schoolUdise),
       'createdBy': serializer.toJson<int>(createdBy),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'syncStatus': serializer.toJson<String>(syncStatus),
@@ -2465,6 +2490,7 @@ class ActivityLog extends DataClass implements Insertable<ActivityLog> {
           int? participantsNumber,
           String? conductedBy,
           String? school,
+          Value<String?> schoolUdise = const Value.absent(),
           int? createdBy,
           DateTime? createdAt,
           String? syncStatus}) =>
@@ -2480,6 +2506,7 @@ class ActivityLog extends DataClass implements Insertable<ActivityLog> {
         participantsNumber: participantsNumber ?? this.participantsNumber,
         conductedBy: conductedBy ?? this.conductedBy,
         school: school ?? this.school,
+        schoolUdise: schoolUdise.present ? schoolUdise.value : this.schoolUdise,
         createdBy: createdBy ?? this.createdBy,
         createdAt: createdAt ?? this.createdAt,
         syncStatus: syncStatus ?? this.syncStatus,
@@ -2507,6 +2534,8 @@ class ActivityLog extends DataClass implements Insertable<ActivityLog> {
       conductedBy:
           data.conductedBy.present ? data.conductedBy.value : this.conductedBy,
       school: data.school.present ? data.school.value : this.school,
+      schoolUdise:
+          data.schoolUdise.present ? data.schoolUdise.value : this.schoolUdise,
       createdBy: data.createdBy.present ? data.createdBy.value : this.createdBy,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       syncStatus:
@@ -2528,6 +2557,7 @@ class ActivityLog extends DataClass implements Insertable<ActivityLog> {
           ..write('participantsNumber: $participantsNumber, ')
           ..write('conductedBy: $conductedBy, ')
           ..write('school: $school, ')
+          ..write('schoolUdise: $schoolUdise, ')
           ..write('createdBy: $createdBy, ')
           ..write('createdAt: $createdAt, ')
           ..write('syncStatus: $syncStatus')
@@ -2548,6 +2578,7 @@ class ActivityLog extends DataClass implements Insertable<ActivityLog> {
       participantsNumber,
       conductedBy,
       school,
+      schoolUdise,
       createdBy,
       createdAt,
       syncStatus);
@@ -2566,6 +2597,7 @@ class ActivityLog extends DataClass implements Insertable<ActivityLog> {
           other.participantsNumber == this.participantsNumber &&
           other.conductedBy == this.conductedBy &&
           other.school == this.school &&
+          other.schoolUdise == this.schoolUdise &&
           other.createdBy == this.createdBy &&
           other.createdAt == this.createdAt &&
           other.syncStatus == this.syncStatus);
@@ -2583,6 +2615,7 @@ class ActivityLogsCompanion extends UpdateCompanion<ActivityLog> {
   final Value<int> participantsNumber;
   final Value<String> conductedBy;
   final Value<String> school;
+  final Value<String?> schoolUdise;
   final Value<int> createdBy;
   final Value<DateTime> createdAt;
   final Value<String> syncStatus;
@@ -2599,6 +2632,7 @@ class ActivityLogsCompanion extends UpdateCompanion<ActivityLog> {
     this.participantsNumber = const Value.absent(),
     this.conductedBy = const Value.absent(),
     this.school = const Value.absent(),
+    this.schoolUdise = const Value.absent(),
     this.createdBy = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.syncStatus = const Value.absent(),
@@ -2616,6 +2650,7 @@ class ActivityLogsCompanion extends UpdateCompanion<ActivityLog> {
     required int participantsNumber,
     required String conductedBy,
     required String school,
+    this.schoolUdise = const Value.absent(),
     required int createdBy,
     required DateTime createdAt,
     this.syncStatus = const Value.absent(),
@@ -2643,6 +2678,7 @@ class ActivityLogsCompanion extends UpdateCompanion<ActivityLog> {
     Expression<int>? participantsNumber,
     Expression<String>? conductedBy,
     Expression<String>? school,
+    Expression<String>? schoolUdise,
     Expression<int>? createdBy,
     Expression<DateTime>? createdAt,
     Expression<String>? syncStatus,
@@ -2661,6 +2697,7 @@ class ActivityLogsCompanion extends UpdateCompanion<ActivityLog> {
       if (participantsNumber != null) 'participants_number': participantsNumber,
       if (conductedBy != null) 'conducted_by': conductedBy,
       if (school != null) 'school': school,
+      if (schoolUdise != null) 'school_udise': schoolUdise,
       if (createdBy != null) 'created_by': createdBy,
       if (createdAt != null) 'created_at': createdAt,
       if (syncStatus != null) 'sync_status': syncStatus,
@@ -2680,6 +2717,7 @@ class ActivityLogsCompanion extends UpdateCompanion<ActivityLog> {
       Value<int>? participantsNumber,
       Value<String>? conductedBy,
       Value<String>? school,
+      Value<String?>? schoolUdise,
       Value<int>? createdBy,
       Value<DateTime>? createdAt,
       Value<String>? syncStatus,
@@ -2696,6 +2734,7 @@ class ActivityLogsCompanion extends UpdateCompanion<ActivityLog> {
       participantsNumber: participantsNumber ?? this.participantsNumber,
       conductedBy: conductedBy ?? this.conductedBy,
       school: school ?? this.school,
+      schoolUdise: schoolUdise ?? this.schoolUdise,
       createdBy: createdBy ?? this.createdBy,
       createdAt: createdAt ?? this.createdAt,
       syncStatus: syncStatus ?? this.syncStatus,
@@ -2739,6 +2778,9 @@ class ActivityLogsCompanion extends UpdateCompanion<ActivityLog> {
     if (school.present) {
       map['school'] = Variable<String>(school.value);
     }
+    if (schoolUdise.present) {
+      map['school_udise'] = Variable<String>(schoolUdise.value);
+    }
     if (createdBy.present) {
       map['created_by'] = Variable<int>(createdBy.value);
     }
@@ -2768,6 +2810,7 @@ class ActivityLogsCompanion extends UpdateCompanion<ActivityLog> {
           ..write('participantsNumber: $participantsNumber, ')
           ..write('conductedBy: $conductedBy, ')
           ..write('school: $school, ')
+          ..write('schoolUdise: $schoolUdise, ')
           ..write('createdBy: $createdBy, ')
           ..write('createdAt: $createdAt, ')
           ..write('syncStatus: $syncStatus, ')
@@ -5417,6 +5460,7 @@ typedef $$ActivityLogsTableCreateCompanionBuilder = ActivityLogsCompanion
   required int participantsNumber,
   required String conductedBy,
   required String school,
+  Value<String?> schoolUdise,
   required int createdBy,
   required DateTime createdAt,
   Value<String> syncStatus,
@@ -5435,6 +5479,7 @@ typedef $$ActivityLogsTableUpdateCompanionBuilder = ActivityLogsCompanion
   Value<int> participantsNumber,
   Value<String> conductedBy,
   Value<String> school,
+  Value<String?> schoolUdise,
   Value<int> createdBy,
   Value<DateTime> createdAt,
   Value<String> syncStatus,
@@ -5485,6 +5530,9 @@ class $$ActivityLogsTableFilterComposer
 
   ColumnFilters<String> get school => $composableBuilder(
       column: $table.school, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get schoolUdise => $composableBuilder(
+      column: $table.schoolUdise, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<int> get createdBy => $composableBuilder(
       column: $table.createdBy, builder: (column) => ColumnFilters(column));
@@ -5542,6 +5590,9 @@ class $$ActivityLogsTableOrderingComposer
   ColumnOrderings<String> get school => $composableBuilder(
       column: $table.school, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<String> get schoolUdise => $composableBuilder(
+      column: $table.schoolUdise, builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<int> get createdBy => $composableBuilder(
       column: $table.createdBy, builder: (column) => ColumnOrderings(column));
 
@@ -5594,6 +5645,9 @@ class $$ActivityLogsTableAnnotationComposer
   GeneratedColumn<String> get school =>
       $composableBuilder(column: $table.school, builder: (column) => column);
 
+  GeneratedColumn<String> get schoolUdise => $composableBuilder(
+      column: $table.schoolUdise, builder: (column) => column);
+
   GeneratedColumn<int> get createdBy =>
       $composableBuilder(column: $table.createdBy, builder: (column) => column);
 
@@ -5641,6 +5695,7 @@ class $$ActivityLogsTableTableManager extends RootTableManager<
             Value<int> participantsNumber = const Value.absent(),
             Value<String> conductedBy = const Value.absent(),
             Value<String> school = const Value.absent(),
+            Value<String?> schoolUdise = const Value.absent(),
             Value<int> createdBy = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
             Value<String> syncStatus = const Value.absent(),
@@ -5658,6 +5713,7 @@ class $$ActivityLogsTableTableManager extends RootTableManager<
             participantsNumber: participantsNumber,
             conductedBy: conductedBy,
             school: school,
+            schoolUdise: schoolUdise,
             createdBy: createdBy,
             createdAt: createdAt,
             syncStatus: syncStatus,
@@ -5675,6 +5731,7 @@ class $$ActivityLogsTableTableManager extends RootTableManager<
             required int participantsNumber,
             required String conductedBy,
             required String school,
+            Value<String?> schoolUdise = const Value.absent(),
             required int createdBy,
             required DateTime createdAt,
             Value<String> syncStatus = const Value.absent(),
@@ -5692,6 +5749,7 @@ class $$ActivityLogsTableTableManager extends RootTableManager<
             participantsNumber: participantsNumber,
             conductedBy: conductedBy,
             school: school,
+            schoolUdise: schoolUdise,
             createdBy: createdBy,
             createdAt: createdAt,
             syncStatus: syncStatus,

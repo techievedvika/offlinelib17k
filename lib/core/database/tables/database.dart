@@ -22,7 +22,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   static LazyDatabase _openConnection() {
     return LazyDatabase(() async {
@@ -71,6 +71,9 @@ class AppDatabase extends _$AppDatabase {
         await m.createTable(students);
         await m.deleteTable('book_issues');
         await m.createTable(bookIssues);
+      }
+      if (from < 4) {
+        await m.addColumn(activityLogs, activityLogs.schoolUdise);
       }
     },
   );

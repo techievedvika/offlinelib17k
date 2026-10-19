@@ -7,6 +7,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../core/database/tables/database.dart';
 import '../../core/di/service_locator.dart';
+import '../../core/school_scope.dart';
 import '../../data/network/network_api_services.dart';
 import '../../models/book/book_model.dart' as book_model;
 
@@ -201,6 +202,7 @@ class BookIssueRepository {
     final now = DateTime.now();
     final rangeStart = DateTime.tryParse(from ?? '') ?? DateTime(now.year, 1, 1);
     final rangeEnd = DateTime.tryParse(to ?? '') ?? now;
+    final udise = await SchoolScope.udise();
 
     // final allIssues = await _db.select(_db.bookIssues).get();
     ///This is to get All Issued based on User ID
@@ -214,7 +216,8 @@ class BookIssueRepository {
     final allIssues = await (_db.select(_db.bookIssues)
       ..where((t) =>
       t.createdAt.isBiggerOrEqualValue(rangeStart) &
-      t.createdAt.isSmallerOrEqualValue(rangeEnd)))
+      t.createdAt.isSmallerOrEqualValue(rangeEnd) &
+      (udise.isEmpty ? const Constant(true) : t.studentLibId.like('$udise-%'))))
         .get();
 
     final students = await _db.select(_db.students).get();
@@ -260,6 +263,7 @@ class BookIssueRepository {
 
 // NEW — "All Pending Returns": only currently OPEN loans (uniqid-aware, matches the fix from before)
   Future<List<Map<String, dynamic>>> getBookReturnOffline({String? adminId, String? from, String? to}) async {
+    final udise = await SchoolScope.udise();
 
     // final now = DateTime.now();
     // final rangeStart = DateTime.tryParse(from ?? '') ?? DateTime(now.year, 1, 1);
@@ -270,7 +274,9 @@ class BookIssueRepository {
     //   ..where((t) => adminId != null ? t.createdBy.equals(int.tryParse(adminId) ?? 0) : const Constant(true)))
     //     .get();
 
-    final allIssues = await _db.select(_db.bookIssues).get();
+    final allIssues = await (_db.select(_db.bookIssues)
+      ..where((t) => udise.isEmpty ? const Constant(true) : t.studentLibId.like('$udise-%')))
+        .get();
 
     // final allIssues = await (_db.select(_db.bookIssues)
     //   ..where((t) => t.createdAt.isBiggerOrEqualValue(rangeStart) & t.createdAt.isSmallerOrEqualValue(rangeEnd)))

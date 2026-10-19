@@ -12,6 +12,7 @@ class ActivityLogs extends Table {
   IntColumn get participantsNumber => integer()();
   TextColumn get conductedBy => text()();
   TextColumn get school => text()();
+  TextColumn get schoolUdise => text().nullable()();
   IntColumn get createdBy => integer()();
   DateTimeColumn get createdAt => dateTime()();
   TextColumn get syncStatus => text().withDefault(const Constant('synced'))();

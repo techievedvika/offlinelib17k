@@ -232,28 +232,39 @@ class _LoginScreenState extends State<LoginScreen> {
                           },
                           onChanged: (value) => loginCubit.password = value,
                         ),
-                        SizedBox(
-                          height: responsive.responsiveValue(
-                              small: 20.0, medium: 30.0, large: 20.0),
-                        ),
-                        if (state is LoginLoading)
-                          const Center(child: CircularProgressIndicator(color: AppColors.primary,)),
-                        if (state is LoginFailure)
-                          Center(
-                            child: Column(
-                              children: [
-                                // AppFeedback.showError(context, message: state.message),
-                                Text(
-                                  state.message,
-                                  textAlign: TextAlign.center,
-                                  style: const TextStyle(
-                                      color: Colors.red,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                              ],
+                        Align(
+                          alignment: Alignment.bottomRight,
+                          child: TextButton(
+                            onPressed: (){},
+                            child: Text('Forget Password ?',
+                              style: TextStyle(
+                                fontSize: responsive.responsiveTextSize(12, 14, 16),
+                              ),
                             ),
                           ),
+                        ),
+                        // SizedBox(
+                        //   height: responsive.responsiveValue(
+                        //       small: 10.0, medium: 30.0, large: 20.0),
+                        // ),
+                        if (state is LoginLoading)
+                          const Center(child: CircularProgressIndicator(color: AppColors.primary,)),
+                        // if (state is LoginFailure)
+                          // Center(
+                          //   child: Column(
+                          //     children: [
+                          //       // AppFeedback.showError(context, message: state.message),
+                          //       // Text(
+                          //       //   state.message,
+                          //       //   textAlign: TextAlign.center,
+                          //       //   style: const TextStyle(
+                          //       //       color: Colors.red,
+                          //       //       fontSize: 16,
+                          //       //       fontWeight: FontWeight.bold),
+                          //       // ),
+                          //     ],
+                          //   ),
+                          // ),
                         // BlocListener<LoginCubit, LoginState>(
                         //   listenWhen: (previous, current) {
                         //     return current is LoginFailure &&

@@ -7,6 +7,7 @@ import 'package:lib17000ft/models/dash/dash_model.dart';
 import '../../configs/app_urls.dart';
 import '../../core/database/tables/database.dart';
 import '../../core/di/service_locator.dart';
+import '../../core/school_scope.dart';
 
 class DashRepository {
   final AppDatabase _db = getIt<AppDatabase>();
@@ -200,11 +201,17 @@ class DashRepository {
     //   ..where((t) => adminId != null ? t.createdBy.equals(int.tryParse(adminId) ?? 0) : const Constant(true)))
     //     .get();
 
+    final udise = await SchoolScope.udise();
+
     final students = await (_db.select(_db.students)
-      ..where((t) => t.status.equals('1')))
+      ..where((t) =>
+      t.status.equals('1') &
+      (udise.isEmpty ? const Constant(true) : t.libId.like('$udise-%'))))
         .get();
     final books = await _db.select(_db.books).get();
-    final allIssuesAllTime = await _db.select(_db.bookIssues).get();
+    final allIssuesAllTime = await (_db.select(_db.bookIssues)
+      ..where((t) => udise.isEmpty ? const Constant(true) : t.studentLibId.like('$udise-%')))
+        .get();
 
     final issuedInRange = allIssuesAllTime.where((i) =>
     i.status == 'Issued' &&
@@ -319,7 +326,13 @@ class DashRepository {
     //   ..where((t) => t.createdBy.equals(int.tryParse(adminId) ?? 0)))
     //     .get();
 
-    final rows = await _db.select(_db.activityLogs).get();
+    final udise = await SchoolScope.udise();
+    final rows = await (_db.select(_db.activityLogs)
+      ..where((t) => udise.isEmpty
+          ? const Constant(true)
+          : t.schoolUdise.equals(udise)))
+        .get();
+
 
     return rows.map((r) => {
       'id': r.id ?? r.localId,
@@ -333,6 +346,7 @@ class DashRepository {
       'conducted_by': r.conductedBy,
       'created_at': r.createdAt.toIso8601String(),
       'school': r.school,
+      'school_udise': r.schoolUdise,
       'created_by': r.createdBy,
     }).toList();
   }

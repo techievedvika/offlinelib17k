@@ -8,6 +8,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../core/database/tables/database.dart';
 import '../../core/di/service_locator.dart';
+import '../../core/school_scope.dart';
 import '../../data/network/network_api_services.dart';
 import '../../models/response_model.dart';
 import '../../models/student_registration/student_model.dart';
@@ -787,6 +788,10 @@ class StudentRepository {
     final query = _db.select(_db.students)..where((t) => t.status.equals('1'));
     if (school != null && school.trim().isNotEmpty) {
       query.where((t) => t.school.equals(school));
+    }
+    final udise = await SchoolScope.udise();
+    if (udise.isNotEmpty) {
+      query.where((t) => t.libId.like('$udise-%'));
     }
     ///This is to get Student based on user ID
     // if (adminId != null && adminId.trim().isNotEmpty) {

@@ -85,13 +85,15 @@ class SessionManager {
     try {
       final t = await token();
       if (t != null && t.isNotEmpty) {
+        final uuid = await deviceUuid();
         await raw.post(
           Uri.parse(AppUrls.logoutApi),
           headers: {
             'Authorization': 'Bearer $t',
-            'X-Device-UUID': await deviceUuid(),
+            'X-Device-UUID': uuid,
             'Accept': 'application/json',
           },
+          body: {'device_uuid': uuid},
         ).timeout(const Duration(seconds: 5));
       }
     } catch (_) {

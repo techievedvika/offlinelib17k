@@ -262,6 +262,7 @@ class SyncEngine {
             participantsNumber: _asInt(item['participants_number']),
             conductedBy: item['conducted_by'] ?? '',
             school: item['school'] ?? '',
+            schoolUdise: Value(item['school_udise']?.toString()),
             createdBy: _asInt(item['created_by']),
             createdAt: DateTime.tryParse(item['created_at'] ?? '') ?? DateTime.now(),
             syncStatus: const Value('synced'),
