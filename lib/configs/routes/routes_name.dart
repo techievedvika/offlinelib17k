@@ -21,4 +21,5 @@ class RoutesName {
   // routes_name.dart
   static const String licenseActivationScreen = '/license-activation';
   static const String librarianRegistrationScreen = '/librarian-registration';
+  static const String forgotPasswordScreen = '/forgot-password';
 }

@@ -40,9 +40,10 @@ class AppUrls {
   static String registerLibrarianApi = "${AppUrls.baseUrl}register_librarian";
   static String sendRegistrationOtpApi = "${AppUrls.baseUrl}send_registration_otp";
   static String verifyRegistrationOtpApi = "${AppUrls.baseUrl}verify_registration_otp";
-
-  //This is for demo only for now
   static String passResetApi = "${AppUrls.baseUrl}reset_password";
+  static String checkForgetPasswordApi = "${AppUrls.baseUrl}check_forget_password";
+
+
   static String dashboardApi = "${AppUrls.baseUrl}get_dashboard_data";
   static String registerApi = "${AppUrls.baseUrl}register_student";
   static String bookIssueReturnApi = "${AppUrls.baseUrl}issue_return_book";

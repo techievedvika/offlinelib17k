@@ -18,6 +18,8 @@ import '../../configs/color/color.dart';
 import '../book_issue/book_issue_cubit.dart';
 import '../book_issue/book_issue_repository.dart';
 import '../book_issue/book_issue_state.dart';
+import '../filters/filter_cubit.dart';
+import '../filters/filter_dropdown.dart';
 import '../lib_activity_log/widget/ocr_reader_button.dart';
 
 class AddBookScreen extends StatefulWidget {
@@ -29,6 +31,16 @@ class AddBookScreen extends StatefulWidget {
 
 class _AddBookScreenState extends State<AddBookScreen> {
   final _formKey = GlobalKey<FormState>();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<FilterCubit>().fetchLanguage();
+      }
+    });
+  }
 
   final TextEditingController isbnController = TextEditingController();
   final TextEditingController titleController = TextEditingController();
@@ -263,6 +275,9 @@ class _AddBookScreenState extends State<AddBookScreen> {
             isbnExists = data['exists'] ?? (data['message'] == 'Success');
           }
         }
+        else {
+          isbnExists = await BookIssueRepository().bookExistsOffline(isbn.trim());
+        }
       } catch (e) {
         debugPrint('Online ISBN check failed: $e');
       }
@@ -281,10 +296,12 @@ class _AddBookScreenState extends State<AddBookScreen> {
       //     isbnExists = true;
       //   }
       // }
+
+
       // If not found online, check the local database — ISBN only
-      if (!isbnExists) {
-        isbnExists = await BookIssueRepository().bookExistsOffline(isbn.trim());
-      }
+      // if (!isbnExists) {
+      //   isbnExists = await BookIssueRepository().bookExistsOffline(isbn.trim());
+      // }
 
       if (!mounted) return;
 
@@ -294,9 +311,19 @@ class _AddBookScreenState extends State<AddBookScreen> {
           builder: (dialogContext) {
             return AlertDialog(
               title: const Text('Book Already Exists'),
-              content: Text(
-                'A book with ISBN ${isbn.trim()} '
-                    'already exists in the database.',
+              content: Text.rich(
+                TextSpan(
+                  children: <TextSpan>[
+                    const TextSpan(
+                      text: 'This book already exists.\n\nWith ',
+                    ),
+                    TextSpan(
+                      text: 'ISBN: ${isbn.trim()}\n',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    )
+                  ]
+                ),
+                // 'A book with ISBN ${isbn.trim()} \nalready exists in the database.',
               ),
               actions: [
                 CustomButton(
@@ -488,13 +515,21 @@ class _AddBookScreenState extends State<AddBookScreen> {
 
               const SizedBox(height: 10),
 
-              LabelText(label: 'Language',astrick: true,),
+              LabelText(label: 'Language', astrick: true),
               const SizedBox(height: 10),
-              CustomTextFormField(
-                textController: languageController,
-                hintText: "Enter Language",
-                readOnly: false,
-                validator: (value) => value == null || value.isEmpty ? 'Please Enter Language.' : null,
+              BlocBuilder<FilterCubit, FilterState>(
+                builder: (context, filterState) {
+                  return FilterDropdown(
+                    value: filterState.selectedLanguage,
+                    hint: 'Select Language',
+                    items: filterState.languages,
+                    onChanged: (value) {
+                      context.read<FilterCubit>().updateSelectedLanguage(value);
+                      languageController.text = value ?? '';
+                    },
+                    isMobile: true,
+                  );
+                },
               ),
 
               const SizedBox(height: 10),
@@ -585,6 +620,7 @@ class _AddBookScreenState extends State<AddBookScreen> {
                     publisherController.clear();
                     authorController.clear();
                     languageController.clear();
+                    context.read<FilterCubit>().updateSelectedLanguage(null);
                     genreController.clear();
                     levelController.clear();
                     codeController.clear();

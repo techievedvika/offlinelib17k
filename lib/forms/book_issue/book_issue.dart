@@ -24,6 +24,8 @@ import '../../components/info_dialog.dart';
 import '../../components/school_tag.dart';
 import '../../configs/app_urls.dart';
 import '../../models/student_registration/student_model.dart';
+import '../filters/filter_cubit.dart';
+import '../filters/filter_dropdown.dart';
 import '../lib_activity_log/widget/ocr_reader_button.dart';
 import 'book_issue_repository.dart';
 
@@ -64,12 +66,18 @@ class _BookIssueState extends State<BookIssue> {
   bool lanAvailable = false;
   bool authAvailable = false;
   bool titleAvailable = false;
+  bool isLanguageAutoFilled = false;
 
   File? bookImage;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<FilterCubit>().fetchLanguage();
+      }
+    });
     _loadUserId();
     print("Student Details: ${widget.student}");
     populateStudentFields(widget.student);
@@ -132,10 +140,12 @@ class _BookIssueState extends State<BookIssue> {
       final bookDetails = await fetchBookDetails(isbn);
       if (mounted) {
         if (bookDetails.isNotEmpty) {
+          final lang = bookDetails['language'];
+          final resolvedLang = (lang == null || lang == 'Unknown') ? '' : lang;
           setState(() {
             bookTitleController.text = bookDetails['title'] ?? 'No Title';
             authorController.text = bookDetails['publisher'] ?? 'No Publisher';
-            languageController.text = bookDetails['language'] ?? 'Unknown';
+            languageController.text = resolvedLang;
             growValue = bookDetails['level'];
             if(bookTitleController.text == 'Unknown'){
               bookTitleController.clear();
@@ -143,10 +153,14 @@ class _BookIssueState extends State<BookIssue> {
             if(authorController.text == 'Unknown'){
               authorController.clear();
             }
-            if(languageController.text == 'Unknown'){
+            if(resolvedLang.isEmpty){
               languageController.clear();
+              isLanguageAutoFilled = false;
+            } else {
+              isLanguageAutoFilled = true;
             }
           });
+          context.read<FilterCubit>().updateSelectedLanguage(resolvedLang.isEmpty ? null : resolvedLang);
         } else {
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
               content: Text('Book details not found.'),
@@ -219,6 +233,8 @@ class _BookIssueState extends State<BookIssue> {
     bookTitleController.clear();
     authorController.clear();
     languageController.clear();
+    isLanguageAutoFilled = false;
+    context.read<FilterCubit>().updateSelectedLanguage(null);
     _radioKey.currentState?.resetSelection();
     _idKey.currentState?.resetSelection();
     setState(() {
@@ -316,26 +332,41 @@ class _BookIssueState extends State<BookIssue> {
                             try {
                               final bookDetails = await fetchBookDetails(isbn);
                               if (mounted) {
+                                final lang = bookDetails['language'];
+                                final resolvedLang = (lang == null || lang == 'Unknown') ? '' : lang;
                                 if (bookDetails.isNotEmpty && bookDetails['title'] != 'NA') {
                                   setState(() {
                                     bookTitleController.text = bookDetails['title'] ?? 'No Title';
                                     // Use 'author' if 'publisher' is empty
                                     authorController.text = bookDetails['publisher'] ?? bookDetails['author'] ?? 'No Publisher';
-                                    languageController.text = bookDetails['language'] ?? 'Unknown';
+                                    languageController.text = resolvedLang;
                                     growValue = bookDetails['level'];
+                                    if(resolvedLang.isEmpty){
+                                      languageController.clear();
+                                      isLanguageAutoFilled = false;
+                                    } else {
+                                      isLanguageAutoFilled = true;
+                                    }
                                   });
                                   print('Book Details: $bookDetails');
                                 } else {
                                   setState(() {
                                     bookTitleController.text = bookDetails['title'] ?? 'No Title';
                                     authorController.text = bookDetails['publisher'] ?? bookDetails['author'] ?? 'No Publisher';
-                                    languageController.text = bookDetails['language'] ?? 'Unknown';
+                                    languageController.text = resolvedLang;
                                     growValue = bookDetails['level'];
+                                    if(resolvedLang.isEmpty){
+                                      languageController.clear();
+                                      isLanguageAutoFilled = false;
+                                    } else {
+                                      isLanguageAutoFilled = true;
+                                    }
                                   });
                                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                                       content: Text('Book details not found.'),
                                       backgroundColor: AppColors.primary));
                                 }
+                                context.read<FilterCubit>().updateSelectedLanguage(resolvedLang.isEmpty ? null : resolvedLang);
                               }
                             } catch (e) {
                               if (mounted) {
@@ -378,13 +409,21 @@ class _BookIssueState extends State<BookIssue> {
                           try {
                             final bookDetails = await fetchBookDetails(isbnController.text);
                             if (mounted) {
+                              final lang = bookDetails['language'];
+                              final resolvedLang = (lang == null || lang == 'Unknown') ? '' : lang;
                               if (bookDetails.isNotEmpty && bookDetails['title'] != 'NA') {
                                 setState(() {
                                   bookTitleController.text = bookDetails['title'] ?? 'No Title';
                                   // Use 'author' if 'publisher' is empty
                                   authorController.text = bookDetails['publisher'] ?? bookDetails['author'] ?? 'No Publisher';
-                                  languageController.text = bookDetails['language'] ?? 'Unknown';
+                                  languageController.text = resolvedLang;
                                   growValue = bookDetails['level'];
+                                  if(resolvedLang.isEmpty){
+                                    languageController.clear();
+                                    isLanguageAutoFilled = false;
+                                  } else {
+                                    isLanguageAutoFilled = true;
+                                  }
                                 });
                                 print('Book Details: $bookDetails');
                                 print('Book level: $growValue');
@@ -393,13 +432,20 @@ class _BookIssueState extends State<BookIssue> {
                                   bookTitleController.text = bookDetails['title'] ?? 'No Title';
                                   // Use 'author' if 'publisher' is empty
                                   authorController.text = bookDetails['publisher'] ?? bookDetails['author'] ?? 'No Publisher';
-                                  languageController.text = bookDetails['language'] ?? 'Unknown';
+                                  languageController.text = resolvedLang;
                                   growValue = bookDetails['level'];
+                                  if(resolvedLang.isEmpty){
+                                    languageController.clear();
+                                    isLanguageAutoFilled = false;
+                                  } else {
+                                    isLanguageAutoFilled = true;
+                                  }
                                 });
                                 ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                                     content: Text('Book details not found.'),
                                     backgroundColor: AppColors.primary));
                               }
+                              context.read<FilterCubit>().updateSelectedLanguage(resolvedLang.isEmpty ? null : resolvedLang);
                             }
                           } catch (e) {
                             if (mounted) {
@@ -445,11 +491,20 @@ class _BookIssueState extends State<BookIssue> {
                     const SizedBox(height: 10),
                     LabelText(label: 'Book Language', astrick: true),
                     const SizedBox(height: 10),
-                    CustomTextFormField(
-                      //hintText: languageController.text,
-                      textController: languageController,
-                      readOnly: false,
-                      validator: (value) => value == 'Unknown' || value!.isEmpty ? 'Please enter book language.' : null,
+                    BlocBuilder<FilterCubit, FilterState>(
+                      builder: (context, filterState) {
+                        return FilterDropdown(
+                          value: filterState.selectedLanguage,
+                          hint: 'Select Language',
+                          items: filterState.languages,
+                          onChanged: (value) {
+                            context.read<FilterCubit>().updateSelectedLanguage(value);
+                            languageController.text = value ?? '';
+                          },
+                          enabled: !isLanguageAutoFilled,
+                          isMobile: true,
+                        );
+                      },
                     ),
                     const SizedBox(height: 10),
                     LabelText(label: 'Book Publisher', astrick: true,),

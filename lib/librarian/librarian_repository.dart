@@ -63,4 +63,11 @@ class LibrarianRepository {
 
   Future<Map<String, dynamic>> verifyRegistrationOtp(String mobile, String otp) =>
       _postOtp(AppUrls.verifyRegistrationOtpApi, {'mobile_number': mobile, 'otp': otp});
+
+  Future<Map<String, dynamic>> sendForgotPasswordOtp(String mobile) =>
+      _postOtp(AppUrls.checkForgetPasswordApi, {'mobile_number': mobile});
+
+  Future<Map<String, dynamic>> resetPassword(String mobile, String otp, String password) =>
+      _postOtp(AppUrls.passResetApi,
+          {'mobile_number': mobile, 'otp': otp, 'password': password});
 }

@@ -235,7 +235,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         Align(
                           alignment: Alignment.bottomRight,
                           child: TextButton(
-                            onPressed: (){},
+                            onPressed: () => Navigator.pushNamed(context, RoutesName.forgotPasswordScreen),
                             child: Text('Forget Password ?',
                               style: TextStyle(
                                 fontSize: responsive.responsiveTextSize(12, 14, 16),

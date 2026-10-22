@@ -9,6 +9,7 @@ class FilterDropdown extends StatelessWidget {
     required this.items,
     required this.onChanged,
     required this.isMobile,
+    this.enabled = true,
   });
 
   final String? value;
@@ -16,6 +17,7 @@ class FilterDropdown extends StatelessWidget {
   final List<String> items;
   final Function(String?) onChanged;
   final bool isMobile;
+  final bool enabled;
 
   @override
   Widget build(BuildContext context) {
@@ -24,6 +26,7 @@ class FilterDropdown extends StatelessWidget {
     return SizedBox(
       width: isMobile ? double.infinity : 200,
       child: DropdownSearch<String>(
+        enabled: enabled,
         selectedItem: safeValue,
         items: (filter, props) {
           return items
