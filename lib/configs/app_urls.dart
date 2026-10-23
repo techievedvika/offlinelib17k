@@ -42,6 +42,7 @@ class AppUrls {
   static String verifyRegistrationOtpApi = "${AppUrls.baseUrl}verify_registration_otp";
   static String passResetApi = "${AppUrls.baseUrl}reset_password";
   static String checkForgetPasswordApi = "${AppUrls.baseUrl}check_forget_password";
+  static String verifyForgetOtpApi = "${AppUrls.baseUrl}verify_forget_password_otp";
 
 
   static String dashboardApi = "${AppUrls.baseUrl}get_dashboard_data";

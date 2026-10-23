@@ -8,6 +8,7 @@ import 'package:lib17000ft/models/book_issue/all_bookIssue.dart';
 import 'package:lib17000ft/screens/debug_sync_screen.dart';
 import 'package:lib17000ft/splash/splash.dart';
 
+import '../../components/online_gate.dart';
 import '../../forms/book/book_add.dart';
 import '../../forms/book_issue/book_issue.dart';
 import '../../forms/book_return/book_return.dart';
@@ -34,9 +35,16 @@ class Routes {
         return MaterialPageRoute(builder: (context) => const DashBoard());
       case '/splash_screen':
         return MaterialPageRoute(builder: (context) => const SplashScreen());
+      // case '/student_registration':
+      //   return MaterialPageRoute(
+      //       builder: (context) => const StudentRegistration());
       case '/student_registration':
         return MaterialPageRoute(
-            builder: (context) => const StudentRegistration());
+          builder: (context) => const OnlineGate(
+            featureName: 'Student registration',
+            child: StudentRegistration(),
+          ),
+        );
       case '/student_edit':
         final args = settings.arguments as Map<String, dynamic>;
 

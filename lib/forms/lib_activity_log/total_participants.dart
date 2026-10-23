@@ -24,7 +24,9 @@
 //   }
 // }
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../components/custom_labeltext.dart';
+import '../../configs/color/color.dart';
 
 // Data model for the table rows
 class GradeParticipant {
@@ -40,36 +42,74 @@ class GradeParticipant {
 class TotalParticipantsInput extends StatelessWidget {
   final List<GradeParticipant> participants;
   final VoidCallback onUpdate;
+  final String? Function(List<GradeParticipant>?)? validator;
 
   const TotalParticipantsInput({
     super.key,
     required this.participants,
     required this.onUpdate,
+    this.validator,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        LabelText(label: "Activity Participants Breakdown",astrick: true,),
-        const SizedBox(height: 10),
-        Table(
-          border: TableBorder.all(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(4)),
-          columnWidths: const {
-            0: FlexColumnWidth(2), // Grade
-            1: FlexColumnWidth(1.5), // Boys
-            2: FlexColumnWidth(1.5), // Girls
-            3: FlexColumnWidth(1.5), // Total
+    return FormField<List<GradeParticipant>>(
+      key: ValueKey(participants.map((e) => e.grade).join(',')),
+      initialValue: participants,
+      validator: validator ??
+          (list) {
+            final currentList = (list != null && list.isNotEmpty) ? list : participants;
+            if (currentList.isEmpty) {
+              return 'Please select at least one grade';
+            }
+            final hasAtLeastOneColumnFilled =
+                currentList.any((p) => p.boys > 0 || p.girls > 0);
+            if (!hasAtLeastOneColumnFilled) {
+              return 'Please fill at least one column';
+            }
+            return null;
           },
-          defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+      builder: (FormFieldState<List<GradeParticipant>> state) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildHeader(),
-            ...participants.map((p) => _buildRow(p)).toList(),
-            // _buildTotalFooter(),
+            LabelText(
+              label: "Activity Participants Breakdown",
+              astrick: true,
+            ),
+            const SizedBox(height: 10),
+            Table(
+              border: TableBorder.all(
+                color: state.hasError ? AppColors.error : Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(4),
+              ),
+              columnWidths: const {
+                0: FlexColumnWidth(2), // Grade
+                1: FlexColumnWidth(1.5), // Boys
+                2: FlexColumnWidth(1.5), // Girls
+                3: FlexColumnWidth(1.5), // Total
+              },
+              defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+              children: [
+                _buildHeader(),
+                ...participants.map((p) => _buildRow(p, state)),
+                // _buildTotalFooter(),
+              ],
+            ),
+            if (state.hasError)
+              Padding(
+                padding: const EdgeInsets.only(top: 6.0, left: 4.0),
+                child: Text(
+                  state.errorText ?? '',
+                  style: const TextStyle(
+                    color: AppColors.error,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
           ],
-        ),
-      ],
+        );
+      },
     );
   }
 
@@ -85,7 +125,7 @@ class TotalParticipantsInput extends StatelessWidget {
     );
   }
 
-  TableRow _buildRow(GradeParticipant p) {
+  TableRow _buildRow(GradeParticipant p, FormFieldState<List<GradeParticipant>> state) {
     return TableRow(
       children: [
         _CellText(p.grade),
@@ -93,6 +133,7 @@ class TotalParticipantsInput extends StatelessWidget {
           initialValue: p.boys == 0 ? '' : p.boys.toString(),
           onChanged: (val) {
             p.boys = int.tryParse(val) ?? 0;
+            state.didChange(participants);
             onUpdate();
           },
         ),
@@ -100,23 +141,11 @@ class TotalParticipantsInput extends StatelessWidget {
           initialValue: p.girls == 0 ? '' : p.girls.toString(),
           onChanged: (val) {
             p.girls = int.tryParse(val) ?? 0;
+            state.didChange(participants);
             onUpdate();
           },
         ),
         //_CellText(p.total.toString()),
-      ],
-    );
-  }
-
-  TableRow _buildTotalFooter() {
-    int grandTotal = participants.fold(0, (sum, item) => sum + item.total);
-    return TableRow(
-      decoration: BoxDecoration(color: Colors.grey[100]),
-      children: [
-        const _CellText("Grand Total", isHeader: true),
-        const SizedBox(),
-        const SizedBox(),
-        _CellText(grandTotal.toString(), isHeader: true),
       ],
     );
   }
@@ -152,6 +181,7 @@ class _CellInput extends StatelessWidget {
       child: TextFormField(
         initialValue: initialValue,
         keyboardType: TextInputType.number,
+        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
         textAlign: TextAlign.center,
         style: const TextStyle(fontSize: 13),
         decoration: const InputDecoration(border: InputBorder.none, hintText: '0'),

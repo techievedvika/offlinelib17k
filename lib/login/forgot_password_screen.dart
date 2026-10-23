@@ -32,6 +32,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   bool _hideConfirm = true;
   int _resendSeconds = 0;
   Timer? _timer;
+  bool _otpVerified = false;
+  bool _otpChecking = false;
+  bool _otpWrong = false;
 
   @override
   void dispose() {
@@ -96,21 +99,32 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     try {
       final res = await _repository.resetPassword(
         _mobileController.text.trim(),
-        _otpController.text.trim(),
         _passController.text,
+        _confirmController.text,
       );
       if (!mounted) return;
       if (res['status'] == 1) {
         ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(res['message'].toString())));
-        if (mounted) Navigator.pop(context);
+        Navigator.pop(context);
       } else {
-        if (res['http_code'] == 429) {
-          // too many wrong attempts - a new OTP is needed
+        final code = res['http_code'];
+        final message = res['message'].toString().toLowerCase();
+        // The OTP is no longer usable (expired, used, or too many attempts).
+        // Other failures, such as a password rule, keep the verified OTP.
+        final otpProblem = code == 429 || message.contains('otp');
+
+        if (code == 429) {
           _timer?.cancel();
-          setState(() => _resendSeconds = 0);
+          setState(() => _resendSeconds = 0); // allow requesting a new OTP
         }
-        _otpController.clear();
+        if (otpProblem) {
+          setState(() {
+            _otpController.clear();
+            _otpVerified = false;
+            _otpWrong = false;
+          });
+        }
         await AppFeedback.showError(context,
             title: 'Reset Failed', message: res['message'].toString());
       }
@@ -125,10 +139,49 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     }
   }
 
+  Future<void> _checkOtp(String value) async {
+    // any edit invalidates an earlier result
+    if (_otpVerified || _otpWrong) {
+      setState(() {
+        _otpVerified = false;
+        _otpWrong = false;
+      });
+    }
+    if (value.length != 6 || int.tryParse(value) == null) return;
+
+    setState(() => _otpChecking = true);
+    try {
+      final res = await _repository.verifyForgotPasswordOtp(
+          _mobileController.text.trim(), value);
+      if (!mounted || _otpController.text.trim() != value) return; // user kept typing
+      if (res['status'] == 1) {
+        setState(() => _otpVerified = true);
+      } else {
+        setState(() => _otpWrong = true);
+        if (res['http_code'] == 429) {
+          _timer?.cancel();
+          setState(() => _resendSeconds = 0); // allow a new OTP
+        }
+        await AppFeedback.showError(context,
+            title: 'Incorrect OTP', message: res['message'].toString());
+      }
+    } catch (_) {
+      if (mounted) {
+        await AppFeedback.showError(context,
+            title: 'Could Not Verify',
+            message: 'Please check your internet connection and try again.');
+      }
+    } finally {
+      if (mounted) setState(() => _otpChecking = false);
+    }
+  }
+
   void _changeNumber() {
     _timer?.cancel();
     setState(() {
       _otpSent = false;
+      _otpVerified = false;
+      _otpWrong = false;
       _resendSeconds = 0;
       _otpController.clear();
       _passController.clear();
@@ -202,54 +255,86 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
+                        // CustomTextFormField(
+                        //   textController: _otpController,
+                        //   textInputType: TextInputType.number,
+                        //   labelText: 'Enter 6-digit OTP',
+                        //   hintText: 'Enter OTP',
+                        //   maxlength: 6,
+                        //   validator: (v) {
+                        //     final o = v?.trim() ?? '';
+                        //     if (o.length != 6 || int.tryParse(o) == null) {
+                        //       return 'Enter the 6-digit OTP';
+                        //     }
+                        //     return null;
+                        //   },
+                        // ),
                         CustomTextFormField(
                           textController: _otpController,
                           textInputType: TextInputType.number,
                           labelText: 'Enter 6-digit OTP',
                           hintText: 'Enter OTP',
                           maxlength: 6,
+                          readOnly: _otpVerified,
+                          onChanged: _checkOtp,
+                          suffixIcon: IconButton(
+                            onPressed: null,
+                            icon: _otpChecking
+                                ? const SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(strokeWidth: 2))
+                                : _otpVerified
+                                ? const Icon(Icons.check_circle, color: Colors.green)
+                                : _otpWrong
+                                ? const Icon(Icons.cancel, color: Colors.red)
+                                : const SizedBox.shrink(),
+                          ),
                           validator: (v) {
                             final o = v?.trim() ?? '';
                             if (o.length != 6 || int.tryParse(o) == null) {
                               return 'Enter the 6-digit OTP';
                             }
+                            if (!_otpVerified) return 'Please enter the correct OTP';
                             return null;
                           },
                         ),
-                        SizedBox(height: size.height * 0.015),
-                        CustomTextFormField(
-                          textController: _passController,
-                          labelText: 'New Password',
-                          hintText: 'At least 8 characters',
-                          obscureText: _hidePass,
-                          suffixIcon: IconButton(
-                            icon: Icon(_hidePass ? Icons.visibility_off : Icons.visibility),
-                            onPressed: () => setState(() => _hidePass = !_hidePass),
+                        if (_otpVerified) ...[
+                          SizedBox(height: size.height * 0.015),
+                          CustomTextFormField(
+                            textController: _passController,
+                            labelText: 'New Password',
+                            hintText: 'At least 8 characters',
+                            obscureText: _hidePass,
+                            suffixIcon: IconButton(
+                              icon: Icon(_hidePass ? Icons.visibility_off : Icons.visibility),
+                              onPressed: () => setState(() => _hidePass = !_hidePass),
+                            ),
+                            validator: (v) {
+                              if (v == null || v.isEmpty) return 'Required';
+                              if (v.length < 8) return 'Minimum 8 characters';
+                              return null;
+                            },
                           ),
-                          validator: (v) {
-                            if (v == null || v.isEmpty) return 'Required';
-                            if (v.length < 8) return 'Minimum 8 characters';
-                            return null;
-                          },
-                        ),
-                        SizedBox(height: size.height * 0.015),
-                        CustomTextFormField(
-                          textController: _confirmController,
-                          labelText: 'Confirm Password',
-                          hintText: 'Re-enter new password',
-                          obscureText: _hideConfirm,
-                          suffixIcon: IconButton(
-                            icon: Icon(_hideConfirm ? Icons.visibility_off : Icons.visibility),
-                            onPressed: () => setState(() => _hideConfirm = !_hideConfirm),
+                          SizedBox(height: size.height * 0.015),
+                          CustomTextFormField(
+                            textController: _confirmController,
+                            labelText: 'Confirm Password',
+                            hintText: 'Re-enter new password',
+                            obscureText: _hideConfirm,
+                            suffixIcon: IconButton(
+                              icon: Icon(_hideConfirm ? Icons.visibility_off : Icons.visibility),
+                              onPressed: () => setState(() => _hideConfirm = !_hideConfirm),
+                            ),
+                            validator: (v) =>
+                            v != _passController.text ? 'Passwords do not match' : null,
                           ),
-                          validator: (v) =>
-                          v != _passController.text ? 'Passwords do not match' : null,
-                        ),
-                        SizedBox(height: size.height * 0.02),
-                        CustomButton(
-                          onPressedButton: _isBusy ? null : _resetPassword,
-                          title: _isBusy ? 'Please wait...' : 'Reset Password',
-                        ),
+                          SizedBox(height: size.height * 0.02),
+                          CustomButton(
+                            onPressedButton: _isBusy ? null : _resetPassword,
+                            title: _isBusy ? 'Please wait...' : 'Reset Password',
+                          ),
+                        ],
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
