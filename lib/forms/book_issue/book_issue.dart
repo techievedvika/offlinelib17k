@@ -24,8 +24,6 @@ import '../../components/info_dialog.dart';
 import '../../components/school_tag.dart';
 import '../../configs/app_urls.dart';
 import '../../models/student_registration/student_model.dart';
-import '../filters/filter_cubit.dart';
-import '../filters/filter_dropdown.dart';
 import '../lib_activity_log/widget/ocr_reader_button.dart';
 import 'book_issue_repository.dart';
 
@@ -50,7 +48,23 @@ class _BookIssueState extends State<BookIssue> {
   final TextEditingController bookTitleController = TextEditingController();
   final TextEditingController authorController = TextEditingController();
   final TextEditingController languageController = TextEditingController();
+  final TextEditingController otherLanguageController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+
+  @override
+  void dispose() {
+    studentIdController.dispose();
+    idController.dispose();
+    studentNameController.dispose();
+    studentClassController.dispose();
+    libIdController.dispose();
+    isbnController.dispose();
+    bookTitleController.dispose();
+    authorController.dispose();
+    languageController.dispose();
+    otherLanguageController.dispose();
+    super.dispose();
+  }
   final _radioKey = GlobalKey<ResettableRadioState>(); // Key for resetting
   final _idKey = GlobalKey<ResettableRadioState>(); // Key for resetting
 
@@ -73,11 +87,6 @@ class _BookIssueState extends State<BookIssue> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        context.read<FilterCubit>().fetchLanguage();
-      }
-    });
     _loadUserId();
     print("Student Details: ${widget.student}");
     populateStudentFields(widget.student);
@@ -160,7 +169,6 @@ class _BookIssueState extends State<BookIssue> {
               isLanguageAutoFilled = true;
             }
           });
-          context.read<FilterCubit>().updateSelectedLanguage(resolvedLang.isEmpty ? null : resolvedLang);
         } else {
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
               content: Text('Book details not found.'),
@@ -233,8 +241,8 @@ class _BookIssueState extends State<BookIssue> {
     bookTitleController.clear();
     authorController.clear();
     languageController.clear();
+    otherLanguageController.clear();
     isLanguageAutoFilled = false;
-    context.read<FilterCubit>().updateSelectedLanguage(null);
     _radioKey.currentState?.resetSelection();
     _idKey.currentState?.resetSelection();
     setState(() {
@@ -366,7 +374,6 @@ class _BookIssueState extends State<BookIssue> {
                                       content: Text('Book details not found.'),
                                       backgroundColor: AppColors.primary));
                                 }
-                                context.read<FilterCubit>().updateSelectedLanguage(resolvedLang.isEmpty ? null : resolvedLang);
                               }
                             } catch (e) {
                               if (mounted) {
@@ -445,7 +452,6 @@ class _BookIssueState extends State<BookIssue> {
                                     content: Text('Book details not found.'),
                                     backgroundColor: AppColors.primary));
                               }
-                              context.read<FilterCubit>().updateSelectedLanguage(resolvedLang.isEmpty ? null : resolvedLang);
                             }
                           } catch (e) {
                             if (mounted) {
@@ -491,21 +497,33 @@ class _BookIssueState extends State<BookIssue> {
                     const SizedBox(height: 10),
                     LabelText(label: 'Book Language', astrick: true),
                     const SizedBox(height: 10),
-                    BlocBuilder<FilterCubit, FilterState>(
-                      builder: (context, filterState) {
-                        return FilterDropdown(
-                          value: filterState.selectedLanguage,
-                          hint: 'Select Language',
-                          items: filterState.languages,
-                          onChanged: (value) {
-                            context.read<FilterCubit>().updateSelectedLanguage(value);
-                            languageController.text = value ?? '';
-                          },
-                          enabled: !isLanguageAutoFilled,
-                          isMobile: true,
-                        );
+                    LanguageDropdown(
+                      selectedLanguage: languageController.text.isNotEmpty
+                          ? languageController.text
+                          : null,
+                      onChanged: (value) {
+                        setState(() {
+                          languageController.text = value ?? '';
+                          if (languageController.text != 'Other') {
+                            otherLanguageController.clear();
+                          }
+                        });
                       },
+                      enabled: !isLanguageAutoFilled,
                     ),
+                    if (languageController.text == 'Other') ...[
+                      const SizedBox(height: 10),
+                      LabelText(label: 'Enter Language', astrick: true),
+                      const SizedBox(height: 10),
+                      CustomTextFormField(
+                        textController: otherLanguageController,
+                        hintText: "Enter Other Language",
+                        readOnly: false,
+                        validator: (value) => languageController.text == 'Other' && (value == null || value.isEmpty)
+                            ? 'Please Enter Other Language.'
+                            : null,
+                      ),
+                    ],
                     const SizedBox(height: 10),
                     LabelText(label: 'Book Publisher', astrick: true,),
                     const SizedBox(height: 10),
@@ -605,7 +623,9 @@ class _BookIssueState extends State<BookIssue> {
                                   'publisher': authorController.text,
                                   'title': bookTitleController.text,
                                   'level' : growValue,
-                                  'language' : languageController.text,
+                                  'language' : languageController.text == 'Other'
+                                      ? otherLanguageController.text.trim()
+                                      : languageController.text.trim(),
                                   'cover_page' : bookImage?.path ?? '',
                                 };
                                 // Always call with 'Issued' first
@@ -640,7 +660,9 @@ class _BookIssueState extends State<BookIssue> {
         'isbn': isbnValue,
         'created_by': userId,
         'title': bookTitleController.text,
-        'language' : languageController.text,
+        'language' : languageController.text == 'Other'
+            ? otherLanguageController.text.trim()
+            : languageController.text.trim(),
         'status': 'Returned',
         'level' : growValue,
       };

@@ -98,7 +98,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                     _buildDrawerSection('Book Management', [
                       rights!.contains("5") ?       _buildDrawerItem(
                         icon: FontAwesomeIcons.book,
-                        title: 'Add Book',
+                        title: 'Add New Book',
                         route: RoutesName.bookAdd,
                       ) : const SizedBox(),
                       rights!.contains("5") ?       _buildDrawerItem(

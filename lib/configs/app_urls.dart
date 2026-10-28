@@ -68,6 +68,7 @@ class AppUrls {
 
 
   static String getBookApi = "${AppUrls.baseUrl}get_book";
+  static String getBookLanguageApi = "${AppUrls.baseUrl}get_languages";
   static String getGradeApi = "${AppUrls.baseUrl}get_grades";
   static String promoteStudentApi = "${AppUrls.baseUrl}promote_student";
   static String getLibVersionApi = "${AppUrls.baseUrl}get_lib_version";

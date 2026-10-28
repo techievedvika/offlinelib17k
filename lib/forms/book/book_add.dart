@@ -15,11 +15,10 @@ import '../../components/custom_textField.dart';
 import '../../components/info_dialog.dart';
 import '../../configs/app_urls.dart';
 import '../../configs/color/color.dart';
+import '../../components/language_dropdown.dart';
 import '../book_issue/book_issue_cubit.dart';
 import '../book_issue/book_issue_repository.dart';
 import '../book_issue/book_issue_state.dart';
-import '../filters/filter_cubit.dart';
-import '../filters/filter_dropdown.dart';
 import '../lib_activity_log/widget/ocr_reader_button.dart';
 
 class AddBookScreen extends StatefulWidget {
@@ -35,11 +34,6 @@ class _AddBookScreenState extends State<AddBookScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        context.read<FilterCubit>().fetchLanguage();
-      }
-    });
   }
 
   final TextEditingController isbnController = TextEditingController();
@@ -47,6 +41,7 @@ class _AddBookScreenState extends State<AddBookScreen> {
   final TextEditingController publisherController = TextEditingController();
   final TextEditingController authorController = TextEditingController();
   final TextEditingController languageController = TextEditingController();
+  final TextEditingController otherLanguageController = TextEditingController();
   final TextEditingController genreController = TextEditingController();
   final TextEditingController levelController = TextEditingController();
   final TextEditingController coverPageController = TextEditingController();
@@ -68,6 +63,7 @@ class _AddBookScreenState extends State<AddBookScreen> {
     publisherController.dispose();
     authorController.dispose();
     languageController.dispose();
+    otherLanguageController.dispose();
     genreController.dispose();
     levelController.dispose();
     coverPageController.dispose();
@@ -400,7 +396,7 @@ class _AddBookScreenState extends State<AddBookScreen> {
       //   title: const Text("Add Book"),
       // ),
       appBar: const CustomAppbar(
-        title: "Add Book",
+        title: "Add New Book",
         backbutton: true,
       ),
 
@@ -517,20 +513,32 @@ class _AddBookScreenState extends State<AddBookScreen> {
 
               LabelText(label: 'Language', astrick: true),
               const SizedBox(height: 10),
-              BlocBuilder<FilterCubit, FilterState>(
-                builder: (context, filterState) {
-                  return FilterDropdown(
-                    value: filterState.selectedLanguage,
-                    hint: 'Select Language',
-                    items: filterState.languages,
-                    onChanged: (value) {
-                      context.read<FilterCubit>().updateSelectedLanguage(value);
-                      languageController.text = value ?? '';
-                    },
-                    isMobile: true,
-                  );
+              LanguageDropdown(
+                selectedLanguage: languageController.text.isNotEmpty
+                    ? languageController.text
+                    : null,
+                onChanged: (value) {
+                  setState(() {
+                    languageController.text = value ?? '';
+                    if (languageController.text != 'Other') {
+                      otherLanguageController.clear();
+                    }
+                  });
                 },
               ),
+              if (languageController.text == 'Other') ...[
+                const SizedBox(height: 10),
+                LabelText(label: 'Enter Language', astrick: true),
+                const SizedBox(height: 10),
+                CustomTextFormField(
+                  textController: otherLanguageController,
+                  hintText: "Enter Other Language",
+                  readOnly: false,
+                  validator: (value) => languageController.text == 'Other' && (value == null || value.isEmpty)
+                      ? 'Please Enter Other Language.'
+                      : null,
+                ),
+              ],
 
               const SizedBox(height: 10),
 
@@ -620,7 +628,7 @@ class _AddBookScreenState extends State<AddBookScreen> {
                     publisherController.clear();
                     authorController.clear();
                     languageController.clear();
-                    context.read<FilterCubit>().updateSelectedLanguage(null);
+                    otherLanguageController.clear();
                     genreController.clear();
                     levelController.clear();
                     codeController.clear();
@@ -671,7 +679,9 @@ class _AddBookScreenState extends State<AddBookScreen> {
                               : genreController.text.trim(),
                           'publisher': publisherController.text.trim(),
                           'title': titleController.text.trim(),
-                          'language': languageController.text.trim(),
+                          'language': languageController.text == 'Other'
+                              ? otherLanguageController.text.trim()
+                              : languageController.text.trim(),
                           'level': selectedValue == "Yes" ? levelController.text.trim() : 'Other',
                           'cover_page': '',
                           'code': 'NA',
