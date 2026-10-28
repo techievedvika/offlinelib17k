@@ -159,7 +159,7 @@ class _CellText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.all(8.2),
       child: Text(
         text,
         textAlign: TextAlign.center,
