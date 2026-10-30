@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
@@ -7,6 +6,7 @@ import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lib17000ft/core/network/authed_http.dart' as http;
 
+import '../../components/app_feedback.dart';
 import '../../components/custom_appbar.dart';
 import '../../components/custom_button.dart';
 import '../../components/custom_labeltext.dart';
@@ -107,9 +107,7 @@ class _AddBookScreenState extends State<AddBookScreen> {
       if (isbn == '-1' || !mounted) return;
 
       if (!(RegExp(r'^\d{10}$').hasMatch(isbn) || (RegExp(r'^97[89]\d{10}$').hasMatch(isbn)))) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text('Invalid ISBN scanned. Please scan a valid ISBN.'),
-            backgroundColor: AppColors.error));
+        AppFeedback.showError(context, message: 'Invalid ISBN scanned. Please scan a valid ISBN.');
         return;
       }
       isbnController.text = isbn;
@@ -117,9 +115,7 @@ class _AddBookScreenState extends State<AddBookScreen> {
 
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error fetching book details: $e")),
-        );
+        AppFeedback.showError(context, message: "Error fetching book details: $e");
       }
     } finally {
       if (mounted) setState(() => isScanning = false);
@@ -344,11 +340,7 @@ class _AddBookScreenState extends State<AddBookScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error checking ISBN: $e'),
-          ),
-        );
+        AppFeedback.showError(context, message: 'Error checking ISBN: $e');
       }
     } finally {
       if (mounted) {
@@ -638,12 +630,7 @@ class _AddBookScreenState extends State<AddBookScreen> {
                     //   bookImage = null;
                     // });
                   } else if (state is BookIssueFailure) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(state.message),
-                        backgroundColor: AppColors.error,
-                      ),
-                    );
+                    AppFeedback.showError(context, message: state.message);
                   }
                 },
                 builder: (context, state) {

@@ -213,6 +213,7 @@ class _DashBoardState extends State<DashBoard>
           school: libSchool!,
           role: role!,
         );
+        LanguageCache.refresh(); // fire and forget: saves the language list for offline use
       } catch (e) {
         print('Initial sync failed: $e');
       } finally {
