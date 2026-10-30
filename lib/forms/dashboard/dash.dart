@@ -26,6 +26,7 @@ import '../../components/sync_banner_widget.dart';
 import '../../components/sync_spinner.dart';
 import '../../core/di/service_locator.dart';
 import '../../core/sync/sync_engine.dart';
+import '../book_issue/book_issue_repository.dart';
 import 'gradebargraph.dart';
 
 class DashBoard extends StatefulWidget {
@@ -77,6 +78,7 @@ class _DashBoardState extends State<DashBoard>
     );
     _animationController.forward();
     //_requestNotificationPermission();
+    BookIssueRepository().removePlaceholderBooks().then((n) => print('Removed $n placeholder books'));
   }
 
   @override

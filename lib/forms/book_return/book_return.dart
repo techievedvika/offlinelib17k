@@ -552,9 +552,9 @@ class _BookReturnState extends State<BookReturn> {
                                   'lib_id': libIdController.text,
                                   'isbn': isbnController.text,
                                   'created_by': userId,
-                                  'title': bookTitleController.text,
-                                  'level': bookLevelController.text,
-                                  'language': bookLanguageController.text,
+                                  // 'title': bookTitleController.text,
+                                  // 'level': bookLevelController.text,
+                                  // 'language': bookLanguageController.text,
                                   'status': 'Returned'
                                 };
                                 //  CORRECTED LINE

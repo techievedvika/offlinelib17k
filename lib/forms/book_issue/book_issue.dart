@@ -48,7 +48,7 @@ class _BookIssueState extends State<BookIssue> {
   final TextEditingController bookTitleController = TextEditingController();
   final TextEditingController authorController = TextEditingController();
   final TextEditingController languageController = TextEditingController();
-  final TextEditingController otherLanguageController = TextEditingController();
+  // final TextEditingController otherLanguageController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
   @override
@@ -62,7 +62,7 @@ class _BookIssueState extends State<BookIssue> {
     bookTitleController.dispose();
     authorController.dispose();
     languageController.dispose();
-    otherLanguageController.dispose();
+    // otherLanguageController.dispose();
     super.dispose();
   }
   final _radioKey = GlobalKey<ResettableRadioState>(); // Key for resetting
@@ -72,17 +72,19 @@ class _BookIssueState extends State<BookIssue> {
   String? userId;
   String? libSchool;
   String? idValue; // Stores the value of the 'For Reading only?' radio button
-  String? growValue; // Stores the value of the 'G-R-O-W level' radio button
+  // String? growValue; // Stores the value of the 'G-R-O-W level' radio button
   String? isbnValue;
   String? libIdValue;
   String? userIdValue;
-  bool bookInDb = true;
-  bool lanAvailable = false;
-  bool authAvailable = false;
-  bool titleAvailable = false;
-  bool isLanguageAutoFilled = false;
+  // bool bookInDb = true;
+  // bool lanAvailable = false;
+  // bool authAvailable = false;
+  // bool titleAvailable = false;
+  // bool isLanguageAutoFilled = false;
+  //
+  // File? bookImage;
 
-  File? bookImage;
+  String? verifiedIsbn; // set only when the book is found in the registered books
 
   @override
   void initState() {
@@ -145,41 +147,12 @@ class _BookIssueState extends State<BookIssue> {
         return;
       }
       isbnController.text = isbn;
-
-      final bookDetails = await fetchBookDetails(isbn);
-      if (mounted) {
-        if (bookDetails.isNotEmpty) {
-          final lang = bookDetails['language'];
-          final resolvedLang = (lang == null || lang == 'Unknown') ? '' : lang;
-          setState(() {
-            bookTitleController.text = bookDetails['title'] ?? 'No Title';
-            authorController.text = bookDetails['publisher'] ?? 'No Publisher';
-            languageController.text = resolvedLang;
-            growValue = bookDetails['level'];
-            if(bookTitleController.text == 'Unknown'){
-              bookTitleController.clear();
-            }
-            if(authorController.text == 'Unknown'){
-              authorController.clear();
-            }
-            if(resolvedLang.isEmpty){
-              languageController.clear();
-              isLanguageAutoFilled = false;
-            } else {
-              isLanguageAutoFilled = true;
-            }
-          });
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-              content: Text('Book details not found.'),
-              backgroundColor: AppColors.primary));
-        }
-      }
+      await _lookupBook(isbn);
     } catch (e) {
       if (mounted) {
         AppFeedback.showError(
           context,
-          message: "Error fetching book details: $e",
+          message: "Error scanning ISBN: $e",
         );
       }
     } finally {
@@ -188,6 +161,54 @@ class _BookIssueState extends State<BookIssue> {
   }
 
 
+  // Future<Map<String, String>> fetchBookDetails(String isbn) async {
+  //   final connectivityResult = await Connectivity().checkConnectivity();
+  //   final online = connectivityResult.isNotEmpty && !connectivityResult.contains(ConnectivityResult.none);
+  //
+  //   Map<String, String> result = {};
+  //
+  //   if (online) {
+  //     try {
+  //       final url = Uri.parse(AppUrls.getBookApi);
+  //       final response = await http.post(url, body: {"isbn": isbn}).timeout(const Duration(seconds: 15));
+  //       if (response.statusCode == 200) {
+  //         final data = json.decode(response.body);
+  //         if (data['book'] != null && data['book'].isNotEmpty) {
+  //           result = {
+  //             'title': data['book'][0]['title'] ?? 'Unknown',
+  //             'author': data['book'][0]['author'] ?? 'Unknown',
+  //             'isbn': data['book'][0]['isbn'].toString(),
+  //             'publisher': data['book'][0]['publisher'] ?? 'Unknown',
+  //             'level': data['book'][0]['level'] ?? '',
+  //             'language': data['book'][0]['language'] ?? 'Unknown',
+  //             'cover_page': data['book'][0]['cover_page'] ?? '',
+  //           };
+  //         }
+  //       } else {
+  //         throw Exception('Failed to fetch book details: ${response.statusCode}');
+  //       }
+  //     } catch (e) {
+  //       print('Online book lookup failed, falling back to offline cache: $e'); // fall through instead of throwing
+  //     }
+  //   }
+  //
+  //   if (result.isEmpty) {
+  //     result = await BookIssueRepository().getBookDetailsMapOffline(isbn); // offline OR online lookup failed above
+  //   }
+  //
+  //   if (mounted) {
+  //     setState(() {
+  //       bookInDb = result['title'] != 'Unknown';
+  //     });
+  //   }
+  //
+  //   return result;
+  // }
+
+  String _clean(String? v) =>
+      (v == null || v == 'Unknown' || v == 'NA') ? '' : v;
+
+  /// Returns the registered book's details, or an empty map if the ISBN is not registered.
   Future<Map<String, String>> fetchBookDetails(String isbn) async {
     final connectivityResult = await Connectivity().checkConnectivity();
     final online = connectivityResult.isNotEmpty && !connectivityResult.contains(ConnectivityResult.none);
@@ -196,40 +217,87 @@ class _BookIssueState extends State<BookIssue> {
 
     if (online) {
       try {
-        final url = Uri.parse(AppUrls.getBookApi);
-        final response = await http.post(url, body: {"isbn": isbn}).timeout(const Duration(seconds: 15));
+        final response = await http
+            .post(Uri.parse(AppUrls.getBookApi), body: {"isbn": isbn})
+            .timeout(const Duration(seconds: 15));
         if (response.statusCode == 200) {
           final data = json.decode(response.body);
-          if (data['book'] != null && data['book'].isNotEmpty) {
+          print('GET_BOOK exists=${data['exists']} book=${data['book']}');
+          final hasBook = data['book'] != null && data['book'].isNotEmpty;
+          final title = hasBook ? (data['book'][0]['title'] ?? '').toString().trim() : '';
+          // get_book returns an "exists" flag; older servers fall back to the title check
+          final exists = data['exists'] == true ||
+              data['exists'] == 1 ||
+              (data['exists'] == null && hasBook && title.isNotEmpty &&
+                  title != 'Unknown' && title != 'NA');
+          if (exists && hasBook) {
+            final b = data['book'][0];
             result = {
-              'title': data['book'][0]['title'] ?? 'Unknown',
-              'author': data['book'][0]['author'] ?? 'Unknown',
-              'isbn': data['book'][0]['isbn'].toString(),
-              'publisher': data['book'][0]['publisher'] ?? 'Unknown',
-              'level': data['book'][0]['level'] ?? '',
-              'language': data['book'][0]['language'] ?? 'Unknown',
-              'cover_page': data['book'][0]['cover_page'] ?? '',
+              'title': (b['title'] ?? '').toString(),
+              'publisher': (b['publisher'] ?? '').toString(),
+              'language': (b['language'] ?? '').toString(),
             };
           }
-        } else {
-          throw Exception('Failed to fetch book details: ${response.statusCode}');
         }
       } catch (e) {
-        print('Online book lookup failed, falling back to offline cache: $e'); // fall through instead of throwing
+        print('Online book lookup failed, using local books: $e');
       }
     }
 
+    // Offline, or not on the server yet (a book added offline and not synced)
     if (result.isEmpty) {
-      result = await BookIssueRepository().getBookDetailsMapOffline(isbn); // offline OR online lookup failed above
+      final repo = BookIssueRepository();
+      if (await repo.bookExistsOffline(isbn)) {
+        final local = await repo.getBookDetailsMapOffline(isbn);
+        final isPlaceholder = local['publisher'] == 'Unknown' && local['author'] == 'Unknown';
+        if (!isPlaceholder) result = local;
+      }
     }
-
-    if (mounted) {
-      setState(() {
-        bookInDb = result['title'] != 'Unknown';
-      });
-    }
-
     return result;
+  }
+
+  /// Looks the ISBN up. Fills the read-only fields when registered,
+  /// otherwise shows an error asking the user to add the book first.
+  Future<bool> _lookupBook(String isbn) async {
+    final clean = isbn.trim();
+    if (clean.isEmpty) return false;
+
+    setState(() => isScanning = true);
+    try {
+      final d = await fetchBookDetails(clean);
+      if (!mounted) return false;
+
+      if (d.isEmpty) {
+        setState(() {
+          verifiedIsbn = null;
+          bookTitleController.clear();
+          authorController.clear();
+          languageController.clear();
+        });
+        await AppFeedback.showError(
+          context,
+          title: 'Book Not Registered',
+          message: 'This book is not registered yet. Please add it first from '
+              '"Add New Book", then issue it.',
+        );
+        return false;
+      }
+
+      setState(() {
+        verifiedIsbn = clean;
+        bookTitleController.text = _clean(d['title']);
+        authorController.text = _clean(d['publisher']);
+        languageController.text = _clean(d['language']);
+      });
+      return true;
+    } catch (e) {
+      if (mounted) {
+        await AppFeedback.showError(context, message: 'Could not check the book: $e');
+      }
+      return false;
+    } finally {
+      if (mounted) setState(() => isScanning = false);
+    }
   }
 
   void resetForm() {
@@ -241,16 +309,12 @@ class _BookIssueState extends State<BookIssue> {
     bookTitleController.clear();
     authorController.clear();
     languageController.clear();
-    otherLanguageController.clear();
-    isLanguageAutoFilled = false;
-    _radioKey.currentState?.resetSelection();
     _idKey.currentState?.resetSelection();
     setState(() {
       idValue = null;
       userIdValue = null;
-      growValue = null;
       isbnValue = null;
-      //bookInDb = false;
+      verifiedIsbn = null;
     });
   }
 
@@ -329,62 +393,67 @@ class _BookIssueState extends State<BookIssue> {
                             setState(() {isScanning = loading;
                             });
                           },
-                          onIsbnDetected: (isbn) async { // Make this callback async
-                            setState(() {
-                              isbnController.text = isbn;
-                            });
-
+                          // onIsbnDetected: (isbn) async { // Make this callback async
+                          //   setState(() {
+                          //     isbnController.text = isbn;
+                          //   });
+                          //
+                          //   if (isbn.isEmpty) return;
+                          //
+                          //   setState(() => isScanning = true); // Visual feedback
+                          //   try {
+                          //     final bookDetails = await fetchBookDetails(isbn);
+                          //     if (mounted) {
+                          //       final lang = bookDetails['language'];
+                          //       final resolvedLang = (lang == null || lang == 'Unknown') ? '' : lang;
+                          //       if (bookDetails.isNotEmpty && bookDetails['title'] != 'NA') {
+                          //         setState(() {
+                          //           bookTitleController.text = bookDetails['title'] ?? 'No Title';
+                          //           // Use 'author' if 'publisher' is empty
+                          //           authorController.text = bookDetails['publisher'] ?? bookDetails['author'] ?? 'No Publisher';
+                          //           languageController.text = resolvedLang;
+                          //           growValue = bookDetails['level'];
+                          //           if(resolvedLang.isEmpty){
+                          //             languageController.clear();
+                          //             isLanguageAutoFilled = false;
+                          //           } else {
+                          //             isLanguageAutoFilled = true;
+                          //           }
+                          //         });
+                          //         print('Book Details: $bookDetails');
+                          //       } else {
+                          //         setState(() {
+                          //           bookTitleController.text = bookDetails['title'] ?? 'No Title';
+                          //           authorController.text = bookDetails['publisher'] ?? bookDetails['author'] ?? 'No Publisher';
+                          //           languageController.text = resolvedLang;
+                          //           growValue = bookDetails['level'];
+                          //           if(resolvedLang.isEmpty){
+                          //             languageController.clear();
+                          //             isLanguageAutoFilled = false;
+                          //           } else {
+                          //             isLanguageAutoFilled = true;
+                          //           }
+                          //         });
+                          //         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                          //             content: Text('Book details not found.'),
+                          //             backgroundColor: AppColors.primary));
+                          //       }
+                          //     }
+                          //   } catch (e) {
+                          //     if (mounted) {
+                          //       AppFeedback.showError(
+                          //         context,
+                          //         message: "Search failed: $e",
+                          //       );
+                          //     }
+                          //   } finally {
+                          //     if (mounted) setState(() => isScanning = false);
+                          //   }
+                          // },
+                          onIsbnDetected: (isbn) async {
+                            setState(() => isbnController.text = isbn);
                             if (isbn.isEmpty) return;
-
-                            setState(() => isScanning = true); // Visual feedback
-                            try {
-                              final bookDetails = await fetchBookDetails(isbn);
-                              if (mounted) {
-                                final lang = bookDetails['language'];
-                                final resolvedLang = (lang == null || lang == 'Unknown') ? '' : lang;
-                                if (bookDetails.isNotEmpty && bookDetails['title'] != 'NA') {
-                                  setState(() {
-                                    bookTitleController.text = bookDetails['title'] ?? 'No Title';
-                                    // Use 'author' if 'publisher' is empty
-                                    authorController.text = bookDetails['publisher'] ?? bookDetails['author'] ?? 'No Publisher';
-                                    languageController.text = resolvedLang;
-                                    growValue = bookDetails['level'];
-                                    if(resolvedLang.isEmpty){
-                                      languageController.clear();
-                                      isLanguageAutoFilled = false;
-                                    } else {
-                                      isLanguageAutoFilled = true;
-                                    }
-                                  });
-                                  print('Book Details: $bookDetails');
-                                } else {
-                                  setState(() {
-                                    bookTitleController.text = bookDetails['title'] ?? 'No Title';
-                                    authorController.text = bookDetails['publisher'] ?? bookDetails['author'] ?? 'No Publisher';
-                                    languageController.text = resolvedLang;
-                                    growValue = bookDetails['level'];
-                                    if(resolvedLang.isEmpty){
-                                      languageController.clear();
-                                      isLanguageAutoFilled = false;
-                                    } else {
-                                      isLanguageAutoFilled = true;
-                                    }
-                                  });
-                                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                                      content: Text('Book details not found.'),
-                                      backgroundColor: AppColors.primary));
-                                }
-                              }
-                            } catch (e) {
-                              if (mounted) {
-                                AppFeedback.showError(
-                                  context,
-                                  message: "Search failed: $e",
-                                );
-                              }
-                            } finally {
-                              if (mounted) setState(() => isScanning = false);
-                            }
+                            await _lookupBook(isbn);
                           },
                         ),
                         IconButton(
@@ -408,150 +477,65 @@ class _BookIssueState extends State<BookIssue> {
                       textInputType: TextInputType.number,
                       readOnly: false,
                       validator: (value) => value == null || value.isEmpty ? 'Please scan a book ISBN.' : null,
-                      suffixIcon: IconButton(
-                        onPressed: isScanning ? null : () async {
-                          if (isbnController.text.isEmpty) return;
-
-                          setState(() => isScanning = true); // Visual feedback
-                          try {
-                            final bookDetails = await fetchBookDetails(isbnController.text);
-                            if (mounted) {
-                              final lang = bookDetails['language'];
-                              final resolvedLang = (lang == null || lang == 'Unknown') ? '' : lang;
-                              if (bookDetails.isNotEmpty && bookDetails['title'] != 'NA') {
-                                setState(() {
-                                  bookTitleController.text = bookDetails['title'] ?? 'No Title';
-                                  // Use 'author' if 'publisher' is empty
-                                  authorController.text = bookDetails['publisher'] ?? bookDetails['author'] ?? 'No Publisher';
-                                  languageController.text = resolvedLang;
-                                  growValue = bookDetails['level'];
-                                  if(resolvedLang.isEmpty){
-                                    languageController.clear();
-                                    isLanguageAutoFilled = false;
-                                  } else {
-                                    isLanguageAutoFilled = true;
-                                  }
-                                });
-                                print('Book Details: $bookDetails');
-                                print('Book level: $growValue');
-                              } else {
-                                setState(() {
-                                  bookTitleController.text = bookDetails['title'] ?? 'No Title';
-                                  // Use 'author' if 'publisher' is empty
-                                  authorController.text = bookDetails['publisher'] ?? bookDetails['author'] ?? 'No Publisher';
-                                  languageController.text = resolvedLang;
-                                  growValue = bookDetails['level'];
-                                  if(resolvedLang.isEmpty){
-                                    languageController.clear();
-                                    isLanguageAutoFilled = false;
-                                  } else {
-                                    isLanguageAutoFilled = true;
-                                  }
-                                });
-                                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                                    content: Text('Book details not found.'),
-                                    backgroundColor: AppColors.primary));
-                              }
-                            }
-                          } catch (e) {
-                            if (mounted) {
-                              AppFeedback.showError(
-                                context,
-                                message: "Search failed: $e",
-                              );
-                            }
-                          } finally {
-                            if (mounted) setState(() => isScanning = false);
-                          }
-                        },
-                        icon: isScanning
-                            ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                            : const Icon(Icons.search, color: AppColors.primary),
-                      ),
+                      onChanged: (v){
+                        if (verifiedIsbn != null && v.trim() != verifiedIsbn) {
+                          setState(() {
+                            verifiedIsbn = null;
+                            bookTitleController.clear();
+                            authorController.clear();
+                            languageController.clear();
+                          });
+                        }
+                      },
+                        suffixIcon: IconButton(
+                          onPressed: isScanning ? null : () => _lookupBook(isbnController.text),
+                          icon: isScanning
+                              ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                              : const Icon(Icons.search, color: AppColors.primary),
+                        ),
                     ),
-                    if(bookInDb != true)
-                      Column(
-                        children: [
-                          const SizedBox(height: 10),
-                          LabelText(label: 'Book Cover Image', astrick: true),
-                          const SizedBox(height: 10),
-                          CustomImagePicker(
-                            onChanged: (File? file) {
-                              setState(() {
-                                bookImage = file;
-                              });
-                            },
-                            validator: (value) => value == null ? "Please capture book image" : null,
-                          ),
-                        ],
-                      ),
-                    const SizedBox(height: 10),
                     LabelText(label: 'Book Title', astrick: true),
                     const SizedBox(height: 10),
                     CustomTextFormField(
                       textController: bookTitleController,
-                      readOnly: false,
+                      readOnly: true,
                       validator: (value) => value == 'Unknown' || value!.isEmpty ? 'Please enter book name.' : null,
                     ),
 
                     const SizedBox(height: 10),
                     LabelText(label: 'Book Language', astrick: true),
                     const SizedBox(height: 10),
-                    LanguageDropdown(
-                      selectedLanguage: languageController.text.isNotEmpty
-                          ? languageController.text
-                          : null,
-                      onChanged: (value) {
-                        setState(() {
-                          languageController.text = value ?? '';
-                          if (languageController.text != 'Other') {
-                            otherLanguageController.clear();
-                          }
-                        });
-                      },
-                      enabled: !isLanguageAutoFilled,
-                    ),
-                    if (languageController.text == 'Other') ...[
-                      const SizedBox(height: 10),
-                      LabelText(label: 'Enter Language', astrick: true),
-                      const SizedBox(height: 10),
-                      CustomTextFormField(
-                        textController: otherLanguageController,
-                        hintText: "Enter Other Language",
-                        readOnly: false,
-                        validator: (value) => languageController.text == 'Other' && (value == null || value.isEmpty)
-                            ? 'Please Enter Other Language.'
-                            : null,
-                      ),
-                    ],
+                        CustomTextFormField(
+                          textController: languageController,
+                          readOnly: true,
+                        ),
                     const SizedBox(height: 10),
                     LabelText(label: 'Book Publisher', astrick: true,),
                     const SizedBox(height: 10),
-                    CustomTextFormField(
-                      //hintText: authorController.text,
-                      textController: authorController,
-                      readOnly: authorController.text != 'Unknown' ? false : true,
-                    ),
+                        CustomTextFormField(
+                          textController: authorController,
+                          readOnly: true,
+                        ),
 
 
-                    if (growValue != 'Other')
-                      Column(
-                        children: [
-                          const SizedBox(height: 20),
-                          LabelText(label: 'G-R-O-W level ', astrick: true),
-                          ResettableRadio(
-                            key: _radioKey,
-                            selectedOption: growValue,
-                            options: const ['Green', 'Red', 'Orange','White', 'Other'],
-                            layout: RadioLayout.grid,
-                            gridCount: 3,
-                            onChanged: (value) => setState(() => growValue = value),
-                            validator: (value) => growValue == null ? 'Please select an option.' : null,
-                            //isEnabled: growValue == null || growValue!.isEmpty,
-                            isEnabled: bookInDb != true,
-                          ),
-                        ],
-                      ),
+                    // if (growValue != 'Other')
+                    //   Column(
+                    //     children: [
+                    //       const SizedBox(height: 20),
+                    //       LabelText(label: 'G-R-O-W level ', astrick: true),
+                    //       ResettableRadio(
+                    //         key: _radioKey,
+                    //         selectedOption: growValue,
+                    //         options: const ['Green', 'Red', 'Orange','White', 'Other'],
+                    //         layout: RadioLayout.grid,
+                    //         gridCount: 3,
+                    //         onChanged: (value) => setState(() => growValue = value),
+                    //         validator: (value) => growValue == null ? 'Please select an option.' : null,
+                    //         //isEnabled: growValue == null || growValue!.isEmpty,
+                    //         isEnabled: bookInDb != true,
+                    //       ),
+                    //     ],
+                    //   ),
 
 
                     const SizedBox(height: 20),
@@ -604,33 +588,57 @@ class _BookIssueState extends State<BookIssue> {
                         return SizedBox(
                           width: double.infinity,
                           child: CustomButton(
-                            onPressedButton: () {
-                              if (_formKey.currentState!.validate()) {
-                                // Save the form data
-                                //_formKey.currentState!.save();
+                            // onPressedButton: () {
+                            //   if (_formKey.currentState!.validate()) {
+                            //     // Save the form data
+                            //     //_formKey.currentState!.save();
+                            //
+                            //     // Store values to ensure they persist for the delayed call
+                            //     userIdValue = studentIdController.text;
+                            //     isbnValue = isbnController.text;
+                            //     libIdValue = libIdController.text;
+                            //
+                            //     final bookIssuePayload = {
+                            //       'student_id': userIdValue,
+                            //       'lib_id': libIdValue,
+                            //       'isbn': isbnValue,
+                            //       'created_by': userId,
+                            //       'status': 'Issued',
+                            //       'publisher': authorController.text,
+                            //       'title': bookTitleController.text,
+                            //       // 'level' : growValue,
+                            //       // 'language' : languageController.text == 'Other'
+                            //       //     ? otherLanguageController.text.trim()
+                            //       //     : languageController.text.trim(),
+                            //       // 'cover_page' : bookImage?.path ?? '',
+                            //     };
+                            //     // Always call with 'Issued' first
+                            //     context.read<BookIssueCubit>().bookIssueReturn(bookIssuePayload, 'Issued');
+                            //   }
+                            // },
+                            onPressedButton: () async {
+                              if (!_formKey.currentState!.validate()) return;
 
-                                // Store values to ensure they persist for the delayed call
-                                userIdValue = studentIdController.text;
-                                isbnValue = isbnController.text;
-                                libIdValue = libIdController.text;
-
-                                final bookIssuePayload = {
-                                  'student_id': userIdValue,
-                                  'lib_id': libIdValue,
-                                  'isbn': isbnValue,
-                                  'created_by': userId,
-                                  'status': 'Issued',
-                                  'publisher': authorController.text,
-                                  'title': bookTitleController.text,
-                                  'level' : growValue,
-                                  'language' : languageController.text == 'Other'
-                                      ? otherLanguageController.text.trim()
-                                      : languageController.text.trim(),
-                                  'cover_page' : bookImage?.path ?? '',
-                                };
-                                // Always call with 'Issued' first
-                                context.read<BookIssueCubit>().bookIssueReturn(bookIssuePayload, 'Issued');
+                              final isbn = isbnController.text.trim();
+                              // ISBN typed but never searched: check it now
+                              if (verifiedIsbn != isbn) {
+                                final ok = await _lookupBook(isbn);
+                                if (!ok || !mounted) return;
                               }
+
+                              // Store values so the delayed "reading only" return can reuse them
+                              userIdValue = studentIdController.text;
+                              isbnValue = isbn;
+                              libIdValue = libIdController.text;
+
+                              final bookIssuePayload = {
+                                'student_id': userIdValue,
+                                'lib_id': libIdValue,
+                                'isbn': isbnValue,
+                                'created_by': userId,
+                                'status': 'Issued',
+                              };
+                              context.read<BookIssueCubit>().bookIssueReturn(bookIssuePayload, 'Issued');
                             },
                             title: "Issue Book",
                           ),
@@ -659,12 +667,12 @@ class _BookIssueState extends State<BookIssue> {
         'lib_id': libIdValue, // Fixed: added missing lib_id
         'isbn': isbnValue,
         'created_by': userId,
-        'title': bookTitleController.text,
-        'language' : languageController.text == 'Other'
-            ? otherLanguageController.text.trim()
-            : languageController.text.trim(),
+        // 'title': bookTitleController.text,
+        // 'language' : languageController.text == 'Other'
+        //     ? otherLanguageController.text.trim()
+        //     : languageController.text.trim(),
         'status': 'Returned',
-        'level' : growValue,
+        // 'level' : growValue,
       };
       // Pass 'Returned' to distinguish this call
       context.read<BookIssueCubit>().bookIssueReturn(bookReturnPayload, 'Returned');

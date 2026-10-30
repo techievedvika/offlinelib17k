@@ -36,67 +36,43 @@ class BookIssueCubit extends Cubit<BookIssueState> {
   }
 
 
-  // MODIFICATION 1: Update the method signature to accept 'status'
+  ///This is to check if book not available than insert book
   // void bookIssueReturn(dynamic bookIssueReturn, String status) async {
   //   emit(BookIssueLoading());
-  //   // The Future.delayed is for simulation and can be removed if not needed.
-  //   await Future.delayed(const Duration(seconds: 1));
   //   try {
-  //     final value = await _bookIssueRepository.bookIssueReturn(bookIssueReturn);
+  //     final online = await _isOnline();
   //
-  //     // 1. Check if the response itself is null
-  //     if (value == null) {
-  //       emit(BookIssueFailure(message: "Invalid response from server"));
-  //       return;
-  //     }
-  //
-  //     // 2. Handle Error cases (Check for true or 1)
-  //     if (value['error'] == true || value['error'] == 1 || value['error'] == "true") {
-  //       print('API Error: ${value['message']}');
-  //       emit(BookIssueFailure(message: value['message']?.toString() ?? "Unknown error occurred"));
-  //     }
-  //     // 3. Handle Success cases (Check for false or 0)
-  //     else if (value['error'] == false || value['error'] == 0 || value['error'] == "false") {
-  //       print('API Success');
-  //       emit(BookIssueSuccess(
-  //           message: value['message']?.toString() ?? "Operation successful",
-  //           status: status
-  //       ));
+  //     final Map<String, dynamic> value;
+  //     if (online) {
+  //       final apiResult = await _bookIssueRepository.bookIssueReturn(bookIssueReturn);
+  //       value = {"error": apiResult['error'], "message": apiResult['message']};
   //     } else {
-  //       emit(BookIssueFailure(message: "Unexpected response status"));
+  //       // NEW — offline path expects a Map, not multipart form data
+  //       final data = bookIssueReturn as Map<String, dynamic>;
+  //       value = await _bookIssueRepository.bookIssueReturnOffline(
+  //         isbn: data['isbn']?.toString() ?? '',
+  //         title: data['title']?.toString() ?? '',
+  //         rollno: data['student_id']?.toString() ?? '',
+  //         studentLibId: data['lib_id']?.toString() ?? '',
+  //         status: status,
+  //         createdBy: int.tryParse(data['created_by']?.toString() ?? '') ?? 0,
+  //         level: data['level']?.toString(),
+  //         language: data['language']?.toString(),
+  //         localCoverPagePath: data['cover_page']?.toString(),
+  //       );
+  //     }
+  //
+  //     if (value['error'] == true || value['error'] == 1) {
+  //       emit(BookIssueFailure(message: value['message'].toString()));
+  //     } else {
+  //       emit(BookIssueSuccess(message: value['message'].toString(), status: status));
   //     }
   //   } catch (error) {
-  //     print("Cubit Catch Error: $error");
-  //
-  //     // Clean up the error message (remove "Exception: " or "Custom Error: ")
-  //     String errorMessage = error.toString()
-  //         .replaceAll("Exception:", "")
-  //         .replaceAll("Custom Error:", "")
-  //         .trim();
-  //
-  //     emit(BookIssueFailure(message: errorMessage));
+  //     emit(BookIssueFailure(message: error.toString()));
   //   }
-  //   // try {
-  //   //   final value = await _bookIssueRepository.bookIssueReturn(bookIssueReturn);
-  //   //
-  //   //   if (value!['error'] == true || value['error'] == 1) {
-  //   //     print('this is value message ${value['message']}');
-  //   //
-  //   //     emit(BookIssueFailure(message: value['message'].toString()));
-  //   //   } else if(value['error'] == false || value['error'] == 0  ) {
-  //   //     print('sucess for ${value!['error']}' );
-  //   //     // MODIFICATION 2: Pass the 'status' to the success state
-  //   //     emit(BookIssueSuccess(message: value['message'].toString(), status: status));
-  //   //   }
-  //   // } catch (error) {
-  //   //   emit(BookIssueFailure(message: error.toString()));
-  //   //   print(error);
-  //   // }
-  //   // This emit seems redundant and might cause issues in the UI.
-  //   // Consider removing it if it's not handled specifically in your BlocConsumer.
-  //   // emit(BookIssueRegistered());
   // }
 
+ ///This is for only check Book is available or not
   void bookIssueReturn(dynamic bookIssueReturn, String status) async {
     emit(BookIssueLoading());
     try {
@@ -105,20 +81,19 @@ class BookIssueCubit extends Cubit<BookIssueState> {
       final Map<String, dynamic> value;
       if (online) {
         final apiResult = await _bookIssueRepository.bookIssueReturn(bookIssueReturn);
-        value = {"error": apiResult['error'], "message": apiResult['message']};
+        value = {
+          "error": apiResult['error'],
+          "code": apiResult['code'],
+          "message": apiResult['message'],
+        };
       } else {
-        // NEW — offline path expects a Map, not multipart form data
         final data = bookIssueReturn as Map<String, dynamic>;
         value = await _bookIssueRepository.bookIssueReturnOffline(
           isbn: data['isbn']?.toString() ?? '',
-          title: data['title']?.toString() ?? '',
           rollno: data['student_id']?.toString() ?? '',
           studentLibId: data['lib_id']?.toString() ?? '',
           status: status,
           createdBy: int.tryParse(data['created_by']?.toString() ?? '') ?? 0,
-          level: data['level']?.toString(),
-          language: data['language']?.toString(),
-          localCoverPagePath: data['cover_page']?.toString(),
         );
       }
 
