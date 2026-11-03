@@ -209,51 +209,51 @@ class _BookIssueState extends State<BookIssue> {
       (v == null || v == 'Unknown' || v == 'NA') ? '' : v;
 
   /// Returns the registered book's details, or an empty map if the ISBN is not registered.
+  /// Returns the registered book's details, or an empty map if the ISBN is not registered.
+  /// Online: the server is the only source. Offline (or server unreachable): local books.
   Future<Map<String, String>> fetchBookDetails(String isbn) async {
     final connectivityResult = await Connectivity().checkConnectivity();
     final online = connectivityResult.isNotEmpty && !connectivityResult.contains(ConnectivityResult.none);
-
-    Map<String, String> result = {};
 
     if (online) {
       try {
         final response = await http
             .post(Uri.parse(AppUrls.getBookApi), body: {"isbn": isbn})
             .timeout(const Duration(seconds: 15));
+
         if (response.statusCode == 200) {
           final data = json.decode(response.body);
-          print('GET_BOOK exists=${data['exists']} book=${data['book']}');
           final hasBook = data['book'] != null && data['book'].isNotEmpty;
           final title = hasBook ? (data['book'][0]['title'] ?? '').toString().trim() : '';
-          // get_book returns an "exists" flag; older servers fall back to the title check
           final exists = data['exists'] == true ||
               data['exists'] == 1 ||
               (data['exists'] == null && hasBook && title.isNotEmpty &&
                   title != 'Unknown' && title != 'NA');
+
           if (exists && hasBook) {
             final b = data['book'][0];
-            result = {
+            return {
               'title': (b['title'] ?? '').toString(),
               'publisher': (b['publisher'] ?? '').toString(),
               'language': (b['language'] ?? '').toString(),
             };
           }
+          return {}; // the server answered: not registered. Do NOT look at local books.
         }
       } catch (e) {
         print('Online book lookup failed, using local books: $e');
       }
+      // only reaches here when the request itself failed (timeout, server error)
     }
 
-    // Offline, or not on the server yet (a book added offline and not synced)
-    if (result.isEmpty) {
-      final repo = BookIssueRepository();
-      if (await repo.bookExistsOffline(isbn)) {
-        final local = await repo.getBookDetailsMapOffline(isbn);
-        final isPlaceholder = local['publisher'] == 'Unknown' && local['author'] == 'Unknown';
-        if (!isPlaceholder) result = local;
-      }
+    // Offline, or the server could not be reached
+    final repo = BookIssueRepository();
+    if (await repo.bookExistsOffline(isbn)) {
+      final local = await repo.getBookDetailsMapOffline(isbn);
+      final isPlaceholder = local['publisher'] == 'Unknown' && local['author'] == 'Unknown';
+      if (!isPlaceholder) return local;
     }
-    return result;
+    return {};
   }
 
   /// Looks the ISBN up. Fills the read-only fields when registered,

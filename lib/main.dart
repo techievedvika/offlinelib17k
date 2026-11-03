@@ -20,24 +20,45 @@ import 'login/bloc/network_cubit.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 
 /// This must be a top-level function
+
 @pragma('vm:entry-point')
-Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  // Initialize Firebase or any services if needed
-  print("Handling background message: ${message.messageId}");
+Future<void> firebaseMessagingBackgroundHandler(
+    RemoteMessage message) async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  if (Firebase.apps.isEmpty) {
+    await Firebase.initializeApp();
+  }
+
+  debugPrint("Handling background message: ${message.messageId}");
 }
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
-  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler); // <-- Add this
-  await PushNotificationService.initialize(); // 👈 Setup notification handler
-  //await PushNotificationService.initializeService();
-  // await _initNotifications();
 
-  await setupLocator();
+  // Initialize Firebase
+  try {
+    await Firebase.initializeApp();
+    FirebaseMessaging.onBackgroundMessage(
+        firebaseMessagingBackgroundHandler);
+    debugPrint("Firebase initialized successfully");
+  } catch (e, stack) {
+    debugPrint("Firebase initialization error: $e");
+    debugPrintStack(stackTrace: stack);
+  }
+
+  // Initialize service locator
+  try {
+    await setupLocator();
+    debugPrint("Service locator initialized successfully");
+  } catch (e, stack) {
+    debugPrint("Service locator error: $e");
+    debugPrintStack(stackTrace: stack);
+  }
 
   runApp(const MyApp());
 }
+
 
 FirebaseMessaging messaging = FirebaseMessaging.instance;
 
@@ -48,7 +69,6 @@ final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
@@ -75,7 +95,6 @@ class MyApp extends StatelessWidget {
             lazy: false,
             create: (context) => SyncStatusCubit(getIt()),
           ),
-          // Add other Blocs here if needed
         ],
         child: MaterialApp(
             debugShowCheckedModeBanner: false,
@@ -86,14 +105,14 @@ class MyApp extends StatelessWidget {
             ),
             initialRoute: RoutesName.splashScreen,
             navigatorKey: SessionManager.navigatorKey,
-            //home: IssueBookDummyScreen(),
-
             onGenerateRoute: Routes.generateRoute)
     );
   }
 }
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  await Firebase.initializeApp();
+  if (Firebase.apps.isEmpty) {
+    await Firebase.initializeApp();
+  }
   print("🔧 Handling background message: ${message.messageId}");
 }

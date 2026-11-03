@@ -25,9 +25,15 @@
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>FirebaseAppDelegateProxyEnabled</key>
-	<false/>
+	<true/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>This app needs the camera to take activity pictures and scan barcodes.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>The camera may need the microphone for video capture.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>This app needs access to your photos to attach activity pictures.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UIBackgroundModes</key>
@@ -49,11 +55,28 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
-	<key>NSPhotoLibraryUsageDescription</key>
-    <string>This app needs access to your photos to attach activity pictures.</string>
-    <key>NSCameraUsageDescription</key>
-    <string>This app needs the camera to take activity pictures and scan barcodes.</string>
-    <key>NSMicrophoneUsageDescription</key>
-    <string>The camera may need the microphone for video capture.</string>
+
+	<key>UIApplicationSceneManifest</key>
+	<dict>
+		<key>UIApplicationSupportsMultipleScenes</key>
+		<false/>
+		<key>UISceneConfigurations</key>
+		<dict>
+			<key>UIWindowSceneSessionRoleApplication</key>
+			<array>
+				<dict>
+					<key>UISceneClassName</key>
+					<string>UIWindowScene</string>
+					<key>UISceneDelegateClassName</key>
+					<string>FlutterSceneDelegate</string>
+					<key>UISceneConfigurationName</key>
+					<string>flutter</string>
+					<key>UISceneStoryboardFile</key>
+					<string>Main</string>
+				</dict>
+			</array>
+		</dict>
+	</dict>
+
 </dict>
 </plist>

@@ -4,11 +4,15 @@ import 'package:lib17000ft/core/network/authed_http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../configs/app_urls.dart';
 import '../database/tables/database.dart';
+import '../auth/session_manager.dart';
+import '../../components/app_feedback.dart';
 
 class SyncEngine {
   final AppDatabase db;
   final String baseUrl;
   bool _isSyncing = false;
+  // final Set<String> _notifiedMissingBooks = {}; // show the dialog once per book per app session
+  bool _missingDialogOpen = false; // never stack two of these dialogs
 
   SyncEngine(this.db, {required this.baseUrl});
 
@@ -28,29 +32,98 @@ class SyncEngine {
 
   // ---------------- PUSH ----------------
 
+  // Future<void> _push() async {
+  //   // Strict dependency order: books -> students -> issues -> activity logs
+  //   for (final type in ['book', 'student', 'issue', 'activity_log']) {
+  //     // final rows = await (db.select(db.syncOutbox)..where((t) => t.entityType.equals(type))).get();
+  //     final rows = await (db.select(db.syncOutbox)
+  //       ..where((t) => t.entityType.equals(type))
+  //       ..orderBy([(t) => OrderingTerm.asc(t.createdAt)]))
+  //         .get();
+  //
+  //     for (final row in rows) {
+  //       try {
+  //         print('PUSH ATTEMPT: type=$type key=${row.entityKey} op=${row.operation}'); // NEW
+  //         print('PUSH PAYLOAD: ${row.payloadJson}'); // NEW
+  //         final resp = await http.post(
+  //           Uri.parse(AppUrls.syncPush),
+  //           headers: {'Content-Type': 'application/json'},
+  //           body: jsonEncode({
+  //             'entity_type': type,
+  //             'operation': row.operation,
+  //             'payload': jsonDecode(row.payloadJson),
+  //           }),
+  //         ).timeout(const Duration(seconds: 30));
+  //         print('RAW STATUS: ${resp.statusCode}'); // NEW
+  //         print('RAW BODY (first 500 chars): ${resp.body.substring(0, resp.body.length > 500 ? 500 : resp.body.length)}');
+  //
+  //         final result = jsonDecode(resp.body);
+  //
+  //         print('SYNC RESPONSE for $type/${row.entityKey}: ${resp.statusCode} - ${resp.body}');
+  //         switch (result['status']) {
+  //           case 'created':
+  //           case 'updated':
+  //           case 'already_exists':
+  //             await (db.delete(db.syncOutbox)..where((t) => t.id.equals(row.id))).go();
+  //             await _markSynced(type, row.entityKey);
+  //             if (type == 'activity_log' && result['server_id'] != null) { // NEW
+  //               await (db.update(db.activityLogs)..where((t) => t.localId.equals(row.entityKey)))
+  //                   .write(ActivityLogsCompanion(id: Value(_asInt(result['server_id']))));
+  //             }
+  //             break;
+  //           case 'ignored_stale':
+  //             await (db.delete(db.syncOutbox)..where((t) => t.id.equals(row.id))).go();
+  //             break; // corrected by pull step right after
+  //           case 'merged':
+  //             await _handleMerge(type, row.entityKey, result['server_key']?.toString());
+  //             await (db.delete(db.syncOutbox)..where((t) => t.id.equals(row.id))).go();
+  //             break;
+  //           default:
+  //             throw Exception(result['message'] ?? 'sync failed');
+  //         }
+  //       } catch (e) {
+  //         await (db.update(db.syncOutbox)..where((t) => t.id.equals(row.id))).write(
+  //           SyncOutboxCompanion(retryCount: Value(row.retryCount + 1), lastError: Value(e.toString())),
+  //         );
+  //         break; // stop this entity type's loop, retry next cycle
+  //       }
+  //     }
+  //   }
+  // }
   Future<void> _push() async {
+
+    final missingBooks = <String, String>{}; // isbn -> title, collected over the whole attempt
     // Strict dependency order: books -> students -> issues -> activity logs
     for (final type in ['book', 'student', 'issue', 'activity_log']) {
-      // final rows = await (db.select(db.syncOutbox)..where((t) => t.entityType.equals(type))).get();
       final rows = await (db.select(db.syncOutbox)
         ..where((t) => t.entityType.equals(type))
         ..orderBy([(t) => OrderingTerm.asc(t.createdAt)]))
           .get();
 
+      // ISBNs the server does not know in this cycle: skip their later entries,
+      // but let issues for other books continue.
+      final blockedIsbns = <String>{};
+
       for (final row in rows) {
         try {
-          print('PUSH ATTEMPT: type=$type key=${row.entityKey} op=${row.operation}'); // NEW
-          print('PUSH PAYLOAD: ${row.payloadJson}'); // NEW
+          final payload = jsonDecode(row.payloadJson) as Map<String, dynamic>;
+
+          if (type == 'issue' && blockedIsbns.contains(payload['book_id']?.toString())) {
+            continue;
+          }
+
+          print('PUSH ATTEMPT: type=$type key=${row.entityKey} op=${row.operation}');
+          print('PUSH PAYLOAD: ${row.payloadJson}');
           final resp = await http.post(
             Uri.parse(AppUrls.syncPush),
             headers: {'Content-Type': 'application/json'},
             body: jsonEncode({
               'entity_type': type,
               'operation': row.operation,
-              'payload': jsonDecode(row.payloadJson),
+              'payload': payload,
             }),
           ).timeout(const Duration(seconds: 30));
-          print('RAW STATUS: ${resp.statusCode}'); // NEW
+          print('RAW STATUS: ${resp.statusCode}');
           print('RAW BODY (first 500 chars): ${resp.body.substring(0, resp.body.length > 500 ? 500 : resp.body.length)}');
 
           final result = jsonDecode(resp.body);
@@ -62,7 +135,7 @@ class SyncEngine {
             case 'already_exists':
               await (db.delete(db.syncOutbox)..where((t) => t.id.equals(row.id))).go();
               await _markSynced(type, row.entityKey);
-              if (type == 'activity_log' && result['server_id'] != null) { // NEW
+              if (type == 'activity_log' && result['server_id'] != null) {
                 await (db.update(db.activityLogs)..where((t) => t.localId.equals(row.entityKey)))
                     .write(ActivityLogsCompanion(id: Value(_asInt(result['server_id']))));
               }
@@ -75,15 +148,54 @@ class SyncEngine {
               await (db.delete(db.syncOutbox)..where((t) => t.id.equals(row.id))).go();
               break;
             default:
-              throw Exception(result['message'] ?? 'sync failed');
+              final msg = (result['message'] ?? 'sync failed').toString();
+              if (type == 'issue' &&
+                  (result['code'] == 'BOOK_NOT_FOUND' ||
+                      msg.toLowerCase().contains('not registered'))) {
+                throw _BookNotRegistered(
+                  payload['book_id']?.toString() ?? '',
+                  payload['book_name']?.toString() ?? '',
+                );
+              }
+              throw Exception(msg);
           }
         } catch (e) {
           await (db.update(db.syncOutbox)..where((t) => t.id.equals(row.id))).write(
             SyncOutboxCompanion(retryCount: Value(row.retryCount + 1), lastError: Value(e.toString())),
           );
-          break; // stop this entity type's loop, retry next cycle
+
+          if (e is _BookNotRegistered) {
+            blockedIsbns.add(e.isbn);
+            missingBooks[e.isbn] = e.title;
+            continue; // the entry stays in the outbox; other books keep syncing
+          }
+          break; // any other failure: stop this entity type, retry next cycle
         }
       }
+    }
+    if (missingBooks.isNotEmpty) {_notifyBooksNotRegistered(missingBooks);}
+  }
+
+  Future<void> _notifyBooksNotRegistered(Map<String, String> books) async {
+    final ctx = SessionManager.navigatorKey.currentContext;
+    if (ctx == null || _missingDialogOpen) return;
+
+    final list = books.entries
+        .map((e) => 'ISBN: ${e.key}\nTitle: ${e.value}')
+        .join('\n\n');
+
+    _missingDialogOpen = true;
+    try {
+      await AppFeedback.showError(
+        ctx,
+        title: 'Book Not Registered',
+        message: '$list\n\n'
+            'Not registered, so ${books.length == 1 ? 'this entry' : 'these entries'} '
+            'cannot sync. Register ${books.length == 1 ? 'the book' : 'the books'} '
+            '(Add New Book) to sync the ${books.length == 1 ? 'entry' : 'entries'}.',
+      );
+    } finally {
+      _missingDialogOpen = false;
     }
   }
 
@@ -450,4 +562,13 @@ class SyncEngine {
     if (value is double) return value.toInt();
     return fallback;
   }
+}
+
+class _BookNotRegistered implements Exception {
+  final String isbn;
+  final String title;
+  _BookNotRegistered(this.isbn, this.title);
+
+  @override
+  String toString() => 'Book not registered: $isbn ($title)';
 }
