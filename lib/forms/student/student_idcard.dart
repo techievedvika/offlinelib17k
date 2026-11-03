@@ -63,7 +63,7 @@ class _StudentIdCardState extends State<StudentIdCard> {
         return _showExitConfirmationDialog(context);
       },
       child: Scaffold(
-        appBar: const CustomAppbar(
+        appBar:  CustomAppbar(
           title: 'Student ID Card',
           backbutton: true,
         ),

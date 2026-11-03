@@ -111,7 +111,7 @@ class _PromoteStudentListState extends State<PromoteStudentList> {
     return WillPopScope(
       onWillPop: () async => _showExitConfirmationDialog(context),
       child: Scaffold(
-        appBar: const CustomAppbar(
+        appBar:  CustomAppbar(
           title: 'Promote Students',
           studentAdd: false,
           // download: true,

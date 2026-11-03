@@ -19,7 +19,6 @@ class RoutesName {
   static const String bookAdd = '/bookAdd';
   static const String offlineTest = '/offlineTest';
   // routes_name.dart
-  static const String licenseActivationScreen = '/license-activation';
   static const String librarianRegistrationScreen = '/librarian-registration';
   static const String forgotPasswordScreen = '/forgot-password';
 }

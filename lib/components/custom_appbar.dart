@@ -4,6 +4,7 @@ import 'package:lib17000ft/configs/color/color.dart';
 import 'package:lib17000ft/configs/routes/routes_name.dart';
 import 'package:lib17000ft/forms/student/student_registration.dart';
 import 'package:lib17000ft/splash/notification.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../core/auth/session_manager.dart';
@@ -14,16 +15,38 @@ class CustomAppbar extends StatelessWidget implements PreferredSizeWidget {
   final bool? studentAdd;
   final bool? notification;
   final bool? clearButton;
+  final bool? scanSection;
   final VoidCallback? onClear;
+  final MobileScannerController? scannerController;
   //  final bool? download;
 
-  const CustomAppbar({super.key, required this.title, this.backbutton,this.studentAdd,this.notification,this.clearButton,this.onClear});
+  const CustomAppbar({
+    super.key,
+    required this.title,
+    this.backbutton,
+    this.studentAdd,
+    this.notification,
+    this.clearButton,
+    this.onClear,
+    this.scanSection,
+    this.scannerController,
+  });
 
   @override
   Widget build(BuildContext context) {
     return AppBar(
       automaticallyImplyLeading: backbutton ?? false,
       actions: [
+        scanSection == true ?
+        IconButton(
+          icon: const Icon(Icons.flash_on),
+          onPressed: () => scannerController?.toggleTorch(),
+        ) : const SizedBox(),
+      scanSection == true ?
+        IconButton(
+          icon: const Icon(Icons.cameraswitch),
+          onPressed: () => scannerController?.switchCamera(),
+        ) : const SizedBox(),
         studentAdd == true ? 
          IconButton(
           tooltip: 'Add student',

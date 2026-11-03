@@ -128,7 +128,7 @@ class _AllBookIssueListState extends State<AllBookIssueList> {
     return WillPopScope(
       onWillPop: () async => _showExitConfirmationDialog(context),
       child: Scaffold(
-        appBar: const CustomAppbar(
+        appBar:  CustomAppbar(
           title: 'All Issued Books',
           studentAdd: false,
           backbutton: true,

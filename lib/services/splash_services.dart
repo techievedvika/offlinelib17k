@@ -12,38 +12,4 @@ class SplashServices {
         () => Navigator.pushNamedAndRemoveUntil(
             context, RoutesName.loginScreen, (route) => false));
   }
-
-  Future<void> decideInitialRoute(BuildContext context) async {
-    Timer(const Duration(seconds: 4), () async {
-      final prefs = await SharedPreferences.getInstance();
-
-      final licenseActivated =
-          prefs.getBool('licenseActivated') ?? false;
-
-      final librarianRegistered =
-          prefs.getBool('librarianRegistered') ?? false;
-
-      if (!context.mounted) return;
-
-      if (!licenseActivated) {
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          RoutesName.licenseActivationScreen,
-              (route) => false,
-        );
-      } else if (!librarianRegistered) {
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          RoutesName.librarianRegistrationScreen,
-              (route) => false,
-        );
-      } else {
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          RoutesName.loginScreen,
-              (route) => false,
-        );
-      }
-    });
-  }
 }

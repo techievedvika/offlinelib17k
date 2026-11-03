@@ -338,7 +338,7 @@ class _DashBoardState extends State<DashBoard>
     final isTablet = screenWidth < 900;
 
     return Scaffold(
-      appBar: const CustomAppbar(
+      appBar:  CustomAppbar(
         title: 'Dashboard',
       ),
       drawer: const CustomDrawer(),

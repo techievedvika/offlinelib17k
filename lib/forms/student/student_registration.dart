@@ -775,7 +775,7 @@ class _StudentRegistrationState extends State<StudentRegistration> {
         return _showExitConfirmationDialog(context);
       },
       child: Scaffold(
-        appBar: const CustomAppbar(
+        appBar:  CustomAppbar(
           title: 'Student Registration',
           backbutton: true,
         ),

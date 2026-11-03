@@ -1,13 +1,9 @@
 // ignore_for_file: deprecated_member_use, use_build_context_synchronously
 
 import 'dart:async';
-import 'dart:io';
-import 'dart:ui';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:lib17000ft/core/network/authed_http.dart' as http;
 import 'package:lib17000ft/components/component.dart';
 import 'package:lib17000ft/components/custom_appbar.dart';
@@ -16,14 +12,11 @@ import 'package:lib17000ft/forms/book_issue/book_issue_cubit.dart';
 import 'package:lib17000ft/forms/book_issue/book_issue_state.dart';
 import 'package:lib17000ft/forms/dashboard/dash_cubit.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:image_picker/image_picker.dart';
 
 import '../../components/app_feedback.dart';
-import '../../components/custom_image_picker.dart';
 import '../../components/info_dialog.dart';
-import '../../components/school_tag.dart';
+import '../../components/isbn_scanner_screen.dart';
 import '../../configs/app_urls.dart';
-import '../../models/student_registration/student_model.dart';
 import '../lib_activity_log/widget/ocr_reader_button.dart';
 import 'book_issue_repository.dart';
 
@@ -134,10 +127,12 @@ class _BookIssueState extends State<BookIssue> {
   Future<void> scanISBN() async {
     try {
       setState(() => isScanning = true);
-      String isbn = await FlutterBarcodeScanner.scanBarcode(
-          '#ff6666', 'Cancel', true, ScanMode.BARCODE);
-
-      if (isbn == '-1' || !mounted) return;
+      // String isbn = await FlutterBarcodeScanner.scanBarcode(
+      //     '#ff6666', 'Cancel', true, ScanMode.BARCODE);
+      //
+      // if (isbn == '-1' || !mounted) return;
+      final isbn = await IsbnScannerScreen.scan(context);
+      if (isbn == null || !mounted) return;
 
       if (!(RegExp(r'^\d{10}$').hasMatch(isbn) || (RegExp(r'^97[89]\d{10}$').hasMatch(isbn)))) {
         AppFeedback.showError(
@@ -324,7 +319,7 @@ class _BookIssueState extends State<BookIssue> {
     return WillPopScope(
       onWillPop: () => _showExitConfirmationDialog(context),
       child: Scaffold(
-        appBar: const CustomAppbar(title: 'Book Issue', backbutton: true),
+        appBar:  CustomAppbar(title: 'Book Issue', backbutton: true),
         body: Padding(
           padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
           child: SafeArea(

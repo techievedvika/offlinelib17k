@@ -2,7 +2,6 @@
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lib17000ft/core/network/authed_http.dart' as http;
 import 'package:lib17000ft/components/component.dart';
@@ -16,8 +15,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../components/app_feedback.dart';
 import '../../components/info_dialog.dart';
+import '../../components/isbn_scanner_screen.dart';
 import '../../configs/app_urls.dart';
-import '../../models/student_registration/student_model.dart';
 import '../book_issue/book_issue_repository.dart';
 import '../lib_activity_log/widget/ocr_reader_button.dart';
 
@@ -148,13 +147,16 @@ class _BookReturnState extends State<BookReturn> {
     try {
       setState(() => isScanning = true);
 
-      String isbn = await FlutterBarcodeScanner.scanBarcode(
-          '#ff6666', 'Cancel', true, ScanMode.BARCODE);
+      // String isbn = await FlutterBarcodeScanner.scanBarcode(
+      //     '#ff6666', 'Cancel', true, ScanMode.BARCODE);
+      //
+      // if (isbn == '-1' || !mounted) {
+      //   // User canceled the scan
+      //   return;
+      // }
 
-      if (isbn == '-1' || !mounted) {
-        // User canceled the scan
-        return;
-      }
+      final isbn = await IsbnScannerScreen.scan(context);
+      if (isbn == null || !mounted) return;
 
       // Validate if ISBN is either 10 or 13 digits and starts with 978 or 979 (for ISBN-13)
       if (!(RegExp(r'^\d{10}$').hasMatch(isbn) ||
@@ -309,7 +311,7 @@ class _BookReturnState extends State<BookReturn> {
         return _showExitConfirmationDialog(context);
       },
       child: Scaffold(
-        appBar: const CustomAppbar(
+        appBar:  CustomAppbar(
           title: 'Book Return',
           backbutton: true,
         ),

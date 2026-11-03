@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
 import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' as html;
+
+import '../components/isbn_scanner_screen.dart';
 class ScannerFormScreen extends StatefulWidget {
   const ScannerFormScreen({super.key});
 
@@ -19,16 +20,14 @@ class _ScannerFormScreenState extends State<ScannerFormScreen> {
   Future<void> scanISBN() async {
   try {
     setState(() => isScanning = true);
-    String isbn = await FlutterBarcodeScanner.scanBarcode(
-        '#ff6666', 'Cancel', true, ScanMode.BARCODE);
-    if (isbn != '-1') {
-      final bookDetails = await fetchBookDetailsFromHtml(isbn);
-      setState(() {
-        isbnController.text = isbn;
-        bookTitleController.text = bookDetails['title'] ?? 'No title available';
-        authorController.text = bookDetails['author'] ?? 'No author available';
-      });
-    }
+    final isbn = await IsbnScannerScreen.scan(context);
+    if (isbn == null || !mounted) return;
+    final bookDetails = await fetchBookDetailsFromHtml(isbn);
+    setState(() {
+      isbnController.text = isbn;
+      bookTitleController.text = bookDetails['title'] ?? 'No title available';
+      authorController.text = bookDetails['author'] ?? 'No author available';
+    });
   } catch (e) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text("Error fetching book details: $e")),

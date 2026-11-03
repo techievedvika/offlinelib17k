@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lib17000ft/core/network/authed_http.dart' as http;
 
@@ -13,6 +12,7 @@ import '../../components/custom_labeltext.dart';
 import '../../components/custom_radio.dart';
 import '../../components/custom_textField.dart';
 import '../../components/info_dialog.dart';
+import '../../components/isbn_scanner_screen.dart';
 import '../../configs/app_urls.dart';
 import '../../configs/color/color.dart';
 import '../../components/language_dropdown.dart';
@@ -101,10 +101,12 @@ class _AddBookScreenState extends State<AddBookScreen> {
   Future<void> scanISBN() async {
     try {
       setState(() => isScanning = true);
-      String isbn = await FlutterBarcodeScanner.scanBarcode(
-          '#ff6666', 'Cancel', true, ScanMode.BARCODE);
-
-      if (isbn == '-1' || !mounted) return;
+      // String isbn = await FlutterBarcodeScanner.scanBarcode(
+      //     '#ff6666', 'Cancel', true, ScanMode.BARCODE);
+      //
+      // if (isbn == '-1' || !mounted) return;
+      final isbn = await IsbnScannerScreen.scan(context);
+      if (isbn == null || !mounted) return;
 
       if (!(RegExp(r'^\d{10}$').hasMatch(isbn) || (RegExp(r'^97[89]\d{10}$').hasMatch(isbn)))) {
         AppFeedback.showError(context, message: 'Invalid ISBN scanned. Please scan a valid ISBN.');
@@ -387,7 +389,7 @@ class _AddBookScreenState extends State<AddBookScreen> {
       // appBar: AppBar(
       //   title: const Text("Add Book"),
       // ),
-      appBar: const CustomAppbar(
+      appBar:  CustomAppbar(
         title: "Add New Book",
         backbutton: true,
       ),

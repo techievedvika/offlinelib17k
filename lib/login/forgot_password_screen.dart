@@ -195,7 +195,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     final size = MediaQuery.of(context).size;
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 238, 222, 192),
-      appBar: const CustomAppbar(
+      appBar:  CustomAppbar(
         title: 'Forgot Password',
         studentAdd: false,
         backbutton: true,

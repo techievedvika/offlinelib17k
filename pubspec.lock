@@ -630,15 +630,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "5.1.2"
-  flutter_barcode_scanner:
-    dependency: "direct main"
-    description:
-      path: "."
-      ref: "flutter-3.29"
-      resolved-ref: "15378e9904d8880318727bdfba756c3cb08455fe"
-      url: "https://github.com/decodevM/flutter_barcode_scanner.git"
-    source: git
-    version: "2.0.0"
   flutter_bloc:
     dependency: "direct main"
     description:
@@ -1101,10 +1092,10 @@ packages:
     dependency: "direct main"
     description:
       name: mobile_scanner
-      sha256: "5a51ea79f0cf8293f616a5d08baae185b59b5e6bb24df01f2a63037ade0bade0"
+      sha256: "175c62fc813c2bd762757359a2088f8cbdb72020cf85d4cd27fc4d3fe59be058"
       url: "https://pub.dev"
     source: hosted
-    version: "7.4.2"
+    version: "7.5.0"
   nested:
     dependency: transitive
     description:

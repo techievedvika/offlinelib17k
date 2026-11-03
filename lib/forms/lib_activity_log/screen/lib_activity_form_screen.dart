@@ -2,13 +2,12 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
+import 'package:path/path.dart' as p;
 import 'package:lib17000ft/core/network/authed_http.dart' as http;
 import 'package:lib17000ft/forms/lib_activity_log/submit.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:path/path.dart' as p;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 
@@ -16,6 +15,7 @@ import '../../../components/custom_appbar.dart';
 import '../../../components/custom_labeltext.dart';
 import '../../../components/custom_textField.dart';
 import '../../../components/info_dialog.dart';
+import '../../../components/isbn_scanner_screen.dart';
 import '../../../configs/app_urls.dart';
 import '../../../configs/color/color.dart';
 import '../../../configs/helper/responsive_helper.dart';
@@ -68,7 +68,7 @@ class _LibActivityFormViewState extends State<LibActivityFormView> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      appBar: const CustomAppbar(
+      appBar:  CustomAppbar(
         title: 'Log New Activity',
         backbutton: true,
       ),
@@ -112,7 +112,6 @@ class _LibActivityFormState extends State<LibActivityForm> {
   String _description = '';
   List<Book> _books = [];
   List<String> _participatingGrades = [];
-  String _totalParticipants = '';
   List<GradeParticipant> _gradeParticipants = [];
   String _conductedBy = '';
   List<String> _availableGrades = [];
@@ -256,8 +255,10 @@ class _LibActivityFormState extends State<LibActivityForm> {
 
   Future<void> _scanISBN() async {
     try {
-      String isbn = await FlutterBarcodeScanner.scanBarcode('#981B1E', 'Cancel', true, ScanMode.BARCODE);
-      if (isbn == '-1' || !mounted) return;
+      // String isbn = await FlutterBarcodeScanner.scanBarcode('#981B1E', 'Cancel', true, ScanMode.BARCODE);
+      // if (isbn == '-1' || !mounted) return;
+      final isbn = await IsbnScannerScreen.scan(context);
+      if (isbn == null || !mounted) return;
 
       widget.setSubmitting(true);
       final bookDetails = await _fetchBookDetails(isbn);

@@ -47,7 +47,7 @@ class _LibActivityListState extends State<LibActivityList> {
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 600;
     return Scaffold(
-      appBar: const CustomAppbar(
+      appBar:  CustomAppbar(
         title: 'Lib Activity Form List',
         backbutton: true,
       ),

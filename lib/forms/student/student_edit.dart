@@ -216,7 +216,7 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      appBar: const CustomAppbar(
+      appBar:  CustomAppbar(
         title: 'Edit Student',
         backbutton: true,
       ),

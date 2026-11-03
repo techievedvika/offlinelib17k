@@ -107,7 +107,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       drawer: const CustomDrawer(),
       backgroundColor: const Color.fromARGB(255, 245, 199, 201),
-      appBar: const CustomAppbar(title: 'All Forms'),
+      appBar:  CustomAppbar(title: 'All Forms'),
       body: Column(
         children: [
           // NEW — small non-blocking banner instead of full-screen block
